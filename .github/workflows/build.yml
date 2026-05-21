@@ -45,15 +45,15 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # --- Build rebar & publish to local maven ---
+      # --- Build rebar (jar goes to rebar/rebar/build/libs/) ---
       - name: Build rebar
         working-directory: rebar
-        run: ./gradlew shadowJar publishToMavenLocal -x test -x dokkaGeneratePublicationHtml --no-daemon
+        run: ./gradlew shadowJar -x test --no-daemon
 
-      # --- Build pylon (resolves rebar from local maven) ---
+      # --- Build pylon (uses rebar via composite build) ---
       - name: Build pylon
         working-directory: pylon
-        run: ./gradlew build -x test --no-daemon
+        run: ./gradlew build -x test --include-build ../rebar --no-daemon
 
       # --- Build steamwork ---
       - name: Build steamwork
