@@ -1,0 +1,3 @@
+tick-interval: 5
+steam-buffer: 1000.0
+item-buffer-size: 64

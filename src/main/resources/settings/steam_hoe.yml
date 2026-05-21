@@ -1,0 +1,9 @@
+attack-damage: 1.0
+attack-speed: 4.0
+attack-durability-damage: 1
+mining-speed: 8.0
+mining-durability-damage: 1
+durability: 500
+
+# 内置蒸汽罐容量（mB）。主动能力（4e）将从这里扣汽。
+steam-capacity: 1500.0

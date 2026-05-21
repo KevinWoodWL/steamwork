@@ -1,0 +1,5 @@
+tick-interval: 20
+range: 5
+steam-buffer: 1000.0
+steam-per-item: 3.125
+items-per-transfer: 1

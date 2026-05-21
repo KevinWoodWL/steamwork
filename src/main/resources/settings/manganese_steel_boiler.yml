@@ -1,0 +1,10 @@
+tick-interval: 10
+water-buffer: 3000.0
+steam-buffer: 6500.0
+water-per-cycle: 70.0
+steam-per-cycle: 260.0
+
+# ===== 高级锅炉：无惩罚 + 微加成 =====
+startup-ticks: 0
+leak-interval-ticks: 0
+heat-efficiency: 1.05

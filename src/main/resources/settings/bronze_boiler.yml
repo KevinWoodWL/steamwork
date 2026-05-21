@@ -1,0 +1,15 @@
+tick-interval: 20
+water-buffer: 1500.0
+steam-buffer: 3000.0
+water-per-cycle: 60.0
+steam-per-cycle: 150.0
+
+# ===== 入门级锅炉的惩罚机制（让玩家有升级动机） =====
+# 启动期：从开始连续加热起，前 200 tick（10 秒）只产 50%。失去热源会重置。
+startup-ticks: 200
+startup-multiplier: 0.5
+# 蒸汽泄漏：每 100 tick（5 秒）流失 1% buffer，伴随白雾粒子 + 漏气音效。
+leak-interval-ticks: 100
+leak-fraction: 0.01
+# 热源利用率：粗糙的青铜散热严重，同样的火源只能用 70% 效率。
+heat-efficiency: 0.7

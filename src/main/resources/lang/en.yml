@@ -1,0 +1,726 @@
+addon: "蒸汽工坊"
+
+item:
+  zinc_ingot:
+    name: "Zinc Ingot"
+    lore: <arrow> A silvery-grey base metal used to make brass alloys
+
+  brass_ingot:
+    name: "Brass Ingot"
+    lore: <arrow> A sturdy copper-zinc alloy for pressure fittings and steam machinery
+
+  nichrome_dust:
+    name: "Nichrome Dust"
+    lore: |-
+      <arrow> A heat-resistant alloy powder mixed in the steam pressurized furnace
+      <arrow> Smelt it into nichrome ingots
+
+  nichrome_ingot:
+    name: "Nichrome Ingot"
+    lore: |-
+      <arrow> A high-resistance, heat-resistant alloy for coils and high-temperature machinery
+      <arrow> Smelted from nichrome dust
+
+  rubber_gasket:
+    name: "Rubber Gasket"
+    lore: <arrow> Seals pipe joints against leaking steam
+
+  pressure_gauge:
+    name: "Pressure Gauge"
+    lore: <arrow> A compact dial for reading boiler pressure
+
+  zinc_concentrate:
+    name: "Zinc Concentrate"
+    lore: |-
+      <arrow> Zinc-rich mineral concentrate washed from amethyst materials
+      <arrow> Smelt it into zinc ingots
+
+  plant_fiber:
+    name: "Plant Fiber"
+    lore: |-
+      <arrow> Heat-softened fiber drawn out in a steam steeping vat
+      <arrow> Useful as cordage and coil winding
+
+  steam_pulp:
+    name: "Steam Pulp"
+    lore: |-
+      <arrow> Plant slurry prepared with hot water and steam
+      <arrow> Press it into paper
+
+  raw_resin:
+    name: "Raw Resin"
+    lore: |-
+      <arrow> Sticky resin steamed out of roots, wood, or elastic materials
+      <arrow> Sterilize and cure it into rubber
+
+  vulcanized_rubber:
+    name: "Vulcanized Rubber"
+    lore: |-
+      <arrow> Heat-stable rubber cured in a steam sterilizer
+      <arrow> Used for steam seals
+
+  sterile_biomass:
+    name: "Sterile Biomass"
+    lore: |-
+      <arrow> Stable substrate from steam-treated rotten or fungal matter
+      <arrow> Reserved for future farming, fermentation, or chemical processes
+
+  silica_grit:
+    name: "Silica Grit"
+    lore: |-
+      <arrow> High-purity fine grit separated in a washing trough
+      <arrow> Useful for insulation, glasswork, and fluxes
+
+  mineral_flux:
+    name: "Mineral Flux"
+    lore: |-
+      <arrow> A smelting additive blended from grit, clay, and bone meal
+      <arrow> Reserved for high-temperature alloys and furnace materials
+
+  treated_wood:
+    name: "Treated Wood"
+    lore: |-
+      <arrow> Wood stabilized by steam steeping
+      <arrow> Good for early machine frames and insulated housings
+
+  fiberboard:
+    name: "Fiberboard"
+    lore: |-
+      <arrow> Pressed from pulp, plant fiber, and resin
+      <arrow> Useful as lightweight structure and heat lining
+
+  rubberized_fabric:
+    name: "Rubberized Fabric"
+    lore: |-
+      <arrow> Flexible fiber treated with steam and resin
+      <arrow> Useful for seals, hoses, and protective layers
+
+  sterile_culture:
+    name: "Sterile Culture"
+    lore: |-
+      <arrow> A stable culture medium from processed sterile biomass
+      <arrow> Reserved for fermentation, medicine, or biological processing
+
+  machine_scrap:
+    name: "Machine Scrap"
+    lore: |-
+      <arrow> Worn-off metal shavings and broken parts from steam machines
+      <arrow> Has a small chance to drop on each recipe completion
+      <arrow> Feed back into the Steam Grinder to recover iron ingots
+
+  brass_gear:
+    name: "Brass Gear"
+    lore: <arrow> A precision mechanical transmission component
+
+  heating_coil:
+    name: "Heating Coil"
+    lore: <arrow> A heat-resistant coil made from nichrome alloy
+
+  # Brass machine components
+  brass_distillation_tube:
+    name: "Brass Distillation Tube"
+    lore: <arrow> Corrosion-resistant tube bent from brass and tin sheets, for steam distillation
+
+  brass_filter:
+    name: "Brass Filter"
+    lore: <arrow> Brass and tin sheet mesh for filtration in steeping processes
+
+  brass_sieve:
+    name: "Brass Sieve"
+    lore: <arrow> Porous brass and tin structure for particle classification in washing troughs
+
+  brass_flow_valve:
+    name: "Brass Flow Valve"
+    lore: <arrow> Brass and redstone-controlled water flow valve for precise regulation
+
+  brass_fan_blade:
+    name: "Brass Fan Blade"
+    lore: <arrow> High-efficiency brass and tin air flow propulsion blade
+
+  brass_valve_core:
+    name: "Brass Valve Core"
+    lore: <arrow> High-strength valve core made from zinc and brass alloy
+
+  brass_seal_ring:
+    name: "Brass Seal Ring"
+    lore: <arrow> High-pressure seal ring made from brass and tin sheets
+
+  # Pressurized alloys
+  invar_dust:
+    name: "Invar Dust"
+    lore: |-
+      <arrow> A precision alloy powder compacted in the Steam Pressurized Furnace
+      <arrow> Smelt it into an invar ingot
+
+  invar_ingot:
+    name: "Invar Ingot"
+    lore: |-
+      <arrow> An iron-nickel alloy with near-zero thermal expansion
+      <arrow> Smelted from invar dust
+
+  duralumin_dust:
+    name: "Duralumin Dust"
+    lore: |-
+      <arrow> A lightweight alloy powder mixed under steam pressure
+      <arrow> Smelt it into a duralumin ingot
+
+  duralumin_ingot:
+    name: "Duralumin Ingot"
+    lore: |-
+      <arrow> A high-strength lightweight alloy of copper and amethyst
+      <arrow> Smelted from duralumin dust
+
+  tungsten_dust:
+    name: "Tungsten Dust"
+    lore: |-
+      <arrow> A heat-resistant metal powder compacted by high-pressure steam
+      <arrow> Smelt it into a tungsten ingot
+
+  tungsten_ingot:
+    name: "Tungsten Ingot"
+    lore: |-
+      <arrow> An extremely heat-resistant rare metal
+      <arrow> Smelted from tungsten dust
+
+  manganese_steel_dust:
+    name: "Manganese Steel Dust"
+    lore: |-
+      <arrow> Alloy steel powder with manganese additives pressed into the mix
+      <arrow> Smelt it into a manganese steel ingot
+
+  manganese_steel_ingot:
+    name: "Manganese Steel Ingot"
+    lore: |-
+      <arrow> A highly wear-resistant alloy steel
+      <arrow> Smelted from manganese steel dust
+
+  manganese_bronze_dust:
+    name: "Manganese Bronze Dust"
+    lore: |-
+      <arrow> A bearing bronze powder compacted for transmission parts
+      <arrow> Smelt it into a manganese bronze ingot
+
+  manganese_bronze_ingot:
+    name: "Manganese Bronze Ingot"
+    lore: |-
+      <arrow> A manganese-and-iron reinforced bronze, ideal for bearings
+      <arrow> Smelted from manganese bronze dust
+
+  # Alloy blocks
+  invar_block:
+    name: "Invar Block"
+    lore: <arrow> A dense block of pressed invar ingots
+  duralumin_block:
+    name: "Duralumin Block"
+    lore: <arrow> A lightweight block of pressed duralumin ingots
+  tungsten_block:
+    name: "Tungsten Block"
+    lore: <arrow> A heavy block of pressed tungsten ingots
+  manganese_steel_block:
+    name: "Manganese Steel Block"
+    lore: <arrow> A high-strength block of pressed manganese steel ingots
+  manganese_bronze_block:
+    name: "Manganese Bronze Block"
+    lore: <arrow> A wear-resistant block of pressed manganese bronze ingots
+
+  # Machine components
+  steam_motor:
+    name: "Steam Motor"
+    lore: <arrow> The core power unit for driving steam machinery
+    tooltip: "<gray>Assembles from Pylon and Steamwork mid-tier components"
+
+  # Steam weapons
+  steam_sword:
+    name: "Steam Sword"
+    lore: |-
+      <arrow> A steam-powered blade, far deadlier than ordinary iron
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  # Steam tools
+  steam_pickaxe:
+    name: "Steam Pickaxe"
+    lore: |-
+      <arrow> A steam-driven rotary impact pick for fast mining
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_axe:
+    name: "Steam Axe"
+    lore: |-
+      <arrow> An internal-combustion lumber axe
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_shovel:
+    name: "Steam Shovel"
+    lore: |-
+      <arrow> A vibrating steam-powered digging shovel
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_hoe:
+    name: "Steam Hoe"
+    lore: |-
+      <arrow> A steam-driven farming implement
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  # Steam armor
+  steam_helmet:
+    name: "Steam Helmet"
+    lore: |-
+      <arrow> A protective helmet with a miniature boiler
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_chestplate:
+    name: "Steam Chestplate"
+    lore: |-
+      <arrow> Heavy steam chestplate forged from brass and iron
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_leggings:
+    name: "Steam Leggings"
+    lore: |-
+      <arrow> Reinforced leggings lined with steam pipes
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_boots:
+    name: "Steam Boots"
+    lore: |-
+      <arrow> Heavy boots with steam-damped shock absorbers
+      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+
+  # Portable steam energy
+  steam_canister_brass:
+    name: "Brass Steam Canister"
+    lore: |-
+      <arrow> Entry-tier portable steam storage
+      <arrow> <attr>Capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_canister_invar:
+    name: "Invar Steam Canister"
+    lore: |-
+      <arrow> Mid-tier portable steam storage with reinforced invar casing
+      <arrow> <attr>Capacity:</attr> <aqua>%capacity%</aqua>
+
+  steam_canister_tungsten:
+    name: "Tungsten Steam Canister"
+    lore: |-
+      <arrow> Top-tier portable steam storage, rated for superheated steam
+      <arrow> <attr>Capacity:</attr> <aqua>%capacity%</aqua>
+
+  # Block items
+  bronze_boiler:
+    name: "Bronze Boiler"
+    lore: |-
+      <arrow> An entry multiblock boiler reinforced with Pylon bronze
+      <arrow> Structure: Pylon bronze blocks on both sides, bronze grating on top, heat below
+      <arrow> <attr>Water buffer:</attr> %water-buffer%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Water usage:</attr> %water-per-second%
+      <arrow> <attr>Steam output:</attr> %steam-per-second%
+    waila: "Bronze Boiler | %structure% | Water %water-bar% | Steam %steam-bar% | %pressure%"
+
+  invar_boiler:
+    name: "Invar Boiler"
+    lore: |-
+      <arrow> A high-efficiency boiler made from low-expansion alloy, using less water
+      <arrow> Structure: invar blocks on both sides, Pylon iron support beam on top, heat below
+      <arrow> <attr>Water buffer:</attr> %water-buffer%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Water usage:</attr> %water-per-second%
+      <arrow> <attr>Steam output:</attr> %steam-per-second%
+    waila: "Invar Boiler | %structure% | Water %water-bar% | Steam %steam-bar% | %pressure%"
+
+  manganese_steel_boiler:
+    name: "Manganese Steel Boiler"
+    lore: |-
+      <arrow> A heavy industrial boiler built from wear-resistant steel for fast steam output
+      <arrow> Structure: manganese steel blocks on both sides, Pylon steel support beam on top, heat below
+      <arrow> <attr>Water buffer:</attr> %water-buffer%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Water usage:</attr> %water-per-second%
+      <arrow> <attr>Steam output:</attr> %steam-per-second%
+    waila: "Manganese Steel Boiler | %structure% | Water %water-bar% | Steam %steam-bar% | %pressure%"
+
+  tungsten_boiler:
+    name: "Tungsten Boiler"
+    lore: |-
+      <arrow> A top-end high-temperature boiler for extreme steam throughput
+      <arrow> Structure: tungsten blocks on both sides, Pylon refractory bricks on top, heat below
+      <arrow> <attr>Water buffer:</attr> %water-buffer%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Water usage:</attr> %water-per-second%
+      <arrow> <attr>Steam output:</attr> %steam-per-second%
+    waila: "Tungsten Boiler | %structure% | Water %water-bar% | Steam %steam-bar% | %pressure%"
+
+  steam_arm:
+    name: "Steam Arm"
+    lore: |-
+      <arrow> Moves items between inventories in a short range
+      <arrow> <attr>Range:</attr> %range%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per transfer:</attr> %steam-per-transfer%
+    waila: "Steam Arm | %steam-bar% | %state%"
+
+  simple_steam_turbine:
+    name: "Simple Steam Turbine"
+    lore: |-
+      <arrow> Scans nearby furnaces for steam boosting (Basic version)
+      <arrow> Supports: Furnaces, Blast Furnaces, Smokers
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Simple Steam Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  advanced_steam_turbine:
+    name: "Advanced Steam Turbine"
+    lore: |-
+      <arrow> Scans nearby furnaces and Pylon heat sources for steam boosting (Premium version)
+      <arrow> Supports: Furnaces, Blast Furnaces, Smokers, Refinery, Heat Line
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Advanced Steam Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  steam_sterilizer:
+    name: "Steam Sterilizer"
+    lore: |-
+      <arrow> Cleans rotten materials, fungi, and resin with hot pressurized steam
+      <arrow> Produces sterile biomass and vulcanized rubber
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Sterilizer | Steam %steam-bar%"
+
+  steam_steeping_vat:
+    name: "Steam Steeping Vat"
+    lore: |-
+      <arrow> Steeps plants, roots, and sticky materials with hot water and steam
+      <arrow> Produces plant fiber, steam pulp, and raw resin
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Steeping Vat | Steam %steam-bar%"
+
+  steam_washing_trough:
+    name: "Steam Washing Trough"
+    lore: |-
+      <arrow> Washes minerals and sediments with hot water and steam
+      <arrow> Produces zinc concentrate, clay, and small mineral byproducts
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Washing Trough | Steam %steam-bar%"
+
+  steam_press:
+    name: "Steam Press"
+    lore: |-
+      <arrow> A high-pressure steam piston that presses soft or granular materials into sheets and boards
+      <arrow> Produces fiberboard and Pylon metal sheets
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Press | Steam %steam-bar%"
+
+  steam_grinder:
+    name: "Steam Grinder"
+    lore: |-
+      <arrow> A steam-driven grinding wheel that dry-mills stones and metal ingots into dust
+      <arrow> Produces quartz and Pylon metal dusts
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Grinder | Steam %steam-bar%"
+
+  steam_pressurized_furnace:
+    name: "Steam Pressurized Furnace"
+    lore: |-
+      <arrow> Compacts materials into advanced alloy dusts using high-pressure steam
+      <arrow> Makes invar, duralumin, tungsten, manganese steel, and manganese bronze dusts
+      <arrow> Drop items on top, right-click or wait for auto-processing
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Pressurized Furnace | Steam %steam-bar% | %state%"
+
+  steam_assembly_bench:
+    name: "Steam Assembly Bench"
+    lore: |-
+      <arrow> Assembles bases + brass parts + alloy components into steam equipment
+      <arrow> Requires a 3×1×3 structure: main block + 4 bronze blocks at the corners
+      <arrow> All steam tools, armor, and canisters are built here
+    waila: "Steam Assembly Bench | %structure%"
+
+gui:
+  steam_arm:
+    title: "<dark_gray>Steam Arm"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    items_per_transfer: "<gray>Items per transfer"
+    steam_per_transfer: "<gray>Steam for this transfer: <reset><aqua>%steam%"
+    steam_per_item: "<gray>Steam per item: <reset><aqua>%steam%"
+    steam_per_operation: "<gray>Steam for this transfer: <reset><aqua>%steam%"
+    items_setting: "<yellow>Transfer Amount"
+    items_hint: "<gray>LMB +1 | RMB -1"
+    items_hint_shift: "<gray>Shift+LMB +10 | Shift+RMB -10"
+    current_amount: "<aqua>Current: %amount%"
+    input_target:
+      name: "<yellow>Input Target"
+      title: "<gray>Input Target Settings"
+      count: "<gray>Configured: <reset>%count% <gray>/ %max%"
+      hint: "<gray>LMB to enter selection mode"
+      hint_select: "<gray>LMB to add/remove container | RMB to keep selection"
+      list_hint: "<gray>RMB to view configured blocks"
+    output_target:
+      name: "<yellow>Output Target"
+      title: "<gray>Output Target Settings"
+      count: "<gray>Configured: <reset>%count% <gray>/ %max%"
+      hint: "<gray>LMB to enter selection mode"
+      hint_select: "<gray>LMB to add/remove container | RMB to keep selection"
+      list_hint: "<gray>RMB to view configured blocks"
+    target_list:
+      input_title: "<dark_gray>Input Target List"
+      output_title: "<dark_gray>Output Target List"
+      entry: "<yellow>Target #%index%"
+      coordinates: "<gray>Coordinates: <white>%x%, %y%, %z%"
+      coordinates_large: "<gray>Coordinates: <white>%x%, %y%, %z% <gray>~ <white>%px%, %py%, %pz%"
+      remove_hint: "<red>LMB to remove this target"
+      back: "<yellow>Back"
+      back_hint: "<gray>Return to the Steam Arm menu"
+    distribution:
+      name: "<yellow>Distribution Method"
+      current: "<gray>Current: <reset>%mode%"
+      hint: "<gray>LMB next | RMB previous"
+      mode:
+        round_robin: "<aqua>Round Robin"
+        strict_round_robin: "<gold>Forced Round Robin"
+        first_priority: "<green>First Target Priority"
+      desc:
+        round_robin: "<gray>Cycles through outputs and skips blocked ones"
+        strict_round_robin: "<gray>Cycles through inputs and outputs, waiting when the current one is blocked"
+        first_priority: "<gray>Tries the first output first, then later outputs when blocked"
+    motor_slot:
+      empty: "<red>Steam Motor Missing"
+      filled: "<green>Steam Motor"
+      installed: "<green>Installed"
+      hint: "<gray>Insert steam motor here"
+    motor_installed: "<green>Motor installed"
+    motor_missing: "<red>Motor missing"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+      missing_motor: "<red>Steam motor missing"
+
+  simple_steam_turbine:
+    title: "<dark_gray>Simple Steam Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    targets_found: "<gray>Heat sources detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  advanced_steam_turbine:
+    title: "<dark_gray>Advanced Steam Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    targets_found: "<gray>Heat sources detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_processor:
+    input_count: "<gray>Input slot items: <reset><yellow>%count%"
+    output_count: "<gray>Output slot items: <reset><yellow>%count%"
+    steam_status_normal: "<gray>Status: <green>Normal"
+    steam_status_low: "<gray>Status: <red>Low steam"
+    progress_idle: "<gray>Waiting for processable materials"
+    progress_percent: "<gray>Progress: <reset>%percent%"
+    time_remaining: "<gray>Time left: <yellow>%time%"
+    output_summary: "<aqua>Yield: <yellow>%amount%</yellow> × <reset>%item%"
+    reason:
+      ready: "<gray>Reason: <reset><gray>Awaiting input"
+      no_ingredients: "<gray>Reason: <reset><gray>No matching recipe"
+      no_steam: "<gray>Reason: <reset><red>Insufficient steam"
+      output_full: "<gray>Reason: <reset><yellow>Output slots full"
+      processing: "<gray>Reason: <reset><green>Processing"
+    steam_rate: "<gray>Steam draw: <reset><aqua>%rate%</aqua> <gray>mB/s"
+    interruption_warning: "<red>⚠ Steam outage too long — progress regressing</red>"
+
+  steam_sterilizer:
+    title: "<dark_gray>Steam Sterilizer"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Sterilizing Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_steeping_vat:
+    title: "<dark_gray>Steam Steeping Vat"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Steeping Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_washing_trough:
+    title: "<dark_gray>Steam Washing Trough"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Washing Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_press:
+    title: "<dark_gray>Steam Press"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Pressing Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_grinder:
+    title: "<dark_gray>Steam Grinder"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Grinding Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_assembly_bench:
+    title: "<dark_gray>Steam Assembly Bench"
+    button: "<aqua>Assemble"
+    status:
+      ready: "<green>Ingredients ready, click to assemble"
+      no_recipe: "<gray>Current inputs don't match any recipe"
+      structure_missing: "<red>Structure incomplete: needs 4 bronze blocks at the corners"
+
+  pressurized_furnace:
+    title: "<dark_gray>Steam Pressurized Furnace"
+    steam_gauge: "<aqua>Steam Pressure"
+    steam: "<gray>Steam: <aqua>%steam% <gray>/ <aqua>%capacity%"
+    input_slots: "<gray>Input slots: <yellow>%filled%<gray>/<yellow>%total%"
+    output_slot: "<gray>Output slot: %output%"
+    output_destination: "<gray>Output target: %destination%"
+    process: "<green>Press <gray>| Steam %steam%"
+    progress: "<green>Pressurizing Progress"
+    progress_idle: "<gray>Waiting for processable materials"
+    progress_bar: "%bar% <gray>%percent%"
+    time_remaining: "<gray>Time left: <yellow>%time%"
+    output_state:
+      empty: "<gray>Empty"
+      amount: "<aqua>%amount%<gray>/<aqua>%max%"
+      full: "<red>Full"
+    destination:
+      gui: "<aqua>GUI output slot"
+      below: "<yellow>Container below"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+guide:
+  recipe:
+    steam_pressurizing: "<gray>Steam pressurizing | %steam% steam | %time%"
+    steam_sterilizing: "<gray>Steam sterilizing | %steam% steam | %time%"
+    steam_steeping: "<gray>Steam steeping | %steam% steam | %time%"
+    steam_washing: "<gray>Steam washing | %steam% steam | %time%"
+    steam_pressing: "<gray>Steam pressing | %steam% steam | %time%"
+    steam_grinding: "<gray>Steam grinding | %steam% steam | %time%"
+    phosphor_bronze: "<gray>Phosphor Bronze - Pylon Tin synergy"
+    nitrided_steel: "<gray>Nitrided Steel - Pylon Steel synergy"
+    palladium_alloy: "<gray>Palladium Alloy - Pylon Palladium synergy"
+  button:
+    root:
+      name: "<white>蒸汽工坊"
+    metals:
+      name: "Ingots & Metals"
+    basic_materials:
+      name: "Basic Materials"
+    components:
+      name: "Mechanical Components"
+    heat_sources:
+      name: "Heat Sources"
+    equipment:
+      name: "Steam Weapons/Tools"
+    armor:
+      name: "Steam Armor"
+    steam_machines:
+      name: "Steam Machines"
+  page:
+    root: "<white>蒸汽工坊"
+    metals: "Ingots & Metals"
+    basic_materials: "Basic Materials"
+    components: "Mechanical Components"
+    heat_sources: "Heat Sources"
+    equipment: "Steam Weapons/Tools"
+    armor: "Steam Armor"
+    steam_machines: "Steam Machines"
+
+fluid:
+  steam: "<#d8edf0>Steam"
+  superheated_steam: "<#fff4d8>Superheated Steam"
+  molten_zinc: "<#c4d4e0>Molten Zinc"
+  molten_brass: "<#e3d45c>Molten Brass"
+
+pressure:
+  low: "<gray>Low pressure"
+  medium: "<yellow>Working pressure"
+  high: "<gold>High pressure"
+  venting: "<red>Venting"
+
+state:
+  active: "<green>Active"
+  idle: "<gray>Idle"
+  # Detailed states used by steam processors (StopReason), called by %state% in WAILA.
+  # Boilers/turbines without StopReason still use the active/idle binary above.
+  ready: "<gray>Awaiting input"
+  no_ingredients: "<gray>No matching recipe"
+  no_steam: "<red>Insufficient steam"
+  output_full: "<yellow>Output full"
+  processing: "<green>Processing"
+
+structure:
+  formed: "<green>Structure complete"
+  missing: "<red>Structure missing"
+
+research:
+  mineral_refining: "Mineral Refining"
+  basic_steam_science: "Basic Steam Science"
+  pressure_measurement: "Pressure Measurement"
+  boiler_technology: "Boiler Technology"
+  steam_automation: "Steam Automation"
+  mechanical_transmission: "Mechanical Transmission"
+  steam_equipment: "Steam Tools"
+  steam_armor: "Steam Armor"
+  advanced_alloys: "Advanced Alloys"
+  advanced_boilers: "Advanced Boilers"
+  pressurized_furnace: "Pressurized Furnace"
+  advanced_ingots: "Advanced Ingots"
+  steam_turbine_tech: "High-Energy Turbine"
+
+message:
+  steam_arm:
+    selecting_input: "<yellow>Selecting input target... LMB to add/remove | RMB to keep selection"
+    selecting_input_range: "<yellow>Selecting input target... Range: %range% blocks. LMB to add/remove | RMB to keep selection"
+    selecting_output: "<yellow>Selecting output target... LMB to add/remove | RMB to keep selection"
+    selecting_output_range: "<yellow>Selecting output target... Range: %range% blocks. LMB to add/remove | RMB to keep selection"
+    selection_cancelled: "<gray>Target selection cancelled"
+    target_added: "<green>Added %type% target: <white>%location%"
+    target_location_large: "<white>(%0%, %1%, %2% ~ %3%, %4%, %5%)"
+    target_type:
+      input: "<aqua>Input"
+      output: "<red>Output"
+    target_max: "<red>Maximum targets reached (9)"
+    target_self: "<red>Cannot target self"
+    target_duplicate: "<red>Target already exists"
+    target_conflict: "<red>This position is already in %type% target list"
+    target_removed: "<yellow>Removed %type% target: <white>%location%"
+    target_out_of_range: "<red>Target out of range (max %range% blocks)"

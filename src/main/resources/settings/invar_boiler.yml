@@ -1,0 +1,14 @@
+tick-interval: 15
+water-buffer: 2000.0
+steam-buffer: 4500.0
+water-per-cycle: 55.0
+steam-per-cycle: 180.0
+
+# ===== 中级锅炉：减轻入门惩罚 =====
+# 启动期缩短到 100 tick（5 秒），且产 70%。
+startup-ticks: 100
+startup-multiplier: 0.7
+# 不再泄漏。
+leak-interval-ticks: 0
+# 标准热源利用率。
+heat-efficiency: 1.0

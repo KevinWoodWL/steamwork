@@ -1,0 +1,736 @@
+addon: "蒸汽工坊"
+
+item:
+  zinc_ingot:
+    name: "锌锭"
+    lore: <arrow> 一种银灰色的基础金属，用于制造黄铜合金
+
+  brass_ingot:
+    name: "黄铜锭"
+    lore: <arrow> 铜与锌的坚固合金，用于压力接头和蒸汽机械
+
+  nichrome_dust:
+    name: "镍铬合金粉末"
+    lore: |-
+      <arrow> 在蒸汽加压炉中混合出的耐热合金粉末
+      <arrow> 冶炼后可得到镍铬合金锭
+
+  nichrome_ingot:
+    name: "镍铬合金锭"
+    lore: |-
+      <arrow> 一种高电阻、耐高温的合金，用于加热线圈和高温设备
+      <arrow> 由镍铬合金粉末冶炼而成
+
+  rubber_gasket:
+    name: "橡胶垫圈"
+    lore: <arrow> 用于密封管道接缝，防止蒸汽泄漏
+
+  pressure_gauge:
+    name: "压力表"
+    lore: <arrow> 用于读取锅炉压力的小型表盘
+
+  zinc_concentrate:
+    name: "锌精矿"
+    lore: |-
+      <arrow> 由蒸汽洗选槽从紫水晶矿物中洗选出的含锌精矿
+      <arrow> 冶炼后可得到锌锭
+
+  plant_fiber:
+    name: "植物纤维"
+    lore: |-
+      <arrow> 由蒸汽浸煮桶软化出的耐热纤维
+      <arrow> 可作为绳线和线圈缠绕材料
+
+  steam_pulp:
+    name: "蒸汽纸浆"
+    lore: |-
+      <arrow> 植物材料经热水和蒸汽浸煮后的浆料
+      <arrow> 可压制成纸
+
+  raw_resin:
+    name: "粗树脂"
+    lore: |-
+      <arrow> 从根系、木材或黏性材料中蒸汽浸提出的树脂
+      <arrow> 灭菌硫化后可得到橡胶
+
+  vulcanized_rubber:
+    name: "硫化橡胶"
+    lore: |-
+      <arrow> 经蒸汽灭菌箱处理后的耐热橡胶
+      <arrow> 用于制作蒸汽密封件
+
+  sterile_biomass:
+    name: "无菌生质"
+    lore: |-
+      <arrow> 腐败或菌类材料经高温蒸汽处理后的稳定基质
+      <arrow> 后续可用于农业、发酵或化学流程
+
+  silica_grit:
+    name: "二氧化硅砂"
+    lore: |-
+      <arrow> 洗选出的高纯细砂
+      <arrow> 可用于绝热材料、玻璃和助熔剂
+
+  mineral_flux:
+    name: "矿物助熔剂"
+    lore: |-
+      <arrow> 由细砂、黏土和骨粉调制的冶炼添加剂
+      <arrow> 后续可用于高温合金和炉体材料
+
+  treated_wood:
+    name: "处理木材"
+    lore: |-
+      <arrow> 经蒸汽浸煮后稳定下来的木质结构材料
+      <arrow> 适合用于早期机器框架和绝缘外壳
+
+  fiberboard:
+    name: "纤维板"
+    lore: |-
+      <arrow> 由纸浆、植物纤维和树脂压制而成
+      <arrow> 可作为轻质结构板和隔热内衬
+
+  rubberized_fabric:
+    name: "覆胶织物"
+    lore: |-
+      <arrow> 植物纤维经蒸汽灭菌与树脂处理后的柔性材料
+      <arrow> 适合做密封套、软管和防护层
+
+  sterile_culture:
+    name: "无菌培养基"
+    lore: |-
+      <arrow> 无菌生质进一步蒸汽处理后的稳定培养材料
+      <arrow> 后续可用于发酵、药剂或生物工艺
+
+  machine_scrap:
+    name: "机器废屑"
+    lore: |-
+      <arrow> 蒸汽机器长时间运行后剥落的金属碎渣与磨损零件
+      <arrow> 每条配方完成时有少量概率掉落
+      <arrow> 攒一些丢回研磨机可回收成铁锭
+
+  brass_gear:
+    name: "黄铜齿轮"
+    lore: <arrow> 精密的机械传动部件
+
+  heating_coil:
+    name: "加热线圈"
+    lore: <arrow> 镍铬合金制成的耐热线圈，用于高温设备
+
+  # ───── 黄铜机械组件 ─────
+  brass_distillation_tube:
+    name: "黄铜蒸馏管"
+    lore: <arrow> 黄铜与锡片弯曲而成的耐腐蚀管道，用于蒸汽蒸馏
+
+  brass_filter:
+    name: "黄铜滤网"
+    lore: <arrow> 黄铜与锡片编织的过滤网，用于浸煮分离
+
+  brass_sieve:
+    name: "黄铜筛网"
+    lore: <arrow> 黄铜与锡片编织的多孔结构，用于洗选槽颗粒分级
+
+  brass_flow_valve:
+    name: "黄铜分流阀"
+    lore: <arrow> 黄铜与红石控制的水流阀门，用于精确控制
+
+  brass_fan_blade:
+    name: "黄铜扇叶"
+    lore: <arrow> 黄铜与锡片制成的高效气流推进叶片
+
+  brass_valve_core:
+    name: "黄铜阀芯"
+    lore: <arrow> 锌与黄铜合金制成的强度阀芯
+
+  brass_seal_ring:
+    name: "黄铜密封环"
+    lore: <arrow> 黄铜与锡片制成的耐高压密封圈
+
+  # ───── 加压合金 ─────
+  invar_dust:
+    name: "因瓦合金粉末"
+    lore: |-
+      <arrow> 在蒸汽加压炉中压合出的精密合金粉末
+      <arrow> 冶炼后可得到因瓦合金锭
+
+  invar_ingot:
+    name: "因瓦合金锭"
+    lore: |-
+      <arrow> 极低热膨胀系数的铁镍合金，用于精密仪器
+      <arrow> 由因瓦合金粉末冶炼而成
+
+  duralumin_dust:
+    name: "硬铝合金粉末"
+    lore: |-
+      <arrow> 在蒸汽压力下混合的轻质合金粉末
+      <arrow> 冶炼后可得到硬铝合金锭
+
+  duralumin_ingot:
+    name: "硬铝合金锭"
+    lore: |-
+      <arrow> 铜与紫水晶共炼的高强度轻质合金
+      <arrow> 由硬铝合金粉末冶炼而成
+
+  tungsten_dust:
+    name: "钨粉末"
+    lore: |-
+      <arrow> 通过高压蒸汽压制出的耐热金属粉末
+      <arrow> 冶炼后可得到钨锭
+
+  tungsten_ingot:
+    name: "钨锭"
+    lore: |-
+      <arrow> 极端耐高温的稀有金属，用于高负载部件
+      <arrow> 由钨粉末冶炼而成
+
+  manganese_steel_dust:
+    name: "锰钢粉末"
+    lore: |-
+      <arrow> 以高压蒸汽压入锰质添加剂的合金钢粉末
+      <arrow> 冶炼后可得到锰钢锭
+
+  manganese_steel_ingot:
+    name: "锰钢锭"
+    lore: |-
+      <arrow> 添加锰元素的高耐磨合金钢
+      <arrow> 由锰钢粉末冶炼而成
+
+  manganese_bronze_dust:
+    name: "锰青铜粉末"
+    lore: |-
+      <arrow> 蒸汽压制出的传动用青铜合金粉末
+      <arrow> 冶炼后可得到锰青铜锭
+
+  manganese_bronze_ingot:
+    name: "锰青铜锭"
+    lore: |-
+      <arrow> 含锰和铁的改良青铜，优质轴承材料
+      <arrow> 由锰青铜粉末冶炼而成
+
+  # ───── 合金块 ─────
+  invar_block:
+    name: "因瓦合金块"
+    lore: <arrow> 由因瓦合金锭压制而成的致密金属块
+  duralumin_block:
+    name: "硬铝合金块"
+    lore: <arrow> 由硬铝合金锭压制而成的轻质金属块
+  tungsten_block:
+    name: "钨块"
+    lore: <arrow> 由钨锭压制而成的沉重金属块
+  manganese_steel_block:
+    name: "锰钢块"
+    lore: <arrow> 由锰钢锭压制而成的高强度金属块
+  manganese_bronze_block:
+    name: "锰青铜块"
+    lore: <arrow> 由锰青铜锭压制而成的耐磨金属块
+
+  # ───── 机械组件 ─────
+  steam_motor:
+    name: "蒸汽马达"
+    lore: <arrow> 驱动蒸汽机械的核心动力单元
+    tooltip: "<gray>由Pylon和Steamwork中期产物组装而成"
+
+  # ───── 蒸汽武器 ─────
+  steam_sword:
+    name: "蒸汽剑"
+    lore: |-
+      <arrow> 注入蒸汽动力的锋利剑刃，威力远超普通铁剑
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  # ───── 蒸汽工具 ─────
+  steam_pickaxe:
+    name: "蒸汽镐"
+    lore: |-
+      <arrow> 蒸汽驱动的旋转冲击镐，挖掘效率极高
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_axe:
+    name: "蒸汽斧"
+    lore: |-
+      <arrow> 内置蒸汽引擎的伐木斧，砍树如切豆腐
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_shovel:
+    name: "蒸汽锹"
+    lore: |-
+      <arrow> 带有振动装置的蒸汽动力锹
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_hoe:
+    name: "蒸汽锄"
+    lore: |-
+      <arrow> 蒸汽驱动的农耕工具
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  # ───── 蒸汽盔甲 ─────
+  steam_helmet:
+    name: "蒸汽头盔"
+    lore: |-
+      <arrow> 内置微型锅炉的防护头盔
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_chestplate:
+    name: "蒸汽胸甲"
+    lore: |-
+      <arrow> 以黄铜和铁锻造的重型蒸汽胸甲
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_leggings:
+    name: "蒸汽护腿"
+    lore: |-
+      <arrow> 内衬蒸汽管道的强化护腿
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_boots:
+    name: "蒸汽靴子"
+    lore: |-
+      <arrow> 装有减震蒸汽弹簧的重型靴子
+      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+
+  # ───── 便携蒸汽能源 ─────
+  steam_canister_brass:
+    name: "黄铜蒸汽罐"
+    lore: |-
+      <arrow> 入门级便携蒸汽储能
+      <arrow> <attr>容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_canister_invar:
+    name: "因瓦蒸汽罐"
+    lore: |-
+      <arrow> 中阶便携蒸汽储能，因瓦合金外壳更耐压
+      <arrow> <attr>容量：</attr> <aqua>%capacity%</aqua>
+
+  steam_canister_tungsten:
+    name: "钨蒸汽罐"
+    lore: |-
+      <arrow> 高阶便携蒸汽储能，可承受过热蒸汽的高压
+      <arrow> <attr>容量：</attr> <aqua>%capacity%</aqua>
+
+  # ───── 方块物品 ─────
+  bronze_boiler:
+    name: "青铜锅炉"
+    lore: |-
+      <arrow> 使用 Pylon 青铜强化的入门多方块锅炉
+      <arrow> 结构：核心左右放 Pylon 青铜块，上方放青铜格栅，下方需要热源
+      <arrow> <attr>水缓冲：</attr> %water-buffer%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>耗水：</attr> %water-per-second%
+      <arrow> <attr>产汽：</attr> %steam-per-second%
+    waila: "青铜锅炉 | %structure% | 水 %water-bar% | 蒸汽 %steam-bar% | %pressure%"
+
+  invar_boiler:
+    name: "因瓦锅炉"
+    lore: |-
+      <arrow> 以低热膨胀合金制造的高效锅炉，水耗更低
+      <arrow> 结构：核心左右放因瓦合金块，上方放 Pylon 铁支撑梁，下方需要热源
+      <arrow> <attr>水缓冲：</attr> %water-buffer%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>耗水：</attr> %water-per-second%
+      <arrow> <attr>产汽：</attr> %steam-per-second%
+    waila: "因瓦锅炉 | %structure% | 水 %water-bar% | 蒸汽 %steam-bar% | %pressure%"
+
+  manganese_steel_boiler:
+    name: "锰钢锅炉"
+    lore: |-
+      <arrow> 以耐磨锰钢承受高负载的工业锅炉，产汽速度很快
+      <arrow> 结构：核心左右放锰钢块，上方放 Pylon 钢支撑梁，下方需要热源
+      <arrow> <attr>水缓冲：</attr> %water-buffer%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>耗水：</attr> %water-per-second%
+      <arrow> <attr>产汽：</attr> %steam-per-second%
+    waila: "锰钢锅炉 | %structure% | 水 %water-bar% | 蒸汽 %steam-bar% | %pressure%"
+
+  tungsten_boiler:
+    name: "钨锅炉"
+    lore: |-
+      <arrow> 面向高温高压系统的顶级锅炉，产汽速度极高
+      <arrow> 结构：核心左右放钨块，上方放 Pylon 耐火砖，下方需要热源
+      <arrow> <attr>水缓冲：</attr> %water-buffer%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>耗水：</attr> %water-per-second%
+      <arrow> <attr>产汽：</attr> %steam-per-second%
+    waila: "钨锅炉 | %structure% | 水 %water-bar% | 蒸汽 %steam-bar% | %pressure%"
+
+  steam_arm:
+    name: "蒸汽动力臂"
+    lore: |-
+      <arrow> 在小范围立体空间内搬运库存之间的物品
+      <arrow> <attr>工作范围：</attr> %range%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次搬运耗汽：</attr> %steam-per-transfer%
+    waila: "蒸汽动力臂 | %steam-bar% | %state%"
+
+  simple_steam_turbine:
+    name: "简易蒸汽涡轮"
+    lore: |-
+      <arrow> 在半径内扫描熔炉并注入蒸汽加速（基础版本）
+      <arrow> 支持：熔炉、高炉、烟熏炉
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "简易蒸汽涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  advanced_steam_turbine:
+    name: "高级蒸汽涡轮"
+    lore: |-
+      <arrow> 在半径内扫描熔炉和Pylon热源并注入蒸汽加速（高级版本）
+      <arrow> 支持：熔炉、高炉、烟熏炉、冶炼炉、热源线
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "高级蒸汽涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  steam_blower:
+    name: "蒸汽鼓风器"
+    lore: |-
+      <arrow> 用蒸汽推动强风，后续可用于鼓风增产和燃烧强化
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽鼓风器 | 蒸汽 %steam-bar%"
+
+  steam_sterilizer:
+    name: "蒸汽灭菌箱"
+    lore: |-
+      <arrow> 使用高温蒸汽净化腐败材料、菌类和树脂
+      <arrow> 可产出无菌生质和硫化橡胶
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽灭菌箱 | 蒸汽 %steam-bar%"
+
+  steam_steeping_vat:
+    name: "蒸汽浸煮桶"
+    lore: |-
+      <arrow> 用热水和蒸汽浸煮植物、根系与黏性材料
+      <arrow> 可产出植物纤维、蒸汽纸浆和粗树脂
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽浸煮桶 | 蒸汽 %steam-bar%"
+
+  steam_washing_trough:
+    name: "蒸汽洗选槽"
+    lore: |-
+      <arrow> 用热水和蒸汽洗选矿物与沉积物
+      <arrow> 可产出锌精矿、黏土和少量矿物副产
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽洗选槽 | 蒸汽 %steam-bar%"
+
+  steam_press:
+    name: "蒸汽冲压机"
+    lore: |-
+      <arrow> 用高压蒸汽推动柱塞，把柔软或散粒材料压制成板与片
+      <arrow> 可产出纤维板、Pylon 板材
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽冲压机 | 蒸汽 %steam-bar%"
+
+  steam_grinder:
+    name: "蒸汽研磨机"
+    lore: |-
+      <arrow> 用蒸汽推动磨盘高速旋转，干法粉碎岩石与金属锭
+      <arrow> 可产出石英、Pylon 各类金属粉末
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽研磨机 | 蒸汽 %steam-bar%"
+
+  steam_pressurized_furnace:
+    name: "蒸汽加压炉"
+    lore: |-
+      <arrow> 利用高压蒸汽将多种材料压制成高级合金粉末
+      <arrow> 可制作因瓦、硬铝、钨、锰钢和锰青铜粉末
+      <arrow> 将材料扔到方块上方，右键或等待自动处理
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽加压炉 | 蒸汽 %steam-bar% | %state%"
+
+  steam_assembly_bench:
+    name: "蒸汽装配台"
+    lore: |-
+      <arrow> 把底座 + 黄铜组件 + 合金件组装成蒸汽装备
+      <arrow> 需要 3×1×3 多方块结构：主方块 + 四角青铜块
+      <arrow> 所有蒸汽工具、护甲、蒸汽罐都在此组装
+    waila: "蒸汽装配台 | %structure%"
+
+gui:
+  steam_arm:
+    title: "<dark_gray>蒸汽动力臂"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    items_per_transfer: "<gray>每次搬运数量"
+    steam_per_transfer: "<gray>本次搬运耗汽：<reset><aqua>%steam%"
+    steam_per_item: "<gray>单件耗汽：<reset><aqua>%steam%"
+    steam_per_operation: "<gray>本次搬运耗汽：<reset><aqua>%steam%"
+    items_setting: "<yellow>搬运数量设置"
+    items_hint: "<gray>左键 +1 | 右键 -1"
+    items_hint_shift: "<gray>Shift+左键 +10 | Shift+右键 -10"
+    current_amount: "<aqua>当前：%amount%"
+    range_limit: "<gray>只能选择半径%range%格内的容器"
+    input_target:
+      name: "<yellow>输入目标"
+      title: "<gray>输入目标设置"
+      count: "<gray>已设定：<reset>%count% <gray>/ %max%"
+      hint: "<gray>左键进入选择模式"
+      hint_select: "<gray>左键点击容器添加/移除 | 右键保留选择"
+      list_hint: "<gray>右键查看已设定方块"
+    output_target:
+      name: "<yellow>输出目标"
+      title: "<gray>输出目标设置"
+      count: "<gray>已设定：<reset>%count% <gray>/ %max%"
+      hint: "<gray>左键进入选择模式"
+      hint_select: "<gray>左键点击容器添加/移除 | 右键保留选择"
+      list_hint: "<gray>右键查看已设定方块"
+    target_list:
+      input_title: "<dark_gray>输入目标列表"
+      output_title: "<dark_gray>输出目标列表"
+      entry: "<yellow>目标 #%index%"
+      coordinates: "<gray>坐标：<white>%x%, %y%, %z%"
+      coordinates_large: "<gray>坐标：<white>%x%, %y%, %z% <gray>~ <white>%px%, %py%, %pz%"
+      remove_hint: "<red>左键删除这个目标"
+      back: "<yellow>返回"
+      back_hint: "<gray>返回动力臂主界面"
+    distribution:
+      name: "<yellow>分配方法"
+      current: "<gray>当前：<reset>%mode%"
+      hint: "<gray>左键下一项 | 右键上一项"
+      mode:
+        round_robin: "<aqua>轮询调度"
+        strict_round_robin: "<gold>强制轮询调度"
+        first_priority: "<green>第一目标优先"
+      desc:
+        round_robin: "<gray>轮流向每个输出移动物品，阻塞时跳过"
+        strict_round_robin: "<gray>轮流处理输入和输出，当前端阻塞或缺失时等待"
+        first_priority: "<gray>总是优先向第一个输出移动，阻塞后再尝试后续输出"
+    motor_slot:
+      empty: "<red>缺少蒸汽马达"
+      filled: "<green>蒸汽马达"
+      installed: "<green>已安装"
+      hint: "<gray>请放入蒸汽马达"
+    motor_installed: "<green>马达已安装"
+    motor_missing: "<red>缺少马达"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+      missing_motor: "<red>缺少蒸汽马达"
+
+  simple_steam_turbine:
+    title: "<dark_gray>简易蒸汽涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    targets_found: "<gray>检测到热源：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  advanced_steam_turbine:
+    title: "<dark_gray>高级蒸汽涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    targets_found: "<gray>检测到热源：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_processor:
+    input_count: "<gray>输入槽物品：<reset><yellow>%count%"
+    output_count: "<gray>输出槽物品：<reset><yellow>%count%"
+    steam_status_normal: "<gray>状态：<green>正常"
+    steam_status_low: "<gray>状态：<red>蒸汽不足"
+    progress_idle: "<gray>等待可处理的材料"
+    progress_percent: "<gray>进度：<reset>%percent%"
+    time_remaining: "<gray>剩余：<yellow>%time%"
+    output_summary: "<aqua>产出：<yellow>%amount%</yellow> × <reset>%item%"
+    reason:
+      ready: "<gray>原因：<reset><gray>待料"
+      no_ingredients: "<gray>原因：<reset><gray>无匹配配方"
+      no_steam: "<gray>原因：<reset><red>蒸汽不足"
+      output_full: "<gray>原因：<reset><yellow>输出槽已满"
+      processing: "<gray>原因：<reset><green>加工中"
+    steam_rate: "<gray>耗汽：<reset><aqua>%rate%</aqua> <gray>mB/s"
+    interruption_warning: "<red>⚠ 断汽过久，进度正在回退</red>"
+
+  steam_sterilizer:
+    title: "<dark_gray>蒸汽灭菌箱"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>灭菌进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_steeping_vat:
+    title: "<dark_gray>蒸汽浸煮桶"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>浸煮进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_washing_trough:
+    title: "<dark_gray>蒸汽洗选槽"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>洗选进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_press:
+    title: "<dark_gray>蒸汽冲压机"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>冲压进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_grinder:
+    title: "<dark_gray>蒸汽研磨机"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>研磨进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  pressurized_furnace:
+    title: "<dark_gray>蒸汽加压炉"
+    steam_gauge: "<aqua>蒸汽压力"
+    steam: "<gray>蒸汽：<aqua>%steam% <gray>/ <aqua>%capacity%"
+    input_slots: "<gray>输入槽：<yellow>%filled%<gray>/<yellow>%total%"
+    output_slot: "<gray>产物槽：%output%"
+    output_destination: "<gray>输出目标：%destination%"
+    process: "<green>加压加工 <gray>| 蒸汽 %steam%"
+    progress: "<green>加压进度"
+    progress_idle: "<gray>等待可加工的材料"
+    progress_bar: "%bar% <gray>%percent%"
+    time_remaining: "<gray>剩余时间：<yellow>%time%"
+    output_state:
+      empty: "<gray>空"
+      amount: "<aqua>%amount%<gray>/<aqua>%max%"
+      full: "<red>已满"
+    destination:
+      gui: "<aqua>GUI产物槽"
+      below: "<yellow>下方容器"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_assembly_bench:
+    title: "<dark_gray>蒸汽装配台"
+    button: "<aqua>组装"
+    status:
+      ready: "<green>原料齐全，点击组装"
+      no_recipe: "<gray>当前输入未匹配任何配方"
+      structure_missing: "<red>结构不完整，需要 4 角青铜块"
+
+guide:
+  recipe:
+    steam_pressurizing: "<gray>蒸汽加压 | 消耗 %steam% 蒸汽 | %time%"
+    steam_sterilizing: "<gray>蒸汽灭菌 | 消耗 %steam% 蒸汽 | %time%"
+    steam_steeping: "<gray>蒸汽浸煮 | 消耗 %steam% 蒸汽 | %time%"
+    steam_washing: "<gray>蒸汽洗选 | 消耗 %steam% 蒸汽 | %time%"
+    steam_pressing: "<gray>蒸汽冲压 | 消耗 %steam% 蒸汽 | %time%"
+    steam_grinding: "<gray>蒸汽研磨 | 消耗 %steam% 蒸汽 | %time%"
+    phosphor_bronze: "<gray>磷青铜 — Pylon 锡协同"
+    nitrided_steel: "<gray>渗氮钢 — Pylon 钢协同"
+    palladium_alloy: "<gray>钯合金 — Pylon 钯协同"
+  button:
+    root:
+      name: "<white>蒸汽工坊"
+    metals:
+      name: "锭材与金属"
+    basic_materials:
+      name: "基础材料"
+    components:
+      name: "机械组件"
+    heat_sources:
+      name: "热源系统"
+    equipment:
+      name: "蒸汽武器/工具"
+    armor:
+      name: "蒸汽盔甲"
+    steam_machines:
+      name: "蒸汽机械"
+  page:
+    root: "<white>蒸汽工坊"
+    metals: "锭材与金属"
+    basic_materials: "基础材料"
+    components: "机械组件"
+    heat_sources: "热源系统"
+    equipment: "蒸汽武器/工具"
+    armor: "蒸汽盔甲"
+    steam_machines: "蒸汽机械"
+
+fluid:
+  steam: "<#d8edf0>蒸汽"
+  superheated_steam: "<#fff4d8>过热蒸汽"
+  molten_zinc: "<#c4d4e0>熔融锌"
+  molten_brass: "<#e3d45c>熔融黄铜"
+
+pressure:
+  low: "<gray>低压"
+  medium: "<yellow>工作压力"
+  high: "<gold>高压"
+  venting: "<red>泄压中"
+
+state:
+  active: "<green>运行中"
+  idle: "<gray>待机"
+  # 蒸汽加工机器使用的细分状态（StopReason），由 WAILA 的 %state% 占位符调用。
+  # 锅炉/涡轮等没接 StopReason 的方块继续用 active/idle 二值。
+  ready: "<gray>待料"
+  no_ingredients: "<gray>无匹配配方"
+  no_steam: "<red>蒸汽不足"
+  output_full: "<yellow>输出槽已满"
+  processing: "<green>加工中"
+
+structure:
+  formed: "<green>结构完整"
+  missing: "<red>结构缺失"
+
+research:
+  mineral_refining: "矿物精炼"
+  basic_steam_science: "基础蒸汽学"
+  pressure_measurement: "压力测量"
+  boiler_technology: "锅炉技术"
+  steam_automation: "蒸汽自动化"
+  mechanical_transmission: "机械传动"
+  steam_equipment: "蒸汽工具"
+  steam_armor: "蒸汽护甲"
+  advanced_alloys: "高级合金"
+  advanced_boilers: "高级锅炉"
+  pressurized_furnace: "蒸汽加压炉"
+  advanced_ingots: "高级合金锭"
+  steam_turbine_tech: "高能涡轮"
+
+message:
+  steam_arm:
+    selecting_input: "<yellow>正在选择输入目标...<gray> 左键点击容器添加/移除 | 右键保留选择<yellow>"
+    selecting_input_range: "<yellow>正在选择输入目标...<gray> 只能选择半径%range%格内的容器<yellow>。左键点击添加/移除 | 右键保留选择"
+    selecting_output: "<yellow>正在选择输出目标...<gray> 左键点击容器添加/移除 | 右键保留选择<yellow>"
+    selecting_output_range: "<yellow>正在选择输出目标...<gray> 只能选择半径%range%格内的容器<yellow>。左键点击添加/移除 | 右键保留选择"
+    selection_cancelled: "<gray>目标选择已取消"
+    target_added: "<green>已添加%type%目标：<white>%location%"
+    target_location_large: "<white>(%0%, %1%, %2% ~ %3%, %4%, %5%)"
+    target_type:
+      input: "<aqua>输入"
+      output: "<red>输出"
+    target_max: "<red>已达到最大目标数量 (9)"
+    target_self: "<red>不能将自身设为目标"
+    target_duplicate: "<red>该目标已存在"
+    target_conflict: "<red>该位置已在%type%目标列表中"
+    target_removed: "<yellow>已移除%type%目标：<white>%location%"
+    target_out_of_range: "<red>目标超出范围 (最大 %range% 格)"
+    target_not_container: "<red>(%x%, %y%, %z%) 不是有效的容器方块"
+    no_steam_arm_nearby: "<red>附近没有蒸汽动力臂在范围内"

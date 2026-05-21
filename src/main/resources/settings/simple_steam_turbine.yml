@@ -1,0 +1,5 @@
+tick-interval: 10
+steam-buffer: 1500.0
+steam-per-operation: 25.0
+speed-boost-ticks: 15
+scan-radius: 2
