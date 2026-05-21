@@ -45,12 +45,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # --- Build rebar ---
+      # --- Build rebar & publish to local maven ---
       - name: Build rebar
         working-directory: rebar
-        run: ./gradlew build -x test --no-daemon
+        run: ./gradlew build publishToMavenLocal -x test --no-daemon
 
-      # --- Build pylon ---
+      # --- Build pylon (resolves rebar from local maven) ---
       - name: Build pylon
         working-directory: pylon
         run: ./gradlew build -x test --no-daemon
