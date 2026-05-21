@@ -47,7 +47,7 @@ jobs:
 
       # --- Build rebar ---
       - name: Build rebar
-        working-directory: rebar/rebar
+        working-directory: rebar
         run: ./gradlew build -x test --no-daemon
 
       # --- Build pylon ---
