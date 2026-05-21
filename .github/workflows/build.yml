@@ -48,7 +48,7 @@ jobs:
       # --- Build rebar & publish to local maven ---
       - name: Build rebar
         working-directory: rebar
-        run: ./gradlew build publishToMavenLocal -x test --no-daemon
+        run: ./gradlew assemble publishToMavenLocal -x test -x dokkaGenerate -x dokkaGeneratePublicationHtml --no-daemon
 
       # --- Build pylon (resolves rebar from local maven) ---
       - name: Build pylon
