@@ -148,12 +148,41 @@ public final class SteepingRecipes {
                 50.0,
                 260));
 
-        SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
-                steamworkKey("steep_spruce_log_to_resin"),
-                RecipeInput.of(new ItemStack(Material.SPRUCE_LOG)),
-                SteamworkItems.RAW_RESIN,
-                45.0,
-                240));
+        // 原木浸煮提取粗树脂（按含脂量分级）
+        // 高含脂（云杉、丛林木）：1 原木 → 1 粗树脂
+        for (Material log : new Material[]{Material.SPRUCE_LOG, Material.JUNGLE_LOG}) {
+            SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                    steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
+                    RecipeInput.of(new ItemStack(log)),
+                    SteamworkItems.RAW_RESIN.clone(),
+                    45.0, 240));
+        }
+        // 中等含脂（橡树、暗橡树）：2 原木 → 1 粗树脂
+        for (Material log : new Material[]{Material.OAK_LOG, Material.DARK_OAK_LOG}) {
+            SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                    steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
+                    RecipeInput.of(new ItemStack(log, 2)),
+                    SteamworkItems.RAW_RESIN.clone(),
+                    45.0, 240));
+        }
+        // 低含脂（白桦、金合欢、樱花、红树）：3 原木 → 1 粗树脂
+        for (Material log : new Material[]{
+                Material.BIRCH_LOG, Material.ACACIA_LOG,
+                Material.CHERRY_LOG, Material.MANGROVE_LOG}) {
+            SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                    steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
+                    RecipeInput.of(new ItemStack(log, 3)),
+                    SteamworkItems.RAW_RESIN.clone(),
+                    45.0, 240));
+        }
+        // 极低含脂（苍白橡树、竹块）：4 原木 → 1 粗树脂
+        for (Material log : new Material[]{Material.PALE_OAK_LOG, Material.BAMBOO_BLOCK}) {
+            SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                    steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
+                    RecipeInput.of(new ItemStack(log, 4)),
+                    SteamworkItems.RAW_RESIN.clone(),
+                    45.0, 240));
+        }
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_crimson_roots_to_resin"),
