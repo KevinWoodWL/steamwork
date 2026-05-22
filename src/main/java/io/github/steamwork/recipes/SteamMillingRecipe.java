@@ -1,11 +1,9 @@
 package io.github.steamwork.recipes;
 
-import io.github.pylonmc.rebar.guide.button.FluidButton;
 import io.github.pylonmc.rebar.guide.button.ItemButton;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.recipe.FluidOrItem;
-import io.github.pylonmc.rebar.recipe.RebarRecipe;
 import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
@@ -23,18 +21,20 @@ import java.util.List;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
-public record SteamResearchRecipe(
+/**
+ * 蒸汽精密铣床配方。把合金锭精密加工成精密零件。
+ * 例：因瓦锭 → 精密齿轮、钨锭 → 精密阀门。
+ */
+public record SteamMillingRecipe(
         @NotNull NamespacedKey key,
-        @NotNull RecipeInput.Item sample,
-        int researchPoints,
+        @NotNull RecipeInput.Item ingredient,
+        @NotNull ItemStack result,
         double steamCost,
-        int timeTicks,
-        @NotNull ItemStack residue,
-        @NotNull String disciplineKey
-) implements RebarRecipe {
+        int timeTicks
+) implements SteamProcessRecipe {
 
-    public static final RecipeType<SteamResearchRecipe> RECIPE_TYPE =
-            new RecipeType<>(steamworkKey("steam_research"));
+    public static final RecipeType<SteamMillingRecipe> RECIPE_TYPE =
+            new RecipeType<>(steamworkKey("steam_milling"));
 
     @Override
     public @NotNull NamespacedKey getKey() {
@@ -42,39 +42,42 @@ public record SteamResearchRecipe(
     }
 
     @Override
+    public @NotNull ItemStack producedStack() {
+        return result.clone();
+    }
+
+    @Override
     public @NotNull List<RecipeInput> getInputs() {
-        return List.of(sample, RecipeInput.of(SteamworkFluids.STEAM, steamCost));
+        return List.of(ingredient, RecipeInput.of(SteamworkFluids.STEAM, steamCost));
     }
 
     @Override
     public @NotNull List<FluidOrItem> getResults() {
-        return List.of(FluidOrItem.of(residue), FluidOrItem.of(SteamworkItems.STEAM_SCIENCE_INTERFACE));
+        return List.of(FluidOrItem.of(result));
     }
 
     @Override
     public @NotNull Gui display() {
         ItemStackBuilder clock = ItemStackBuilder.of(Material.CLOCK)
                 .name(Component.translatable(
-                        "steamwork.guide.recipe.steam_research",
+                        "steamwork.guide.recipe.steam_milling",
                         RebarArgument.of("time", UnitFormat.SECONDS.format(timeTicks / 20.0)),
-                        RebarArgument.of("steam", UnitFormat.MILLIBUCKETS.format(steamCost)),
-                        RebarArgument.of("points", researchPoints),
-                        RebarArgument.of("discipline", Component.translatable("steamwork.research_type." + disciplineKey))
+                        RebarArgument.of("steam", UnitFormat.MILLIBUCKETS.format(steamCost))
                 ));
 
         return Gui.builder()
                 .setStructure(
                         "# # # # # # # # #",
-                        "# # # i # r # # #",
+                        "# # # i # o # # #",
                         "# # # # m # # # #",
                         "# # # s c # # # #",
                         "# # # # # # # # #"
                 )
                 .addIngredient('#', GuiItems.backgroundBlack())
-                .addIngredient('i', ItemButton.of(sample))
-                .addIngredient('r', ItemButton.of(residue))
-                .addIngredient('m', ItemButton.of(SteamworkItems.STEAM_SCIENCE_INTERFACE))
-                .addIngredient('s', new FluidButton(steamCost, SteamworkFluids.STEAM))
+                .addIngredient('i', ItemButton.of(ingredient))
+                .addIngredient('o', ItemButton.of(result))
+                .addIngredient('m', ItemButton.of(SteamworkItems.STEAM_PRECISION_MILL))
+                .addIngredient('s', new io.github.pylonmc.rebar.guide.button.FluidButton(steamCost, SteamworkFluids.STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .build();
     }

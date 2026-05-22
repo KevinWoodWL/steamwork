@@ -3,6 +3,7 @@ package io.github.steamwork.recipes.registration;
 import io.github.pylonmc.pylon.PylonFluids;
 import io.github.pylonmc.pylon.PylonItems;
 import io.github.pylonmc.pylon.recipes.CastingRecipe;
+import io.github.pylonmc.pylon.recipes.KilnRecipe;
 import io.github.pylonmc.pylon.recipes.MeltingRecipe;
 import io.github.pylonmc.pylon.recipes.SmelteryRecipe;
 import io.github.pylonmc.rebar.recipe.RecipeInput;
@@ -48,14 +49,38 @@ public final class SmelteryRecipes {
                 Map.of(SteamworkFluids.MOLTEN_BRASS, 1.0), 920.0));
 
         // pylon 0.37+ 的 CastingRecipe 加了 mold 参数（铸模）并删了 timeTicks。
-        // 铸锭都用 INGOT_MOLD。
-        CastingRecipe.RECIPE_TYPE.addRecipe(new CastingRecipe(
-                SteamworkKeys.ZINC_INGOT, PylonItems.INGOT_MOLD,
-                RecipeInput.of(SteamworkFluids.MOLTEN_ZINC, 144.0),
-                SteamworkItems.ZINC_INGOT));
+        // 铸锭都用 INGOT_MOLD。锌的 CastingRecipe 移到 CookingRecipes 顶部以保证在配方书里排首位。
         CastingRecipe.RECIPE_TYPE.addRecipe(new CastingRecipe(
                 SteamworkKeys.BRASS_INGOT, PylonItems.INGOT_MOLD,
                 RecipeInput.of(SteamworkFluids.MOLTEN_BRASS, 144.0),
                 SteamworkItems.BRASS_INGOT));
+
+        // KilnRecipe(key, input1, input2, outputItem, outputFluid, outputFluidAmount, timeTicks, temperature)
+        // input2/outputFluid 可为 null。窑炉给玩家在造熔炼塔之前一条入门合金路径，与上面熔炼塔路线并存。
+        // 紫水晶碎片入窑出锌液 + 渣，温度对齐锌的熔点（约 420 °C）。
+        KilnRecipe.RECIPE_TYPE.addRecipe(new KilnRecipe(
+                steamworkKey("kiln_zinc_from_amethyst"),
+                RecipeInput.of(new ItemStack(Material.AMETHYST_SHARD)),
+                null,
+                PylonItems.SLAG.clone(),
+                SteamworkFluids.MOLTEN_ZINC, 16.0,
+                180, 420.0));
+        // 2 紫水晶块入窑出 144 mB 锌液 + 2 渣，给一个略高产的成块入炉路线。
+        KilnRecipe.RECIPE_TYPE.addRecipe(new KilnRecipe(
+                steamworkKey("kiln_zinc_from_amethyst_block"),
+                RecipeInput.of(new ItemStack(Material.AMETHYST_BLOCK)),
+                null,
+                PylonItems.SLAG.clone().asQuantity(2),
+                SteamworkFluids.MOLTEN_ZINC, 144.0,
+                240, 420.0));
+        // 2 紫铜锭 + 1 锌锭入窑直接出黄铜液 432 mB + 2 渣，黄铜液相线 920 °C。
+        // 与 Pylon 自带的 bronze 配方写法对齐（2 copper + 1 tin → 432 mB bronze）。
+        KilnRecipe.RECIPE_TYPE.addRecipe(new KilnRecipe(
+                steamworkKey("kiln_brass"),
+                RecipeInput.of(new ItemStack(Material.COPPER_INGOT), 2),
+                RecipeInput.of(SteamworkItems.ZINC_INGOT, 1),
+                PylonItems.SLAG.clone().asQuantity(2),
+                SteamworkFluids.MOLTEN_BRASS, 432.0,
+                240, 920.0));
     }
 }

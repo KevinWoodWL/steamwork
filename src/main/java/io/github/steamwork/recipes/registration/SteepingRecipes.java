@@ -176,6 +176,23 @@ public final class SteepingRecipes {
                 35.0,
                 200));
 
+        // 树叶浸煮提取粗树脂（所有树种，8叶 → 1粗树脂）
+        for (Material leaves : new Material[]{
+                Material.OAK_LEAVES, Material.SPRUCE_LEAVES, Material.BIRCH_LEAVES,
+                Material.JUNGLE_LEAVES, Material.ACACIA_LEAVES, Material.DARK_OAK_LEAVES,
+                Material.MANGROVE_LEAVES, Material.CHERRY_LEAVES,
+                Material.AZALEA_LEAVES, Material.FLOWERING_AZALEA_LEAVES,
+                Material.PALE_OAK_LEAVES
+        }) {
+            String key = "steep_" + leaves.name().toLowerCase() + "_to_resin";
+            SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                    steamworkKey(key),
+                    RecipeInput.of(new ItemStack(leaves, 8)),
+                    SteamworkItems.RAW_RESIN.clone(),
+                    30.0,
+                    160));
+        }
+
         // 处理木材 -> 纤维板 已搬到蒸汽冲压机（PressingRecipes），那才是真正的"压制"工艺。
 
         // 树脂浸煮硫化 -> 硫化橡胶（原灭菌箱配方，搬到浸煮桶更符合"浸煮硫化"工艺）

@@ -92,6 +92,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     private final NamespacedKey currentRecipePdcKey;
     private final NamespacedKey ticksPdcKey;
+    private final NamespacedKey lockedRecipePdcKey;
 
     protected boolean lastActive = false;
     /** 机器当前停摆原因。{@link StopReason#PROCESSING} 表示在加工，其它值都表示停摆且原因明确。 */
@@ -100,6 +101,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     protected int recipeTicksRemaining = 0;
     /** 加工过程中累计的"断汽 tick 数"；超过 {@link #interruptionGraceTicks} 后开始回退进度。 */
     protected int interruptionTicks = 0;
+    /** 玩家手动锁定的配方 key；非 null 时机器只执行该配方。 */
+    @Nullable protected NamespacedKey lockedRecipeKey = null;
 
     /**
      * 机器停摆/工作的原因枚举。
@@ -117,6 +120,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         NO_STEAM("no_steam"),
         /** 配方匹配上了但输出槽放不下产物。 */
         OUTPUT_FULL("output_full"),
+        /** 输出槽中存在与当前配方产物不同类型的物品。 */
+        MIXED_OUTPUT("mixed_output"),
         /** 正在加工中（非停摆状态）。 */
         PROCESSING("processing");
 
@@ -131,6 +136,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private final StatusItem statusItem = new StatusItem();
     private final SteamGaugeItem steamGaugeItem = new SteamGaugeItem();
     private final ProgressItem progressItem = new ProgressItem();
+    private final RecipeLockItem recipeLockItem = new RecipeLockItem();
 
     /** 蒸汽机器物品基类，子类只需写一行构造即可。 */
     public static abstract class BaseItem extends RebarItem {
@@ -150,6 +156,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         super(block, context);
         this.currentRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_recipe");
         this.ticksPdcKey = steamworkKey(pdcKeyPrefix() + "_ticks");
+        this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
         setFacing(context.getFacing());
         setTickInterval(tickInterval);
         createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
@@ -160,8 +167,10 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         super(block, pdc);
         this.currentRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_recipe");
         this.ticksPdcKey = steamworkKey(pdcKeyPrefix() + "_ticks");
+        this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
         currentRecipeKey = pdc.get(currentRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
         recipeTicksRemaining = pdc.getOrDefault(ticksPdcKey, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
+        lockedRecipeKey = pdc.get(lockedRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
     }
 
     // ===== 抽象接口 =====
@@ -203,7 +212,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     @Override
     public void postInitialise() {
-        inputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
+        outputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
     }
 
     @Override
@@ -215,6 +224,11 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             pdc.remove(currentRecipePdcKey);
             pdc.remove(ticksPdcKey);
         }
+        if (lockedRecipeKey != null) {
+            pdc.set(lockedRecipePdcKey, RebarSerializers.NAMESPACED_KEY, lockedRecipeKey);
+        } else {
+            pdc.remove(lockedRecipePdcKey);
+        }
     }
 
     @Override
@@ -224,7 +238,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                         "# # # # # # # # #",
                         "# i i i i i p o #",
                         "# # # # # # # # #",
-                        "# # # # s # a # #",
+                        "# # l # s # a # #",
                         "# # # # # # # # #"
                 )
                 .addIngredient('#', GuiItems.background())
@@ -233,6 +247,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                 .addIngredient('p', progressItem)
                 .addIngredient('s', steamGaugeItem)
                 .addIngredient('a', statusItem)
+                .addIngredient('l', recipeLockItem)
                 .build();
     }
 
@@ -316,10 +331,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         if (recipeTicksRemaining >= recipe.timeTicks()) {
             // 完全回退：配方崩溃，损失原料，产出 1 个废屑作为"事故痕迹"。
             spawnCrashEffects();
-            ItemStack scrap = SteamworkItems.MACHINE_SCRAP.clone();
-            if (outputInventory.canHold(scrap)) {
-                outputInventory.addItem(new MachineUpdateReason(), scrap);
-            }
+            dropScrap();
             resetRecipe();
             currentReason = StopReason.READY;
             interruptionTicks = 0;
@@ -357,6 +369,22 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         if (isInputEmpty()) return StopReason.READY;
 
         double currentSteam = fluidAmount(SteamworkFluids.STEAM);
+
+        // 锁定模式：只尝试该配方，失败时返回具体原因。
+        if (lockedRecipeKey != null) {
+            R locked = recipeType().getRecipe(lockedRecipeKey);
+            if (locked == null) return StopReason.NO_INGREDIENTS;
+            Map<Integer, Integer> reserved = findIngredients(locked);
+            if (reserved == null) return StopReason.NO_INGREDIENTS;
+            if (currentSteam < locked.steamCost()) return StopReason.NO_STEAM;
+            if (hasMixedOutput(locked.producedStack())) return StopReason.MIXED_OUTPUT;
+            if (!outputInventory.canHold(locked.producedStack())) return StopReason.OUTPUT_FULL;
+            consumeReserved(reserved);
+            startRecipe(locked);
+            spawnProcessingParticles(8);
+            return StopReason.PROCESSING;
+        }
+
         boolean anyMatchedInputs = false;
         boolean anyHadEnoughSteam = false;
 
@@ -380,6 +408,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         }
 
         boolean anyCanStore = false;
+        boolean anyMixed = false;
         for (R recipe : recipeType()) {
             Map<Integer, Integer> reserved = findIngredients(recipe);
             if (reserved == null) continue;
@@ -388,7 +417,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             if (currentSteam < recipe.steamCost()) continue;
             anyHadEnoughSteam = true;
 
-            if (!canStoreOutput(recipe)) continue;
+            if (hasMixedOutput(recipe.producedStack())) { anyMixed = true; continue; }
+            if (!outputInventory.canHold(recipe.producedStack())) continue;
             anyCanStore = true;
 
             consumeReserved(reserved);
@@ -400,6 +430,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         // 按"最接近成功"的顺序输出最具体的失败原因。
         if (!anyMatchedInputs) return StopReason.NO_INGREDIENTS;
         if (!anyHadEnoughSteam) return StopReason.NO_STEAM;
+        if (anyMixed && !anyCanStore) return StopReason.MIXED_OUTPUT;
         if (!anyCanStore) return StopReason.OUTPUT_FULL;
         return StopReason.READY;
     }
@@ -446,7 +477,18 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     }
 
     private boolean canStoreOutput(@NotNull R recipe) {
+        if (hasMixedOutput(recipe.producedStack())) return false;
         return outputInventory.canHold(recipe.producedStack());
+    }
+
+    /** 检查输出槽中是否存在与 {@code produced} 不同类型的物品。 */
+    private boolean hasMixedOutput(@NotNull ItemStack produced) {
+        for (int i = 0; i < outputInventory.getSize(); i++) {
+            ItemStack existing = outputInventory.getItem(i);
+            if (existing == null || existing.isEmpty()) continue;
+            if (!existing.isSimilar(produced)) return true;
+        }
+        return false;
     }
 
     private void startRecipe(@NotNull R recipe) {
@@ -475,10 +517,12 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private void tryProduceScrap() {
         if (scrapChance <= 0) return;
         if (Math.random() >= scrapChance) return;
-        ItemStack scrap = SteamworkItems.MACHINE_SCRAP.clone();
-        if (outputInventory.canHold(scrap)) {
-            outputInventory.addItem(new MachineUpdateReason(), scrap);
-        }
+        dropScrap();
+    }
+
+    private void dropScrap() {
+        Block b = getBlock();
+        b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 1.0, 0.5), SteamworkItems.MACHINE_SCRAP.clone());
     }
 
     private void resetRecipe() {
@@ -582,7 +626,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             Material mat = switch (currentReason) {
                 case PROCESSING -> Material.GREEN_STAINED_GLASS_PANE;
                 case NO_STEAM -> Material.RED_STAINED_GLASS_PANE;
-                case OUTPUT_FULL -> Material.YELLOW_STAINED_GLASS_PANE;
+                case OUTPUT_FULL, MIXED_OUTPUT -> Material.YELLOW_STAINED_GLASS_PANE;
                 case NO_INGREDIENTS, READY -> Material.GRAY_STAINED_GLASS_PANE;
             };
 
@@ -679,6 +723,75 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
+    }
+
+    private final class RecipeLockItem extends AbstractItem {
+
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            if (lockedRecipeKey == null) {
+                List<R> matchable = getMatchableRecipes();
+                List<Component> lore = new ArrayList<>();
+                lore.add(noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.unlocked")));
+                if (!matchable.isEmpty()) {
+                    lore.add(noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.available")));
+                    for (R r : matchable) {
+                        lore.add(noItalic(Component.text("  ").append(r.producedStack().effectiveName())));
+                    }
+                }
+                lore.add(noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.hint_click")));
+                return ItemStackBuilder.of(Material.GRAY_STAINED_GLASS_PANE)
+                        .name(noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.title")))
+                        .lore(lore);
+            }
+            R locked = recipeType().getRecipe(lockedRecipeKey);
+            if (locked == null) {
+                lockedRecipeKey = null;
+                return getItemProvider(viewer);
+            }
+            return ItemStackBuilder.of(locked.producedStack().getType())
+                    .name(noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.title")))
+                    .lore(List.of(
+                            noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.locked",
+                                    RebarArgument.of("recipe", locked.producedStack().effectiveName()))),
+                            noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.hint_next")),
+                            noItalic(Component.translatable(SHARED_KEY + ".recipe_lock.hint_unlock"))
+                    ));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            if (clickType.isRightClick()) {
+                lockedRecipeKey = null;
+                notifyWindows();
+                return;
+            }
+            // 左键：在输入槽当前能匹配的配方里循环选择产物
+            List<R> matchable = getMatchableRecipes();
+            if (matchable.isEmpty()) return;
+            int currentIdx = -1;
+            if (lockedRecipeKey != null) {
+                for (int i = 0; i < matchable.size(); i++) {
+                    if (matchable.get(i).getKey().equals(lockedRecipeKey)) {
+                        currentIdx = i;
+                        break;
+                    }
+                }
+            }
+            lockedRecipeKey = matchable.get((currentIdx + 1) % matchable.size()).getKey();
+            notifyWindows();
+        }
+    }
+
+    /** 返回当前输入槽原料能匹配的所有配方（不重复）。 */
+    private @NotNull List<R> getMatchableRecipes() {
+        List<R> result = new ArrayList<>();
+        for (R recipe : recipeType()) {
+            if (findIngredients(recipe) != null) {
+                result.add(recipe);
+            }
+        }
+        return result;
     }
 
     private static @NotNull Component noItalic(@NotNull Component component) {

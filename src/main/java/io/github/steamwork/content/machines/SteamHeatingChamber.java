@@ -70,7 +70,7 @@ public class SteamHeatingChamber extends RebarBlock implements
         public @NotNull List<RebarArgument> getPlaceholders() {
             return List.of(
                     RebarArgument.of("steam-buffer", UnitFormat.MILLIBUCKETS.format(steamBuffer)),
-                    RebarArgument.of("superheated-steam-buffer", UnitFormat.MILLIBUCKETS.format(superheatedSteamBuffer)),
+                    RebarArgument.of("superheated-buffer", UnitFormat.MILLIBUCKETS.format(superheatedSteamBuffer)),
                     RebarArgument.of("input", UnitFormat.MILLIBUCKETS.format(steamInputPerCycle)),
                     RebarArgument.of("output", UnitFormat.MILLIBUCKETS.format(superheatedOutputPerCycle))
             );

@@ -279,7 +279,7 @@ public final class CraftingRecipes {
         steamPress.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
         steamPress.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
         steamPress.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
-        steamPress.setIngredient('A', Material.ANVIL);
+        steamPress.setIngredient('A', Material.PISTON);
         steamPress.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
         steamPress.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         steamPress.setCategory(CraftingBookCategory.MISC);
@@ -299,6 +299,20 @@ public final class CraftingRecipes {
         RecipeType.VANILLA_SHAPED.addRecipe(steamGrinder);
 
         // Steam equipment（5 工具 + 4 护甲）已迁移到蒸汽装配台。见 AssemblyRecipes。
+
+        // 蒸汽精密铣床：因瓦框架 + 锰钢刀头 + 精密传动 + 蒸汽气路。
+        // 需要因瓦锭（低热膨胀保精度）+ 锰钢锭（高硬度刀盘）+ 黄铜传动件 + 阀芯。
+        ShapedRecipe steamPrecisionMill = new ShapedRecipe(
+                SteamworkKeys.STEAM_PRECISION_MILL, SteamworkItems.STEAM_PRECISION_MILL);
+        steamPrecisionMill.shape("IMI", "VGV", "BPB");
+        steamPrecisionMill.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        steamPrecisionMill.setIngredient('M', rebarChoice(SteamworkItems.MANGANESE_STEEL_INGOT));
+        steamPrecisionMill.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        steamPrecisionMill.setIngredient('G', Material.GRINDSTONE);
+        steamPrecisionMill.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        steamPrecisionMill.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamPrecisionMill.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamPrecisionMill);
 
         // Alloy blocks: 9 ingots <-> 1 block.
         addBlockRecipe(SteamworkKeys.INVAR_BLOCK, SteamworkItems.INVAR_BLOCK, SteamworkItems.INVAR_INGOT);
@@ -332,6 +346,210 @@ public final class CraftingRecipes {
         pressurizedFurnace.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
         pressurizedFurnace.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pressurizedFurnace);
+
+        // 蒸汽科研接口：黄铜分析架 + 滤网（用于样品定位）+ 蒸汽气路 + 压力表读数。
+        ShapedRecipe steamScienceInterface = new ShapedRecipe(
+                SteamworkKeys.STEAM_SCIENCE_INTERFACE, SteamworkItems.STEAM_SCIENCE_INTERFACE);
+        steamScienceInterface.shape("DPD", "FLF", "BRB");
+        steamScienceInterface.setIngredient('D', rebarChoice(SteamworkItems.BRASS_DISTILLATION_TUBE));
+        steamScienceInterface.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamScienceInterface.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FILTER));
+        steamScienceInterface.setIngredient('L', Material.LECTERN);
+        steamScienceInterface.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        steamScienceInterface.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamScienceInterface.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamScienceInterface);
+
+        // 蒸汽加热室：殷钢外壳 + 加热线圈核心 + 阀芯调流 + 压力表，把普通蒸汽再热为过热蒸汽。
+        ShapedRecipe steamHeatingChamber = new ShapedRecipe(
+                SteamworkKeys.STEAM_HEATING_CHAMBER, SteamworkItems.STEAM_HEATING_CHAMBER);
+        steamHeatingChamber.shape("IPI", "HCH", "VRV");
+        steamHeatingChamber.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        steamHeatingChamber.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamHeatingChamber.setIngredient('H', rebarChoice(SteamworkItems.HEATING_COIL));
+        steamHeatingChamber.setIngredient('C', rebarChoice(SteamworkItems.NICHROME_INGOT));
+        steamHeatingChamber.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        steamHeatingChamber.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamHeatingChamber.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamHeatingChamber);
+
+        // 精馏塔节：玻璃壁 + 镍铬合金框 + 蒸馏管，每段塔由 2 玻璃 + 4 镍铬锭 + 2 蒸馏管 + 1 黄铜密封环组成。
+        ShapedRecipe distillationTowerSection = new ShapedRecipe(
+                SteamworkKeys.DISTILLATION_TOWER_SECTION, SteamworkItems.DISTILLATION_TOWER_SECTION);
+        distillationTowerSection.shape("NGN", "DRD", "NGN");
+        distillationTowerSection.setIngredient('N', rebarChoice(SteamworkItems.NICHROME_INGOT));
+        distillationTowerSection.setIngredient('G', Material.GLASS);
+        distillationTowerSection.setIngredient('D', rebarChoice(SteamworkItems.BRASS_DISTILLATION_TUBE));
+        distillationTowerSection.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        distillationTowerSection.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(distillationTowerSection);
+
+        // 精馏冷凝顶盖：紫铜板 + 加热线圈反向用作冷凝盘 + 阀芯。
+        ShapedRecipe distillationCondenser = new ShapedRecipe(
+                SteamworkKeys.DISTILLATION_CONDENSER, SteamworkItems.DISTILLATION_CONDENSER);
+        distillationCondenser.shape("CVC", "HRH", "CCC");
+        distillationCondenser.setIngredient('C', Material.CUT_COPPER);
+        distillationCondenser.setIngredient('V', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
+        distillationCondenser.setIngredient('H', rebarChoice(SteamworkItems.HEATING_COIL));
+        distillationCondenser.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        distillationCondenser.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(distillationCondenser);
+
+        // 蒸汽精馏塔（控制器底座）：镍铬合金底盘 + 蒸馏管气路 + 加热线圈 + 阀芯 + 压力表。
+        // 玩家在此基础上再向上堆 1-4 节塔节 + 1 个冷凝顶盖即可工作。
+        ShapedRecipe steamDistillationTower = new ShapedRecipe(
+                SteamworkKeys.STEAM_DISTILLATION_TOWER, SteamworkItems.STEAM_DISTILLATION_TOWER);
+        steamDistillationTower.shape("DPD", "HVH", "NRN");
+        steamDistillationTower.setIngredient('D', rebarChoice(SteamworkItems.BRASS_DISTILLATION_TUBE));
+        steamDistillationTower.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamDistillationTower.setIngredient('H', rebarChoice(SteamworkItems.HEATING_COIL));
+        steamDistillationTower.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        steamDistillationTower.setIngredient('N', rebarChoice(SteamworkItems.NICHROME_INGOT));
+        steamDistillationTower.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamDistillationTower.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamDistillationTower);
+
+        // ===== 分析样本 =====
+        // 每种样本提供三条合成路径：Steamwork 自家材料（产量低、最便宜），
+        // 原版材料（产量中等），Pylon 材料（产量最高）。覆盖玩家现有资源。
+        // 产量按研究耗时缩放：矿物/有机 400t 是基准，流体 440t 略高，冶金 500t 最高。
+
+        // ---- 矿物分析样本（研究耗时 400t） ----
+        // Steamwork 路径：锌精矿 + 二氧化硅砂 + 玻璃瓶 → 2 个
+        ShapelessRecipe mineralSampleSteamwork = new ShapelessRecipe(
+                SteamworkKeys.MINERAL_ANALYSIS_SAMPLE,
+                SteamworkItems.MINERAL_ANALYSIS_SAMPLE.clone().asQuantity(2));
+        mineralSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.ZINC_CONCENTRATE));
+        mineralSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.SILICA_GRIT));
+        mineralSampleSteamwork.addIngredient(Material.GLASS_BOTTLE);
+        mineralSampleSteamwork.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(mineralSampleSteamwork);
+
+        // 原版路径：紫水晶碎片 + 红石 + 石英 + 玻璃瓶 → 4 个
+        ShapelessRecipe mineralSampleVanilla = new ShapelessRecipe(
+                steamworkKey("mineral_analysis_sample_vanilla"),
+                SteamworkItems.MINERAL_ANALYSIS_SAMPLE.clone().asQuantity(4));
+        mineralSampleVanilla.addIngredient(Material.AMETHYST_SHARD);
+        mineralSampleVanilla.addIngredient(Material.REDSTONE);
+        mineralSampleVanilla.addIngredient(Material.QUARTZ);
+        mineralSampleVanilla.addIngredient(Material.GLASS_BOTTLE);
+        mineralSampleVanilla.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(mineralSampleVanilla);
+
+        // Pylon 路径：铜粉 + 铁粉 + 锡粉 + 石英粉 + 玻璃瓶 → 6 个
+        ShapelessRecipe mineralSamplePylon = new ShapelessRecipe(
+                steamworkKey("mineral_analysis_sample_pylon"),
+                SteamworkItems.MINERAL_ANALYSIS_SAMPLE.clone().asQuantity(6));
+        mineralSamplePylon.addIngredient(rebarChoice(PylonItems.COPPER_DUST));
+        mineralSamplePylon.addIngredient(rebarChoice(PylonItems.IRON_DUST));
+        mineralSamplePylon.addIngredient(rebarChoice(PylonItems.TIN_DUST));
+        mineralSamplePylon.addIngredient(rebarChoice(PylonItems.QUARTZ_DUST));
+        mineralSamplePylon.addIngredient(Material.GLASS_BOTTLE);
+        mineralSamplePylon.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(mineralSamplePylon);
+
+        // ---- 有机分析样本（研究耗时 400t） ----
+        // Steamwork 路径：无菌生质 + 植物纤维 + 玻璃瓶 → 2 个
+        ShapelessRecipe organicSampleSteamwork = new ShapelessRecipe(
+                SteamworkKeys.ORGANIC_ANALYSIS_SAMPLE,
+                SteamworkItems.ORGANIC_ANALYSIS_SAMPLE.clone().asQuantity(2));
+        organicSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.STERILE_BIOMASS));
+        organicSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.PLANT_FIBER));
+        organicSampleSteamwork.addIngredient(Material.GLASS_BOTTLE);
+        organicSampleSteamwork.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(organicSampleSteamwork);
+
+        // 原版路径：发酵蛛眼 + 骨粉 + 小麦 + 玻璃瓶 → 4 个
+        ShapelessRecipe organicSampleVanilla = new ShapelessRecipe(
+                steamworkKey("organic_analysis_sample_vanilla"),
+                SteamworkItems.ORGANIC_ANALYSIS_SAMPLE.clone().asQuantity(4));
+        organicSampleVanilla.addIngredient(Material.FERMENTED_SPIDER_EYE);
+        organicSampleVanilla.addIngredient(Material.BONE_MEAL);
+        organicSampleVanilla.addIngredient(Material.WHEAT);
+        organicSampleVanilla.addIngredient(Material.GLASS_BOTTLE);
+        organicSampleVanilla.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(organicSampleVanilla);
+
+        // Pylon 路径：纤维 x 2 + 硫磺 + 煤粉 + 玻璃瓶 → 6 个
+        ShapelessRecipe organicSamplePylon = new ShapelessRecipe(
+                steamworkKey("organic_analysis_sample_pylon"),
+                SteamworkItems.ORGANIC_ANALYSIS_SAMPLE.clone().asQuantity(6));
+        organicSamplePylon.addIngredient(rebarChoice(PylonItems.FIBER));
+        organicSamplePylon.addIngredient(rebarChoice(PylonItems.FIBER));
+        organicSamplePylon.addIngredient(rebarChoice(PylonItems.SULFUR));
+        organicSamplePylon.addIngredient(rebarChoice(PylonItems.COAL_DUST));
+        organicSamplePylon.addIngredient(Material.GLASS_BOTTLE);
+        organicSamplePylon.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(organicSamplePylon);
+
+        // ---- 冶金分析样本（研究耗时 500t，最贵） ----
+        // Steamwork 路径：热处理金属 + 机器废屑 + 玻璃瓶 → 3 个
+        ShapelessRecipe metallurgicalSampleSteamwork = new ShapelessRecipe(
+                SteamworkKeys.METALLURGICAL_ANALYSIS_SAMPLE,
+                SteamworkItems.METALLURGICAL_ANALYSIS_SAMPLE.clone().asQuantity(3));
+        metallurgicalSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.HEAT_TREATED_METAL));
+        metallurgicalSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.MACHINE_SCRAP));
+        metallurgicalSampleSteamwork.addIngredient(Material.GLASS_BOTTLE);
+        metallurgicalSampleSteamwork.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(metallurgicalSampleSteamwork);
+
+        // 原版路径：下界合金碎片 + 铁锭 + 金粒 + 玻璃瓶 → 6 个
+        ShapelessRecipe metallurgicalSampleVanilla = new ShapelessRecipe(
+                steamworkKey("metallurgical_analysis_sample_vanilla"),
+                SteamworkItems.METALLURGICAL_ANALYSIS_SAMPLE.clone().asQuantity(6));
+        metallurgicalSampleVanilla.addIngredient(Material.NETHERITE_SCRAP);
+        metallurgicalSampleVanilla.addIngredient(Material.IRON_INGOT);
+        metallurgicalSampleVanilla.addIngredient(Material.GOLD_NUGGET);
+        metallurgicalSampleVanilla.addIngredient(Material.GLASS_BOTTLE);
+        metallurgicalSampleVanilla.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(metallurgicalSampleVanilla);
+
+        // Pylon 路径：青铜锭 + 钢锭 + 锻铁 + 渣 + 玻璃瓶 → 9 个
+        ShapelessRecipe metallurgicalSamplePylon = new ShapelessRecipe(
+                steamworkKey("metallurgical_analysis_sample_pylon"),
+                SteamworkItems.METALLURGICAL_ANALYSIS_SAMPLE.clone().asQuantity(9));
+        metallurgicalSamplePylon.addIngredient(rebarChoice(PylonItems.BRONZE_INGOT));
+        metallurgicalSamplePylon.addIngredient(rebarChoice(PylonItems.STEEL_INGOT));
+        metallurgicalSamplePylon.addIngredient(rebarChoice(PylonItems.WROUGHT_IRON));
+        metallurgicalSamplePylon.addIngredient(rebarChoice(PylonItems.SLAG));
+        metallurgicalSamplePylon.addIngredient(Material.GLASS_BOTTLE);
+        metallurgicalSamplePylon.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(metallurgicalSamplePylon);
+
+        // ---- 流体分析样本（研究耗时 440t） ----
+        // Steamwork 路径：蒸馏水瓶 + 矿物浸出液瓶 + 矿物助熔剂 → 2 个
+        ShapelessRecipe fluidSampleSteamwork = new ShapelessRecipe(
+                SteamworkKeys.FLUID_ANALYSIS_SAMPLE,
+                SteamworkItems.FLUID_ANALYSIS_SAMPLE.clone().asQuantity(2));
+        fluidSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.DISTILLED_WATER_VIAL));
+        fluidSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.MINERAL_LEACHATE_VIAL));
+        fluidSampleSteamwork.addIngredient(rebarChoice(SteamworkItems.MINERAL_FLUX));
+        fluidSampleSteamwork.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(fluidSampleSteamwork);
+
+        // 原版路径：水瓶 + 凝魂沙 + 紫颂果 + 糖 + 玻璃瓶 → 5 个
+        ShapelessRecipe fluidSampleVanilla = new ShapelessRecipe(
+                steamworkKey("fluid_analysis_sample_vanilla"),
+                SteamworkItems.FLUID_ANALYSIS_SAMPLE.clone().asQuantity(5));
+        fluidSampleVanilla.addIngredient(Material.POTION);
+        fluidSampleVanilla.addIngredient(Material.SOUL_SAND);
+        fluidSampleVanilla.addIngredient(Material.CHORUS_FRUIT);
+        fluidSampleVanilla.addIngredient(Material.SUGAR);
+        fluidSampleVanilla.addIngredient(Material.GLASS_BOTTLE);
+        fluidSampleVanilla.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(fluidSampleVanilla);
+
+        // Pylon 路径：石膏粉 + 硫磺 + 黑曜石碎片 + 细密沉积物 + 玻璃瓶 → 7 个
+        ShapelessRecipe fluidSamplePylon = new ShapelessRecipe(
+                steamworkKey("fluid_analysis_sample_pylon"),
+                SteamworkItems.FLUID_ANALYSIS_SAMPLE.clone().asQuantity(7));
+        fluidSamplePylon.addIngredient(rebarChoice(PylonItems.GYPSUM_DUST));
+        fluidSamplePylon.addIngredient(rebarChoice(PylonItems.SULFUR));
+        fluidSamplePylon.addIngredient(rebarChoice(PylonItems.OBSIDIAN_CHIP));
+        fluidSamplePylon.addIngredient(rebarChoice(PylonItems.FINE_SEDIMENT));
+        fluidSamplePylon.addIngredient(Material.GLASS_BOTTLE);
+        fluidSamplePylon.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPELESS.addRecipe(fluidSamplePylon);
     }
 
     /** Adds reversible 9 ingots <-> 1 block recipes. */

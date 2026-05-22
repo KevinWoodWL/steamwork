@@ -2,24 +2,31 @@ package io.github.steamwork;
 
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.steamwork.content.machines.SteamGrinder;
+import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
 import io.github.steamwork.content.machines.SteamSteepingVat;
 import io.github.steamwork.content.machines.SteamSterilizer;
 import io.github.steamwork.content.machines.SteamWashingTrough;
 import io.github.steamwork.recipes.SteamAssemblyRecipe;
+import io.github.steamwork.recipes.SteamDistillationRecipe;
 import io.github.steamwork.recipes.SteamGrindingRecipe;
+import io.github.steamwork.recipes.SteamMillingRecipe;
 import io.github.steamwork.recipes.SteamPressingRecipe;
 import io.github.steamwork.recipes.SteamPressurizingRecipe;
+import io.github.steamwork.recipes.SteamResearchRecipe;
 import io.github.steamwork.recipes.SteamSteepingRecipe;
 import io.github.steamwork.recipes.SteamSterilizingRecipe;
 import io.github.steamwork.recipes.SteamWashingRecipe;
 import io.github.steamwork.recipes.registration.AssemblyRecipes;
 import io.github.steamwork.recipes.registration.CookingRecipes;
 import io.github.steamwork.recipes.registration.CraftingRecipes;
+import io.github.steamwork.recipes.registration.DistillationRecipes;
 import io.github.steamwork.recipes.registration.GrindingRecipes;
+import io.github.steamwork.recipes.registration.MillingRecipes;
 import io.github.steamwork.recipes.registration.PressingRecipes;
 import io.github.steamwork.recipes.registration.PressurizingRecipes;
+import io.github.steamwork.recipes.registration.ResearchRecipes;
 import io.github.steamwork.recipes.registration.SmelteryRecipes;
 import io.github.steamwork.recipes.registration.SteepingRecipes;
 import io.github.steamwork.recipes.registration.SterilizingRecipes;
@@ -135,7 +142,10 @@ public final class SteamworkRecipes {
         safeRegisterRecipeType(SteamWashingRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamPressingRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamGrindingRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamMillingRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamAssemblyRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamResearchRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamDistillationRecipe.RECIPE_TYPE);
     }
 
     private static void registerAllRecipes() {
@@ -148,7 +158,10 @@ public final class SteamworkRecipes {
         WashingRecipes.register();
         PressingRecipes.register();
         GrindingRecipes.register();
+        MillingRecipes.register();
         AssemblyRecipes.register();
+        ResearchRecipes.register();
+        DistillationRecipes.register();
     }
 
     private static void refreshMachineCaches() {
@@ -158,5 +171,6 @@ public final class SteamworkRecipes {
         SteamWashingTrough.refreshRecipeCache();
         SteamPress.refreshRecipeCache();
         SteamGrinder.refreshRecipeCache();
+        SteamPrecisionMill.refreshRecipeCache();
     }
 }

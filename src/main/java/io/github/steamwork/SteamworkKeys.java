@@ -122,4 +122,17 @@ public final class SteamworkKeys {
 
     // Equipment workshop
     public static final NamespacedKey STEAM_ASSEMBLY_BENCH = steamworkKey("steam_assembly_bench");
+
+    // Precision mill machine
+    public static final NamespacedKey STEAM_PRECISION_MILL = steamworkKey("steam_precision_mill");
+
+    // Precision mill products
+    public static final NamespacedKey PRECISION_GEAR = steamworkKey("precision_gear");
+    public static final NamespacedKey PRECISION_SCREW = steamworkKey("precision_screw");
+    public static final NamespacedKey PRECISION_VALVE = steamworkKey("precision_valve");
+    public static final NamespacedKey WEAR_PLATE = steamworkKey("wear_plate");
+    public static final NamespacedKey HEAT_SINK = steamworkKey("heat_sink");
+    public static final NamespacedKey MILLING_BLADE = steamworkKey("milling_blade");
+    public static final NamespacedKey CATALYST_CORE = steamworkKey("catalyst_core");
+    public static final NamespacedKey PRECISION_BEARING = steamworkKey("precision_bearing");
 }

@@ -1,89 +1,153 @@
 package io.github.steamwork;
 
 import io.github.pylonmc.rebar.item.research.Research;
-import io.github.pylonmc.rebar.registry.RebarRegistry;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
+// Research nodes are keyed as <discipline>_<topic> to match the four disciplines
+// used by SteamScienceInterface (material / biology / precision / chemistry).
+// Costs follow a flat curve across four tiers:
+//   T0 entry   :  20- 40
+//   T1 early   :  60-110
+//   T2 mid     : 140-220
+//   T3 advanced: 280-380
+//   T4 endgame : 450-600
 public final class SteamworkResearches {
 
     private SteamworkResearches() {
         throw new AssertionError("Utility class");
     }
 
-    public static final Research MINERAL_REFINING = new Research(
-            steamworkKey("mineral_refining"), SteamworkItems.ZINC_CONCENTRATE, 25L,
-            SteamworkKeys.ZINC_CONCENTRATE, SteamworkKeys.SILICA_GRIT, SteamworkKeys.MINERAL_FLUX,
-            SteamworkKeys.ZINC_INGOT);
-    public static final Research BASIC_STEAM_SCIENCE = new Research(
-            steamworkKey("basic_steam_science"), SteamworkItems.BRASS_INGOT, 50L,
-            SteamworkKeys.BRASS_INGOT, SteamworkKeys.PLANT_FIBER, SteamworkKeys.STEAM_PULP,
-            SteamworkKeys.RAW_RESIN, SteamworkKeys.VULCANIZED_RUBBER, SteamworkKeys.STERILE_BIOMASS,
-            SteamworkKeys.TREATED_WOOD, SteamworkKeys.FIBERBOARD, SteamworkKeys.RUBBERIZED_FABRIC,
-            SteamworkKeys.STERILE_CULTURE,
-            SteamworkKeys.RUBBER_GASKET);
-    public static final Research PRESSURE_MEASUREMENT = new Research(
-            steamworkKey("pressure_measurement"), SteamworkItems.PRESSURE_GAUGE, 75L, SteamworkKeys.PRESSURE_GAUGE);
-    public static final Research MECHANICAL_TRANSMISSION = new Research(
-            steamworkKey("mechanical_transmission"), SteamworkItems.BRASS_GEAR, 100L, SteamworkKeys.BRASS_GEAR);
-    public static final Research BOILER_TECHNOLOGY = new Research(
-            steamworkKey("boiler_technology"), SteamworkItems.BRONZE_BOILER, 120L,
-            SteamworkKeys.BRONZE_BOILER);
-    public static final Research STEAM_AUTOMATION = new Research(
-            steamworkKey("steam_automation"), SteamworkItems.STEAM_ARM, 150L,
-            SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_STERILIZER,
-            SteamworkKeys.STEAM_STEEPING_VAT, SteamworkKeys.STEAM_WASHING_TROUGH);
-    public static final Research STEAM_EQUIPMENT = new Research(
-            steamworkKey("steam_equipment"), SteamworkItems.STEAM_SWORD, 200L,
-            SteamworkKeys.STEAM_SWORD, SteamworkKeys.STEAM_PICKAXE, SteamworkKeys.STEAM_AXE,
-            SteamworkKeys.STEAM_SHOVEL, SteamworkKeys.STEAM_HOE);
-    public static final Research STEAM_ARMOR = new Research(
-            steamworkKey("steam_armor"), SteamworkItems.STEAM_CHESTPLATE, 250L,
-            SteamworkKeys.STEAM_HELMET, SteamworkKeys.STEAM_CHESTPLATE,
-            SteamworkKeys.STEAM_LEGGINGS, SteamworkKeys.STEAM_BOOTS);
+    // ---- Tier 0: entry-level handcraft ----------------------------------
 
-    // Unlocks the machine itself.
-    public static final Research PRESSURIZED_FURNACE = new Research(
-            steamworkKey("pressurized_furnace"), SteamworkItems.STEAM_PRESSURIZED_FURNACE, 280L,
+    public static final Research MATERIAL_BASIC_METALS = new Research(
+            steamworkKey("material_basic_metals"), SteamworkItems.BRASS_INGOT, 15L,
+            SteamworkKeys.ZINC_INGOT, SteamworkKeys.BRASS_INGOT,
+            SteamworkKeys.RUBBER_GASKET, SteamworkKeys.PRESSURE_GAUGE,
+            SteamworkKeys.ZINC_CONCENTRATE, SteamworkKeys.SILICA_GRIT,
+            SteamworkKeys.MINERAL_FLUX, SteamworkKeys.BRONZE_BOILER,
+            SteamworkKeys.BRASS_GEAR,
+            SteamworkKeys.BRASS_DISTILLATION_TUBE, SteamworkKeys.BRASS_FILTER,
+            SteamworkKeys.BRASS_SIEVE, SteamworkKeys.BRASS_FLOW_VALVE,
+            SteamworkKeys.BRASS_FAN_BLADE, SteamworkKeys.BRASS_VALVE_CORE,
+            SteamworkKeys.BRASS_SEAL_RING);
+
+    public static final Research BIOLOGY_PLANT_PROCESSING = new Research(
+            steamworkKey("biology_plant_processing"), SteamworkItems.PLANT_FIBER, 12L,
+            SteamworkKeys.PLANT_FIBER, SteamworkKeys.STEAM_PULP, SteamworkKeys.RAW_RESIN,
+            SteamworkKeys.VULCANIZED_RUBBER, SteamworkKeys.STERILE_BIOMASS);
+
+    public static final Research MATERIAL_BASIC_CONSTRUCTION = new Research(
+            steamworkKey("material_basic_construction"), SteamworkItems.FIBERBOARD, 15L,
+            SteamworkKeys.TREATED_WOOD, SteamworkKeys.FIBERBOARD,
+            SteamworkKeys.RUBBERIZED_FABRIC, SteamworkKeys.STERILE_CULTURE);
+
+    // ---- Tier 1: early machinery & alloys -------------------------------
+
+    public static final Research MATERIAL_BASIC_MACHINES = new Research(
+            steamworkKey("material_basic_machines"), SteamworkItems.STEAM_STERILIZER, 25L,
+            SteamworkKeys.STEAM_STERILIZER, SteamworkKeys.STEAM_STEEPING_VAT,
+            SteamworkKeys.STEAM_WASHING_TROUGH,
+            SteamworkKeys.STEAM_PRESS, SteamworkKeys.STEAM_GRINDER,
+            SteamworkKeys.HEAT_TREATED_METAL, SteamworkKeys.MACHINE_SCRAP);
+
+    // ---- Tier 2: mid-tier processing ------------------------------------
+
+    public static final Research PRECISION_STEAM_AUTOMATION = new Research(
+            steamworkKey("precision_steam_automation"), SteamworkItems.STEAM_ARM, 170L,
+            SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_ASSEMBLY_BENCH,
+            SteamworkKeys.STEAM_MOTOR,
+            SteamworkKeys.STEAM_CANISTER_BRASS, SteamworkKeys.STEAM_CANISTER_INVAR,
+            SteamworkKeys.STEAM_CANISTER_TUNGSTEN);
+
+    public static final Research CHEMISTRY_BASIC_RESEARCH = new Research(
+            steamworkKey("chemistry_basic_research"), SteamworkItems.STEAM_SCIENCE_INTERFACE, 18L,
+            SteamworkKeys.MINERAL_ANALYSIS_SAMPLE, SteamworkKeys.ORGANIC_ANALYSIS_SAMPLE,
+            SteamworkKeys.METALLURGICAL_ANALYSIS_SAMPLE, SteamworkKeys.FLUID_ANALYSIS_SAMPLE,
+            SteamworkKeys.STEAM_SCIENCE_INTERFACE, SteamworkKeys.ANALYSIS_RESIDUE);
+
+    public static final Research MATERIAL_PRESSURIZED_FURNACE = new Research(
+            steamworkKey("material_pressurized_furnace"), SteamworkItems.STEAM_PRESSURIZED_FURNACE, 220L,
             SteamworkKeys.STEAM_PRESSURIZED_FURNACE);
 
-    // Unlocks advanced alloys separately from the machine.
-    public static final Research ADVANCED_INGOTS = new Research(
-            steamworkKey("advanced_ingots"), SteamworkItems.INVAR_INGOT, 320L,
+    // ---- Tier 3: advanced alloys & fluids -------------------------------
+
+    public static final Research MATERIAL_ADVANCED_INGOTS = new Research(
+            steamworkKey("material_advanced_ingots"), SteamworkItems.INVAR_INGOT, 45L,
             SteamworkKeys.INVAR_DUST, SteamworkKeys.DURALUMIN_DUST, SteamworkKeys.TUNGSTEN_DUST,
             SteamworkKeys.MANGANESE_STEEL_DUST, SteamworkKeys.MANGANESE_BRONZE_DUST,
             SteamworkKeys.INVAR_INGOT, SteamworkKeys.DURALUMIN_INGOT, SteamworkKeys.TUNGSTEN_INGOT,
             SteamworkKeys.MANGANESE_STEEL_INGOT, SteamworkKeys.MANGANESE_BRONZE_INGOT,
             SteamworkKeys.INVAR_BLOCK, SteamworkKeys.DURALUMIN_BLOCK, SteamworkKeys.TUNGSTEN_BLOCK,
-            SteamworkKeys.MANGANESE_STEEL_BLOCK, SteamworkKeys.MANGANESE_BRONZE_BLOCK);
-    public static final Research ADVANCED_BOILERS = new Research(
-            steamworkKey("advanced_boilers"), SteamworkItems.INVAR_BOILER, 360L,
-            SteamworkKeys.INVAR_BOILER, SteamworkKeys.MANGANESE_STEEL_BOILER, SteamworkKeys.TUNGSTEN_BOILER);
-
-    public static final Research ADVANCED_ALLOYS = new Research(
-            steamworkKey("advanced_alloys"), SteamworkItems.NICHROME_INGOT, 380L,
+            SteamworkKeys.MANGANESE_STEEL_BLOCK, SteamworkKeys.MANGANESE_BRONZE_BLOCK,
             SteamworkKeys.NICHROME_DUST, SteamworkKeys.NICHROME_INGOT, SteamworkKeys.HEATING_COIL);
-    public static final Research STEAM_TURBINE_TECH = new Research(
-            steamworkKey("steam_turbine_tech"), SteamworkItems.SIMPLE_STEAM_TURBINE, 420L, 
-            SteamworkKeys.SIMPLE_STEAM_TURBINE, SteamworkKeys.ADVANCED_STEAM_TURBINE);
+
+    public static final Research MATERIAL_ADVANCED_BOILERS = new Research(
+            steamworkKey("material_advanced_boilers"), SteamworkItems.INVAR_BOILER, 100L,
+            SteamworkKeys.INVAR_BOILER, SteamworkKeys.MANGANESE_STEEL_BOILER,
+            SteamworkKeys.TUNGSTEN_BOILER);
+
+    public static final Research CHEMISTRY_HEATING_CHAMBER = new Research(
+            steamworkKey("chemistry_heating_chamber"), SteamworkItems.STEAM_HEATING_CHAMBER, 20L,
+            SteamworkKeys.STEAM_HEATING_CHAMBER);
+
+    public static final Research CHEMISTRY_DISTILLATION = new Research(
+            steamworkKey("chemistry_distillation"), SteamworkItems.STEAM_DISTILLATION_TOWER, 40L,
+            SteamworkKeys.STEAM_DISTILLATION_TOWER, SteamworkKeys.DISTILLATION_TOWER_SECTION,
+            SteamworkKeys.DISTILLATION_CONDENSER,
+            SteamworkKeys.REFINED_RESIN, SteamworkKeys.PLANT_ESSENCE,
+            SteamworkKeys.DISTILLED_WATER_VIAL, SteamworkKeys.MINERAL_LEACHATE_VIAL,
+            SteamworkKeys.WASTE_ACID_VIAL, SteamworkKeys.MINERAL_CONCENTRATE,
+            SteamworkKeys.FIBER_RESIDUE);
+
+    public static final Research PRECISION_MILLING = new Research(
+            steamworkKey("precision_milling"), SteamworkItems.STEAM_PRECISION_MILL, 160L,
+            SteamworkKeys.STEAM_PRECISION_MILL,
+            SteamworkKeys.PRECISION_GEAR, SteamworkKeys.PRECISION_SCREW,
+            SteamworkKeys.PRECISION_VALVE, SteamworkKeys.WEAR_PLATE,
+            SteamworkKeys.HEAT_SINK, SteamworkKeys.MILLING_BLADE,
+            SteamworkKeys.CATALYST_CORE, SteamworkKeys.PRECISION_BEARING);
+
+    // ---- Tier 4: endgame ------------------------------------------------
+
+    public static final Research PRECISION_TURBINES_1 = new Research(
+            steamworkKey("precision_turbines_1"), SteamworkItems.SIMPLE_STEAM_TURBINE, 15L,
+            SteamworkKeys.SIMPLE_STEAM_TURBINE);
+
+    public static final Research PRECISION_TURBINES_2 = new Research(
+            steamworkKey("precision_turbines_2"), SteamworkItems.ADVANCED_STEAM_TURBINE, 100L,
+            SteamworkKeys.ADVANCED_STEAM_TURBINE);
+
+    public static final Research PRECISION_STEAM_EQUIPMENT = new Research(
+            steamworkKey("precision_steam_equipment"), SteamworkItems.STEAM_SWORD, 550L,
+            SteamworkKeys.STEAM_SWORD, SteamworkKeys.STEAM_PICKAXE, SteamworkKeys.STEAM_AXE,
+            SteamworkKeys.STEAM_SHOVEL, SteamworkKeys.STEAM_HOE);
+
+    public static final Research MATERIAL_STEAM_ARMOR = new Research(
+            steamworkKey("material_steam_armor"), SteamworkItems.STEAM_CHESTPLATE, 600L,
+            SteamworkKeys.STEAM_HELMET, SteamworkKeys.STEAM_CHESTPLATE,
+            SteamworkKeys.STEAM_LEGGINGS, SteamworkKeys.STEAM_BOOTS);
 
     public static void initialize() {
-        MINERAL_REFINING.register();
-        BASIC_STEAM_SCIENCE.register();
-        PRESSURE_MEASUREMENT.register();
-        MECHANICAL_TRANSMISSION.register();
-        BOILER_TECHNOLOGY.register();
-        STEAM_AUTOMATION.register();
-        STEAM_EQUIPMENT.register();
-        STEAM_ARMOR.register();
-        PRESSURIZED_FURNACE.register();
-        ADVANCED_INGOTS.register();
-        ADVANCED_BOILERS.register();
-        ADVANCED_ALLOYS.register();
-        STEAM_TURBINE_TECH.register();
+        MATERIAL_BASIC_METALS.register();
+        BIOLOGY_PLANT_PROCESSING.register();
+        MATERIAL_BASIC_CONSTRUCTION.register();
 
-        RebarRegistry.RESEARCHES.mapKey(steamworkKey("simple_steam_turbine"), STEAM_TURBINE_TECH.getKey());
-        RebarRegistry.RESEARCHES.mapKey(steamworkKey("advanced_steam_turbine"), STEAM_TURBINE_TECH.getKey());
-        RebarRegistry.RESEARCHES.mapKey(steamworkKey("pressure_alloys"), PRESSURIZED_FURNACE.getKey());
+        MATERIAL_BASIC_MACHINES.register();
+
+        PRECISION_STEAM_AUTOMATION.register();
+        CHEMISTRY_BASIC_RESEARCH.register();
+        MATERIAL_PRESSURIZED_FURNACE.register();
+
+        MATERIAL_ADVANCED_INGOTS.register();
+        MATERIAL_ADVANCED_BOILERS.register();
+        CHEMISTRY_HEATING_CHAMBER.register();
+        CHEMISTRY_DISTILLATION.register();
+        PRECISION_MILLING.register();
+
+        PRECISION_TURBINES_1.register();
+        PRECISION_TURBINES_2.register();
+        PRECISION_STEAM_EQUIPMENT.register();
+        MATERIAL_STEAM_ARMOR.register();
     }
 }

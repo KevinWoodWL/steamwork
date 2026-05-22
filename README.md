@@ -45,3 +45,7 @@ steamwork:steam_arm:active=true
 
 蒸汽传输直接复用 Pylon 的流体管道，Steamwork 不再提供独立的 `steam_pipe`
 或 `pressure_valve` 方块。
+
+## 贡献者
+
+- [@KevinWoodWL](https://github.com/KevinWoodWL) — 项目作者与主要开发者

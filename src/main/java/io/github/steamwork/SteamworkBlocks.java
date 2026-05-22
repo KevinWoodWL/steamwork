@@ -8,6 +8,7 @@ import io.github.steamwork.content.machines.SteamAssemblyBench;
 import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.SteamGrinder;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
+import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
 import io.github.steamwork.content.machines.SteamScienceInterface;
@@ -39,6 +40,7 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.STEAM_WASHING_TROUGH, Material.CAULDRON, SteamWashingTrough.class);
         RebarBlock.register(SteamworkKeys.STEAM_PRESS, Material.IRON_BLOCK, SteamPress.class);
         RebarBlock.register(SteamworkKeys.STEAM_GRINDER, Material.GRINDSTONE, SteamGrinder.class);
+        RebarBlock.register(SteamworkKeys.STEAM_PRECISION_MILL, Material.GRINDSTONE, SteamPrecisionMill.class);
         RebarBlock.register(SteamworkKeys.STEAM_PRESSURIZED_FURNACE, Material.CUT_COPPER_SLAB, SteamPressurizedFurnace.class);
         RebarBlock.register(SteamworkKeys.STEAM_ASSEMBLY_BENCH, Material.SMITHING_TABLE, SteamAssemblyBench.class);
         RebarBlock.register(SteamworkKeys.STEAM_SCIENCE_INTERFACE, Material.LECTERN, SteamScienceInterface.class);

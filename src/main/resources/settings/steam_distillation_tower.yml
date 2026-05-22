@@ -1,0 +1,4 @@
+tick-interval: 10
+steam-buffer: 4000.0
+input-fluid-buffer: 2000.0
+output-fluid-buffer: 2000.0

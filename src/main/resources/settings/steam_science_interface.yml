@@ -1,0 +1,3 @@
+tick-interval: 10
+steam-buffer: 2000.0
+max-stored-points: 1000

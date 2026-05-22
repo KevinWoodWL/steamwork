@@ -1,6 +1,10 @@
 package io.github.steamwork.recipes.registration;
 
+import io.github.pylonmc.pylon.PylonItems;
+import io.github.pylonmc.pylon.recipes.CastingRecipe;
+import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
 import io.github.steamwork.SteamworkKeys;
 import org.bukkit.NamespacedKey;
@@ -19,12 +23,12 @@ public final class CookingRecipes {
     }
 
     public static void register() {
-        addAlloyCookingRecipes(
-                SteamworkKeys.NICHROME_INGOT,
-                SteamworkItems.NICHROME_DUST,
-                SteamworkItems.NICHROME_INGOT,
-                0.8F,
-                260);
+        // 锌锭的合成顺序：先注册熔融锌铸锭，让它在配方书里排到 1/3。
+        // 后面两条是锌精矿的熔炉/高炉烘烤，作为 2/3、3/3。
+        CastingRecipe.RECIPE_TYPE.addRecipe(new CastingRecipe(
+                SteamworkKeys.ZINC_INGOT, PylonItems.INGOT_MOLD,
+                RecipeInput.of(SteamworkFluids.MOLTEN_ZINC, 144.0),
+                SteamworkItems.ZINC_INGOT));
         FurnaceRecipe zincConcentrateFurnace = new FurnaceRecipe(
                 steamworkKey("zinc_ingot_from_concentrate_smelting"),
                 SteamworkItems.ZINC_INGOT,
@@ -42,6 +46,13 @@ public final class CookingRecipes {
                 90);
         zincConcentrateBlasting.setCategory(CookingBookCategory.MISC);
         RecipeType.VANILLA_BLASTING.addRecipe(zincConcentrateBlasting);
+
+        addAlloyCookingRecipes(
+                SteamworkKeys.NICHROME_INGOT,
+                SteamworkItems.NICHROME_DUST,
+                SteamworkItems.NICHROME_INGOT,
+                0.8F,
+                260);
 
         addAlloyCookingRecipes(
                 SteamworkKeys.INVAR_INGOT,

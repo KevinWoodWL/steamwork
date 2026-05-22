@@ -105,8 +105,15 @@ item:
     name: "Machine Scrap"
     lore: |-
       <arrow> Worn-off metal shavings and broken parts from steam machines
-      <arrow> Has a small chance to drop on each recipe completion
+      <arrow> Has a small chance to drop above the machine on each recipe completion
+      <arrow> Sources: Steam Sterilizer, Steeping Vat, Washing Trough, Steam Press, Steam Grinder
       <arrow> Feed back into the Steam Grinder to recover iron ingots
+
+  heat_treated_metal:
+    name: "Heat-Treated Metal"
+    lore: |-
+      <arrow> Dense metal plate stress-equalized under high-temperature steam
+      <arrow> Used in steam machinery components requiring high structural strength
 
   brass_gear:
     name: "Brass Gear"
@@ -406,10 +413,12 @@ item:
   steam_press:
     name: "Steam Press"
     lore: |-
-      <arrow> A high-pressure steam piston that presses soft or granular materials into sheets and boards
-      <arrow> Produces fiberboard and Pylon metal sheets
+      <arrow> A high-pressure steam piston that presses materials into sheets and boards
+      <arrow> Multi-block: place machine, leave one air gap below, then place an Iron Block
+      <arrow> Right-click the Iron Block to insert items; output drops at the Iron Block
+      <arrow> Shift+Right-click to deposit the entire main-hand stack at once
       <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-    waila: "Steam Press | Steam %steam-bar%"
+    waila: "Steam Press | Steam %steam-bar% | %state%"
 
   steam_grinder:
     name: "Steam Grinder"
@@ -435,6 +444,166 @@ item:
       <arrow> Requires a 3×1×3 structure: main block + 4 bronze blocks at the corners
       <arrow> All steam tools, armor, and canisters are built here
     waila: "Steam Assembly Bench | %structure%"
+
+  steam_science_interface:
+    name: "Steam Science Interface"
+    lore: |-
+      <arrow> Burns regular steam to analyze samples into research points
+      <arrow> Right-click to claim accumulated points
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Stored points cap:</attr> %max-points%
+    waila: "Steam Science Interface | Steam %steam-bar% | Stored %points% | %state%"
+
+  steam_heating_chamber:
+    name: "Steam Heating Chamber"
+    lore: |-
+      <arrow> Re-heats regular steam into superheated steam at a 3:1 ratio
+      <arrow> A bridge between basic boilers and advanced steam machinery
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Superheated buffer:</attr> %superheated-buffer%
+    waila: "Steam Heating Chamber | %state%"
+
+  steam_precision_mill:
+    name: "Steam Precision Mill"
+    lore: |-
+      <arrow> High-speed steam-driven milling that cuts alloy ingots into precision parts
+      <arrow> Typical outputs: precision gears, valves, heat sinks
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Precision Mill | Steam %steam-bar% | %state%"
+
+  # Precision mill products
+  precision_gear:
+    name: "Precision Gear"
+    lore: |-
+      <arrow> A low-thermal-expansion transmission gear milled from invar
+      <arrow> Core drive component for mid-tier machines
+
+  precision_screw:
+    name: "Precision Screw"
+    lore: |-
+      <arrow> A high-accuracy threaded rod milled from invar
+      <arrow> Used in precision positioning and feed mechanisms
+
+  precision_valve:
+    name: "Precision Valve"
+    lore: |-
+      <arrow> A wear-resistant control valve milled from tungsten
+      <arrow> For precise regulation of high-pressure fluids
+
+  wear_plate:
+    name: "Wear Plate"
+    lore: |-
+      <arrow> A high-abrasion-resistant liner milled from manganese steel
+      <arrow> Protects internal machine surfaces and friction faces
+
+  heat_sink:
+    name: "Heat Sink"
+    lore: |-
+      <arrow> A lightweight, high-efficiency thermal fin milled from duralumin
+      <arrow> Used in thermal management modules for high-load machines
+
+  milling_blade:
+    name: "Milling Blade"
+    lore: |-
+      <arrow> A high-hardness cutter edge made from manganese steel
+      <arrow> Core consumable for the mill; also a crafting material for mid-tier machines
+
+  catalyst_core:
+    name: "Catalyst Core"
+    lore: |-
+      <arrow> A rare catalytic core precision-milled from palladium
+      <arrow> Used in advanced chemical reactions and precision synthesis
+
+  precision_bearing:
+    name: "Precision Bearing"
+    lore: |-
+      <arrow> A high-speed rotary load carrier milled from steel
+      <arrow> Reduces internal friction and improves transmission efficiency
+
+  steam_distillation_tower:
+    lore: |-
+      <arrow> A modular tower that distills materials with superheated steam
+      <arrow> Stack 1-4 sections + condenser cap; more sections unlock complex recipes
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+    waila: "Steam Distillation Tower | %structure% | Steam %steam-bar% | %state%"
+
+  distillation_tower_section:
+    name: "Distillation Tower Section"
+    lore: <arrow> A glass-and-invar tray that adds one stage to a distillation tower
+
+  distillation_condenser:
+    name: "Distillation Condenser"
+    lore: <arrow> The copper cap that completes a distillation tower
+
+  # Distillation byproducts and intermediates
+  refined_resin:
+    name: "Refined Resin"
+    lore: |-
+      <arrow> Resin distilled clean of impurities for high-grade rubberwork
+      <arrow> Used in advanced seals and elastic components
+
+  plant_essence:
+    name: "Plant Essence"
+    lore: |-
+      <arrow> A concentrated organic extract pulled from plant matter
+      <arrow> Used in biology research and chemical preparations
+
+  distilled_water_vial:
+    name: "Distilled Water Vial"
+    lore: |-
+      <arrow> A glass vial of pure distilled water
+      <arrow> Empty into a fluid input slot for chemistry recipes
+
+  mineral_leachate_vial:
+    name: "Mineral Leachate Vial"
+    lore: <arrow> Bottled mineral leachate, ready for further processing
+
+  waste_acid_vial:
+    name: "Waste Acid Vial"
+    lore: |-
+      <arrow> Spent acid byproduct from mineral distillation
+      <arrow> Neutralize with mineral flux in the distillation tower to recover mineral leachate vials
+
+  mineral_concentrate:
+    name: "Mineral Concentrate"
+    lore: |-
+      <arrow> Dense mineral cake distilled from flux and leachate
+      <arrow> A precursor for high-purity metallurgy
+
+  fiber_residue:
+    name: "Fiber Residue"
+    lore: |-
+      <arrow> Solid pulp left over from steam-distilling plant fiber
+      <arrow> Re-distill in the tower to break down into bone meal and mineral flux
+
+  # Research samples
+  mineral_analysis_sample:
+    name: "Mineral Analysis Sample"
+    lore: |-
+      <arrow> A prepared mineral specimen for the steam science interface
+      <arrow> Yields material discipline research points
+
+  organic_analysis_sample:
+    name: "Organic Analysis Sample"
+    lore: |-
+      <arrow> A bottled organic specimen for the steam science interface
+      <arrow> Yields biology discipline research points
+
+  metallurgical_analysis_sample:
+    name: "Metallurgical Analysis Sample"
+    lore: |-
+      <arrow> A high-temperature alloy specimen for the steam science interface
+      <arrow> Yields precision discipline research points
+
+  fluid_analysis_sample:
+    name: "Fluid Analysis Sample"
+    lore: |-
+      <arrow> A sealed fluid specimen for the steam science interface
+      <arrow> Yields chemistry discipline research points
+
+  analysis_residue:
+    name: "Analysis Residue"
+    lore: <arrow> Spent material left over after a research analysis cycle
 
 gui:
   steam_arm:
@@ -541,9 +710,18 @@ gui:
       no_ingredients: "<gray>Reason: <reset><gray>No matching recipe"
       no_steam: "<gray>Reason: <reset><red>Insufficient steam"
       output_full: "<gray>Reason: <reset><yellow>Output slots full"
+      mixed_output: "<gray>Reason: <reset><yellow>Mixed items in output slot"
       processing: "<gray>Reason: <reset><green>Processing"
     steam_rate: "<gray>Steam draw: <reset><aqua>%rate%</aqua> <gray>mB/s"
     interruption_warning: "<red>⚠ Steam outage too long — progress regressing</red>"
+    recipe_lock:
+      title: "<yellow>Output Selection"
+      unlocked: "<gray>No output selected — auto-select"
+      locked: "<gray>Selected: <reset>%recipe%"
+      available: "<gray>Available outputs:"
+      hint_click: "<dark_gray>Left-click to select an output"
+      hint_next: "<dark_gray>Left-click to cycle to next output"
+      hint_unlock: "<dark_gray>Right-click to clear selection"
 
   steam_sterilizer:
     title: "<dark_gray>Steam Sterilizer"
@@ -580,16 +758,31 @@ gui:
     steam_gauge: "<aqua>Steam Storage"
     steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress: "<green>Pressing Progress"
-    progress_bar: "<reset>%bar% <gray>%percent%"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
+    reason:
+      ready: "<gray>Awaiting input"
+      no_ingredients: "<gray>No matching recipe"
+      no_steam: "<red>Insufficient steam"
+      structure_missing: "<red>Structure missing — place Iron Block 2 below"
+      processing: "<green>Pressing..."
 
   steam_grinder:
     title: "<dark_gray>Steam Grinder"
     steam_gauge: "<aqua>Steam Storage"
     steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress: "<green>Grinding Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_precision_mill:
+    title: "<dark_gray>Steam Precision Mill"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Milling Progress"
     progress_bar: "<reset>%bar% <gray>%percent%"
     status:
       active: "<green>Active"
@@ -626,6 +819,72 @@ gui:
       active: "<green>Active"
       idle: "<gray>Idle"
 
+  steam_science_interface:
+    title: "<dark_gray>Steam Science Interface"
+    steam_gauge: "<aqua>Steam"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Analysis Progress"
+    progress_idle: "<gray>Insert a research sample to begin"
+    progress_percent: "<reset>%bar% <gray>%percent%"
+    time_remaining: "<gray>Time left: <yellow>%time%"
+    points_pending: "<gray>Pending points: <aqua>%points%"
+    claim: "<yellow>Claim Research Points"
+    stored_points: "<gray>Stored: <aqua>%points% <gray>/ <aqua>%max%"
+    claim_hint: "<gray>LMB to credit points to your research"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+      ready: "<gray>Awaiting input"
+      no_sample: "<gray>No sample loaded"
+      no_steam: "<red>Insufficient steam"
+      output_full: "<yellow>Output full"
+      point_storage_full: "<yellow>Point buffer full"
+      processing: "<green>Analyzing"
+    reason:
+      ready: "<gray>Insert a sample to begin analysis"
+      no_sample: "<gray>Place a research sample in the input slot"
+      no_steam: "<red>Needs steam to operate"
+      output_full: "<yellow>Clear the residue output slot"
+      point_storage_full: "<yellow>Claim stored points before continuing"
+      processing: "<green>Analyzing the loaded sample"
+
+  steam_heating_chamber:
+    title: "<dark_gray>Steam Heating Chamber"
+    ratio: "<gray>Conversion: <aqua>%input%<gray>mB steam <gray>→ <aqua>%output%<gray>mB superheated"
+    input_gauge: "<aqua>Steam Input"
+    output_gauge: "<#fff4d8>Superheated Output"
+    fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  steam_distillation_tower:
+    title: "<dark_gray>Steam Distillation Tower"
+    steam_gauge: "<aqua>Superheated Steam"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>Distillation Progress"
+    progress_idle: "<gray>Awaiting matching ingredients"
+    progress_percent: "<reset>%bar% <gray>%percent%"
+    time_remaining: "<gray>Time left: <yellow>%time%"
+    structure: "<yellow>Tower Structure"
+    sections: "<gray>Sections built: <aqua>%sections% <gray>(max 4)"
+    status:
+      active: "<green>Running"
+      idle: "<gray>Idle"
+      ready: "<gray>Awaiting input"
+      structure_missing: "<red>Tower structure missing"
+      no_ingredients: "<gray>No matching recipe"
+      no_steam: "<red>Insufficient superheated steam"
+      output_full: "<yellow>Output full"
+      processing: "<green>Distilling"
+    reason:
+      ready: "<gray>Place ingredients to begin distillation"
+      structure_missing: "<red>Build sections + condenser above the controller"
+      no_ingredients: "<gray>Current inputs don't match any recipe"
+      no_steam: "<red>Needs superheated steam to operate"
+      output_full: "<yellow>Clear the output slots or fluid buffer"
+      processing: "<green>Distilling the loaded materials"
+
 guide:
   recipe:
     steam_pressurizing: "<gray>Steam pressurizing | %steam% steam | %time%"
@@ -634,6 +893,9 @@ guide:
     steam_washing: "<gray>Steam washing | %steam% steam | %time%"
     steam_pressing: "<gray>Steam pressing | %steam% steam | %time%"
     steam_grinding: "<gray>Steam grinding | %steam% steam | %time%"
+    steam_milling: "<gray>Steam milling | %steam% steam | %time%"
+    steam_research: "<gray>Steam research | %discipline% | %points% pts | %steam% steam | %time%"
+    steam_distillation: "<gray>Steam distillation | %sections% sections | %steam% superheated | %time%"
     phosphor_bronze: "<gray>Phosphor Bronze - Pylon Tin synergy"
     nitrided_steel: "<gray>Nitrided Steel - Pylon Steel synergy"
     palladium_alloy: "<gray>Palladium Alloy - Pylon Palladium synergy"
@@ -669,6 +931,12 @@ fluid:
   superheated_steam: "<#fff4d8>Superheated Steam"
   molten_zinc: "<#c4d4e0>Molten Zinc"
   molten_brass: "<#e3d45c>Molten Brass"
+  distilled_water: "<#c8e7ff>Distilled Water"
+  mineral_leachate: "<#a8b27a>Mineral Leachate"
+  waste_acid: "<#7a8a4a>Waste Acid"
+  light_fraction: "<#f4e29a>Light Fraction"
+  medium_fraction: "<#d2a559>Medium Fraction"
+  heavy_fraction: "<#5a4632>Heavy Fraction"
 
 pressure:
   low: "<gray>Low pressure"
@@ -685,26 +953,44 @@ state:
   no_ingredients: "<gray>No matching recipe"
   no_steam: "<red>Insufficient steam"
   output_full: "<yellow>Output full"
+  mixed_output: "<yellow>Mixed items in output"
   processing: "<green>Processing"
+  no_sample: "<gray>No sample loaded"
+  point_storage_full: "<yellow>Point buffer full"
+  structure_missing: "<red>Structure missing"
+
+research_type:
+  material: "Material"
+  biology: "Biology"
+  precision: "Precision"
+  chemistry: "Chemistry"
 
 structure:
   formed: "<green>Structure complete"
   missing: "<red>Structure missing"
 
 research:
-  mineral_refining: "Mineral Refining"
-  basic_steam_science: "Basic Steam Science"
-  pressure_measurement: "Pressure Measurement"
-  boiler_technology: "Boiler Technology"
-  steam_automation: "Steam Automation"
-  mechanical_transmission: "Mechanical Transmission"
-  steam_equipment: "Steam Tools"
-  steam_armor: "Steam Armor"
-  advanced_alloys: "Advanced Alloys"
-  advanced_boilers: "Advanced Boilers"
-  pressurized_furnace: "Pressurized Furnace"
-  advanced_ingots: "Advanced Ingots"
-  steam_turbine_tech: "High-Energy Turbine"
+  # Tier 0 - entry handcraft
+  material_basic_metals: "Basic Metals"
+  biology_plant_processing: "Plant Processing"
+  material_basic_construction: "Basic Construction"
+  # Tier 1 - early machinery & alloys
+  material_basic_machines: "Basic Steam Machines"
+  # Tier 2 - mid-tier processing
+  precision_steam_automation: "Steam Automation"
+  chemistry_basic_research: "Basic Steam Research"
+  material_pressurized_furnace: "Pressurized Furnace"
+  # Tier 3 - advanced alloys & fluids
+  material_advanced_ingots: "Advanced Ingots"
+  material_advanced_boilers: "Advanced Boilers"
+  chemistry_heating_chamber: "Steam Superheating"
+  chemistry_distillation: "Steam Distillation"
+  precision_milling: "Precision Milling"
+  # Tier 4 - endgame
+  precision_turbines_1: "Steam Turbine I"
+  precision_turbines_2: "Steam Turbine II"
+  precision_steam_equipment: "Steam Tools"
+  material_steam_armor: "Steam Armor"
 
 message:
   steam_arm:
@@ -724,3 +1010,5 @@ message:
     target_conflict: "<red>This position is already in %type% target list"
     target_removed: "<yellow>Removed %type% target: <white>%location%"
     target_out_of_range: "<red>Target out of range (max %range% blocks)"
+  steam_science_interface:
+    claimed: "<green>Claimed <aqua>%points%</aqua> research points (total <aqua>%total%</aqua>)"

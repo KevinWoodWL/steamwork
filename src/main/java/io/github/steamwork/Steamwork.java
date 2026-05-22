@@ -2,6 +2,7 @@ package io.github.steamwork;
 
 import io.github.pylonmc.rebar.addon.RebarAddon;
 import io.github.steamwork.content.machines.SteamArm;
+import io.github.steamwork.content.machines.SteamPress;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
@@ -37,6 +38,7 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
         // 注册需要全局监听的方块逻辑（必须在所有 block 注册完成后调用）。
         // 改为显式注册以替代 SteamArm 之前的 static {} 块注册方式。
         SteamArm.registerGlobalListeners();
+        SteamPress.registerGlobalListeners();
 
         SteamworkResearches.initialize();
         SteamworkRecipes.initialize();

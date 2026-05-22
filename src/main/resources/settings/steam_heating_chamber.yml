@@ -1,0 +1,5 @@
+tick-interval: 10
+steam-buffer: 3000.0
+superheated-steam-buffer: 1500.0
+steam-input-per-cycle: 90.0
+superheated-output-per-cycle: 30.0

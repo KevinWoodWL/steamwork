@@ -14,6 +14,7 @@ import io.github.steamwork.content.machines.SteamHeatingChamber;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
 import io.github.steamwork.content.machines.SteamScienceInterface;
+import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamSteepingVat;
 import io.github.steamwork.content.machines.SteamSterilizer;
 import io.github.steamwork.content.machines.SteamDistillationTower;
@@ -135,6 +136,19 @@ public final class SteamworkItems {
 
     // Machine components
     public static final ItemStack STEAM_MOTOR = ItemStackBuilder.rebar(Material.CLOCK, SteamworkKeys.STEAM_MOTOR).build();
+
+    // Precision mill machine block
+    public static final ItemStack STEAM_PRECISION_MILL = ItemStackBuilder.rebar(Material.GRINDSTONE, SteamworkKeys.STEAM_PRECISION_MILL).build();
+
+    // Precision mill products
+    public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
+    public static final ItemStack PRECISION_SCREW = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_SCREW).build();
+    public static final ItemStack PRECISION_VALVE = ItemStackBuilder.rebar(Material.IRON_INGOT, SteamworkKeys.PRECISION_VALVE).build();
+    public static final ItemStack WEAR_PLATE = ItemStackBuilder.rebar(Material.IRON_INGOT, SteamworkKeys.WEAR_PLATE).build();
+    public static final ItemStack HEAT_SINK = ItemStackBuilder.rebar(Material.IRON_INGOT, SteamworkKeys.HEAT_SINK).build();
+    public static final ItemStack MILLING_BLADE = ItemStackBuilder.rebar(Material.IRON_SWORD, SteamworkKeys.MILLING_BLADE).build();
+    public static final ItemStack CATALYST_CORE = ItemStackBuilder.rebar(Material.NETHER_STAR, SteamworkKeys.CATALYST_CORE).build();
+    public static final ItemStack PRECISION_BEARING = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_BEARING).build();
 
     // Steam weapons / tools / armor — each carries a steam buffer in PDC (see SteamCharge).
     // Capacity baked in template so crafting copies it; main-thread runtime can read amount/capacity uniformly.
@@ -281,6 +295,8 @@ public final class SteamworkItems {
                 .addButton(new MachineRecipesButton(STEAM_PRESSURIZED_FURNACE, SteamPressurizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_SCIENCE_INTERFACE)
                 .addButton(new MachineRecipesButton(STEAM_SCIENCE_INTERFACE, SteamResearchRecipe.RECIPE_TYPE));
+        RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_PRECISION_MILL)
+                .addButton(new MachineRecipesButton(STEAM_PRECISION_MILL, io.github.steamwork.recipes.SteamMillingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_DISTILLATION_TOWER)
                 .addButton(new MachineRecipesButton(STEAM_DISTILLATION_TOWER, SteamDistillationRecipe.RECIPE_TYPE));
 
@@ -305,6 +321,7 @@ public final class SteamworkItems {
         advancedTurbinePage.addItem(STEAM_WASHING_TROUGH);
         advancedTurbinePage.addItem(STEAM_PRESS);
         advancedTurbinePage.addItem(STEAM_GRINDER);
+        advancedTurbinePage.addItem(STEAM_PRECISION_MILL);
         // Pylon 液压系列
         addOptionalPylonGuideItem(advancedTurbinePage, "HYDRAULIC_BREAKER");
         addOptionalPylonGuideItem(advancedTurbinePage, "HYDRAULIC_MINER");
@@ -332,6 +349,18 @@ public final class SteamworkItems {
 
         // Machine components
         RebarItem.register(RebarItem.class, STEAM_MOTOR, SteamworkKeys.STEAM_MOTOR);
+
+        RebarItem.register(SteamPrecisionMill.Item.class, STEAM_PRECISION_MILL, SteamworkKeys.STEAM_PRECISION_MILL);
+
+        // Precision mill products
+        RebarItem.register(RebarItem.class, PRECISION_GEAR);
+        RebarItem.register(RebarItem.class, PRECISION_SCREW);
+        RebarItem.register(RebarItem.class, PRECISION_VALVE);
+        RebarItem.register(RebarItem.class, WEAR_PLATE);
+        RebarItem.register(RebarItem.class, HEAT_SINK);
+        RebarItem.register(RebarItem.class, MILLING_BLADE);
+        RebarItem.register(RebarItem.class, CATALYST_CORE);
+        RebarItem.register(RebarItem.class, PRECISION_BEARING);
 
         RebarItem.register(SteamEquipment.class, STEAM_SWORD, SteamworkKeys.STEAM_SWORD);
         RebarItem.register(SteamEquipment.class, STEAM_PICKAXE, SteamworkKeys.STEAM_PICKAXE);

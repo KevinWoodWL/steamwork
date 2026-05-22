@@ -105,8 +105,15 @@ item:
     name: "机器废屑"
     lore: |-
       <arrow> 蒸汽机器长时间运行后剥落的金属碎渣与磨损零件
-      <arrow> 每条配方完成时有少量概率掉落
+      <arrow> 每条配方完成时有少量概率从机器上方掉落
+      <arrow> 来源：蒸汽灭菌箱、蒸汽浸煮桶、蒸汽洗选槽、蒸汽冲压机、蒸汽研磨机
       <arrow> 攒一些丢回研磨机可回收成铁锭
+
+  heat_treated_metal:
+    name: "热处理金属"
+    lore: |-
+      <arrow> 经高温蒸汽处理后应力均匀化的致密金属板
+      <arrow> 用于制造需要高强度结构的蒸汽机械零件
 
   brass_gear:
     name: "黄铜齿轮"
@@ -413,10 +420,12 @@ item:
   steam_press:
     name: "蒸汽冲压机"
     lore: |-
-      <arrow> 用高压蒸汽推动柱塞，把柔软或散粒材料压制成板与片
-      <arrow> 可产出纤维板、Pylon 板材
+      <arrow> 用高压蒸汽推动柱塞，把材料压制成板与片
+      <arrow> 多方块结构：放置机器，下方留一格空气，再放铁块
+      <arrow> 右键铁块投放材料；产物以掉落物形式出现在铁块处
+      <arrow> Shift+右键铁块可一次性放入主手所有物品
       <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
-    waila: "蒸汽冲压机 | 蒸汽 %steam-bar%"
+    waila: "蒸汽冲压机 | 蒸汽 %steam-bar% | %state%"
 
   steam_grinder:
     name: "蒸汽研磨机"
@@ -442,6 +451,166 @@ item:
       <arrow> 需要 3×1×3 多方块结构：主方块 + 四角青铜块
       <arrow> 所有蒸汽工具、护甲、蒸汽罐都在此组装
     waila: "蒸汽装配台 | %structure%"
+
+  steam_science_interface:
+    name: "蒸汽科研接口"
+    lore: |-
+      <arrow> 燃烧普通蒸汽分析样品，转化为研究点数
+      <arrow> 右键领取累计的研究点数
+      <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
+      <arrow> <attr>暂存上限:</attr> %max-points%
+    waila: "蒸汽科研接口 | 蒸汽 %steam-bar% | 暂存 %points% | %state%"
+
+  steam_heating_chamber:
+    name: "蒸汽加热室"
+    lore: |-
+      <arrow> 把普通蒸汽再加热为过热蒸汽，比例 3:1
+      <arrow> 连接基础锅炉与高级蒸汽机械的桥梁设备
+      <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
+      <arrow> <attr>过热蒸汽缓存:</attr> %superheated-buffer%
+    waila: "蒸汽加热室 | %state%"
+
+  steam_precision_mill:
+    name: "蒸汽精密铣床"
+    lore: |-
+      <arrow> 用高压蒸汽驱动高速铣削，把合金锭加工为精密机械零件
+      <arrow> 典型产物：精密齿轮、精密阀门、散热片
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽精密铣床 | 蒸汽 %steam-bar% | %state%"
+
+  # 精密铣床产物
+  precision_gear:
+    name: "精密齿轮"
+    lore: |-
+      <arrow> 因瓦合金铣削而成的低热膨胀传动齿轮
+      <arrow> 中期机器的核心传动零件
+
+  precision_screw:
+    name: "精密螺杆"
+    lore: |-
+      <arrow> 因瓦合金铣削的高精度螺纹杆
+      <arrow> 用于精密定位和进给机构
+
+  precision_valve:
+    name: "精密阀门"
+    lore: |-
+      <arrow> 钨合金铣削的耐磨精密控制阀
+      <arrow> 用于高压流体的精确调节
+
+  wear_plate:
+    name: "耐磨衬板"
+    lore: |-
+      <arrow> 锰钢铣削的高耐磨防护板
+      <arrow> 用于机器内壁保护和摩擦面强化
+
+  heat_sink:
+    name: "散热片"
+    lore: |-
+      <arrow> 硬铝合金铣削的轻质高效散热结构件
+      <arrow> 用于高热负荷机器的散热模块
+
+  milling_blade:
+    name: "铣削刀片"
+    lore: |-
+      <arrow> 锰钢制成的高硬度铣刀刃
+      <arrow> 铣床的核心耗材，也是中期机器的制造材料
+
+  catalyst_core:
+    name: "催化芯"
+    lore: |-
+      <arrow> 钯金精密铣削的稀有催化核心
+      <arrow> 用于高级化学反应和精密合成流程
+
+  precision_bearing:
+    name: "精密轴承"
+    lore: |-
+      <arrow> 钢合金铣削的高速旋转承载件
+      <arrow> 减少机器内部摩擦，提升传动效率
+
+  steam_distillation_tower:
+    lore: |-
+      <arrow> 利用过热蒸汽进行物料精馏的模块化高塔
+      <arrow> 堆叠 1-4 个塔节 + 冷凝顶盖；段数越多可解锁更复杂的配方
+      <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
+    waila: "蒸汽精馏塔 | %structure% | 蒸汽 %steam-bar% | %state%"
+
+  distillation_tower_section:
+    name: "精馏塔节"
+    lore: <arrow> 由玻璃与殷钢拼成的塔层，可为精馏塔增加一段精馏面
+
+  distillation_condenser:
+    name: "精馏冷凝顶盖"
+    lore: <arrow> 完成蒸汽精馏塔结构所需的紫铜顶盖
+
+  # 蒸馏副产物与中间产物
+  refined_resin:
+    name: "精炼树脂"
+    lore: |-
+      <arrow> 经过精馏除杂的高纯度树脂
+      <arrow> 用于制作高级密封件与弹性元件
+
+  plant_essence:
+    name: "植物精华"
+    lore: |-
+      <arrow> 从植物原料中浓缩提取的有机液
+      <arrow> 用于生物学研究与化学制备
+
+  distilled_water_vial:
+    name: "蒸馏水瓶"
+    lore: |-
+      <arrow> 一瓶纯净蒸馏水
+      <arrow> 倒入流体输入槽用于化学配方
+
+  mineral_leachate_vial:
+    name: "矿物浸出液瓶"
+    lore: <arrow> 装瓶后的矿物浸出液，可继续加工
+
+  waste_acid_vial:
+    name: "废酸瓶"
+    lore: |-
+      <arrow> 矿物精馏副产的废酸
+      <arrow> 在精馏塔中与矿物助熔剂中和，可回收为矿物浸出液瓶
+
+  mineral_concentrate:
+    name: "矿物浓缩物"
+    lore: |-
+      <arrow> 由助剂与浸出液精馏出的高密度矿物饼
+      <arrow> 高纯冶金的前置原料
+
+  fiber_residue:
+    name: "纤维残渣"
+    lore: |-
+      <arrow> 蒸汽精馏植物纤维后剩下的固体浆渣
+      <arrow> 在精馏塔中再次蒸馏可分解为骨粉和矿物助熔剂
+
+  # 研究样本
+  mineral_analysis_sample:
+    name: "矿物分析样本"
+    lore: |-
+      <arrow> 为蒸汽科研接口准备的矿物标本
+      <arrow> 产出材料学研究点数
+
+  organic_analysis_sample:
+    name: "有机分析样本"
+    lore: |-
+      <arrow> 为蒸汽科研接口准备的有机标本
+      <arrow> 产出生物学研究点数
+
+  metallurgical_analysis_sample:
+    name: "冶金分析样本"
+    lore: |-
+      <arrow> 为蒸汽科研接口准备的高温合金标本
+      <arrow> 产出精密学研究点数
+
+  fluid_analysis_sample:
+    name: "流体分析样本"
+    lore: |-
+      <arrow> 为蒸汽科研接口准备的封装流体标本
+      <arrow> 产出化学研究点数
+
+  analysis_residue:
+    name: "分析残渣"
+    lore: <arrow> 一次研究分析后留下的废弃物
 
 gui:
   steam_arm:
@@ -549,9 +718,18 @@ gui:
       no_ingredients: "<gray>原因：<reset><gray>无匹配配方"
       no_steam: "<gray>原因：<reset><red>蒸汽不足"
       output_full: "<gray>原因：<reset><yellow>输出槽已满"
+      mixed_output: "<gray>原因：<reset><yellow>输出槽中存在不同产物"
       processing: "<gray>原因：<reset><green>加工中"
     steam_rate: "<gray>耗汽：<reset><aqua>%rate%</aqua> <gray>mB/s"
     interruption_warning: "<red>⚠ 断汽过久，进度正在回退</red>"
+    recipe_lock:
+      title: "<yellow>产物选择"
+      unlocked: "<gray>未选择 — 自动选择配方"
+      locked: "<gray>已选择：<reset>%recipe%"
+      available: "<gray>可选产物："
+      hint_click: "<dark_gray>左键选择产物"
+      hint_next: "<dark_gray>左键切换到下一个产物"
+      hint_unlock: "<dark_gray>右键清除选择"
 
   steam_sterilizer:
     title: "<dark_gray>蒸汽灭菌箱"
@@ -588,16 +766,31 @@ gui:
     steam_gauge: "<aqua>蒸汽储量"
     steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress: "<green>冲压进度"
-    progress_bar: "<reset>%bar% <gray>%percent%"
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
+    reason:
+      ready: "<gray>待料"
+      no_ingredients: "<gray>无匹配配方"
+      no_steam: "<red>蒸汽不足"
+      structure_missing: "<red>结构未完成 — 请在下方两格放铁块"
+      processing: "<green>冲压中..."
 
   steam_grinder:
     title: "<dark_gray>蒸汽研磨机"
     steam_gauge: "<aqua>蒸汽储量"
     steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress: "<green>研磨进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_precision_mill:
+    title: "<dark_gray>蒸汽精密铣床"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>铣削进度"
     progress_bar: "<reset>%bar% <gray>%percent%"
     status:
       active: "<green>运行中"
@@ -634,6 +827,72 @@ gui:
       no_recipe: "<gray>当前输入未匹配任何配方"
       structure_missing: "<red>结构不完整，需要 4 角青铜块"
 
+  steam_science_interface:
+    title: "<dark_gray>蒸汽科研接口"
+    steam_gauge: "<aqua>蒸汽"
+    steam: "<gray>蒸汽: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>分析进度"
+    progress_idle: "<gray>请放入研究样本以开始分析"
+    progress_percent: "<reset>%bar% <gray>%percent%"
+    time_remaining: "<gray>剩余时间: <yellow>%time%"
+    points_pending: "<gray>待领取点数: <aqua>%points%"
+    claim: "<yellow>领取研究点数"
+    stored_points: "<gray>已暂存: <aqua>%points% <gray>/ <aqua>%max%"
+    claim_hint: "<gray>左键领取点数到你的研究中"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+      ready: "<gray>等待输入"
+      no_sample: "<gray>未放入样本"
+      no_steam: "<red>蒸汽不足"
+      output_full: "<yellow>产物已满"
+      point_storage_full: "<yellow>点数缓存已满"
+      processing: "<green>分析中"
+    reason:
+      ready: "<gray>放入样本以开始分析"
+      no_sample: "<gray>请将研究样本放入输入槽"
+      no_steam: "<red>需要蒸汽才能运转"
+      output_full: "<yellow>请清空残渣输出槽"
+      point_storage_full: "<yellow>请先领取暂存的研究点数"
+      processing: "<green>正在分析当前样本"
+
+  steam_heating_chamber:
+    title: "<dark_gray>蒸汽加热室"
+    ratio: "<gray>转化: <aqua>%input%<gray>mB 蒸汽 <gray>→ <aqua>%output%<gray>mB 过热蒸汽"
+    input_gauge: "<aqua>蒸汽输入"
+    output_gauge: "<#fff4d8>过热蒸汽输出"
+    fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  steam_distillation_tower:
+    title: "<dark_gray>蒸汽精馏塔"
+    steam_gauge: "<aqua>过热蒸汽"
+    steam: "<gray>蒸汽: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress: "<green>精馏进度"
+    progress_idle: "<gray>等待匹配的原料"
+    progress_percent: "<reset>%bar% <gray>%percent%"
+    time_remaining: "<gray>剩余时间: <yellow>%time%"
+    structure: "<yellow>塔体结构"
+    sections: "<gray>已搭建塔节: <aqua>%sections% <gray>(最多 4)"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+      ready: "<gray>等待输入"
+      structure_missing: "<red>塔体结构未完成"
+      no_ingredients: "<gray>没有匹配的配方"
+      no_steam: "<red>过热蒸汽不足"
+      output_full: "<yellow>产物已满"
+      processing: "<green>精馏中"
+    reason:
+      ready: "<gray>放入原料以开始精馏"
+      structure_missing: "<red>请在控制器上方搭建塔节与冷凝顶盖"
+      no_ingredients: "<gray>当前输入未匹配任何配方"
+      no_steam: "<red>需要过热蒸汽才能运转"
+      output_full: "<yellow>请清空产物槽或流体缓存"
+      processing: "<green>正在精馏当前原料"
+
 guide:
   recipe:
     steam_pressurizing: "<gray>蒸汽加压 | 消耗 %steam% 蒸汽 | %time%"
@@ -642,6 +901,9 @@ guide:
     steam_washing: "<gray>蒸汽洗选 | 消耗 %steam% 蒸汽 | %time%"
     steam_pressing: "<gray>蒸汽冲压 | 消耗 %steam% 蒸汽 | %time%"
     steam_grinding: "<gray>蒸汽研磨 | 消耗 %steam% 蒸汽 | %time%"
+    steam_milling: "<gray>蒸汽铣削 | 消耗 %steam% 蒸汽 | %time%"
+    steam_research: "<gray>蒸汽科研 | %discipline% | %points% 点 | %steam% 蒸汽 | %time%"
+    steam_distillation: "<gray>蒸汽精馏 | %sections% 段塔 | %steam% 过热蒸汽 | %time%"
     phosphor_bronze: "<gray>磷青铜 — Pylon 锡协同"
     nitrided_steel: "<gray>渗氮钢 — Pylon 钢协同"
     palladium_alloy: "<gray>钯合金 — Pylon 钯协同"
@@ -677,6 +939,12 @@ fluid:
   superheated_steam: "<#fff4d8>过热蒸汽"
   molten_zinc: "<#c4d4e0>熔融锌"
   molten_brass: "<#e3d45c>熔融黄铜"
+  distilled_water: "<#c8e7ff>蒸馏水"
+  mineral_leachate: "<#a8b27a>矿物浸出液"
+  waste_acid: "<#7a8a4a>废酸"
+  light_fraction: "<#f4e29a>轻馏分"
+  medium_fraction: "<#d2a559>中馏分"
+  heavy_fraction: "<#5a4632>重馏分"
 
 pressure:
   low: "<gray>低压"
@@ -693,26 +961,44 @@ state:
   no_ingredients: "<gray>无匹配配方"
   no_steam: "<red>蒸汽不足"
   output_full: "<yellow>输出槽已满"
+  mixed_output: "<yellow>输出槽混有不同产物"
   processing: "<green>加工中"
+  no_sample: "<gray>未放入样本"
+  point_storage_full: "<yellow>点数缓存已满"
+  structure_missing: "<red>结构未完成"
+
+research_type:
+  material: "材料学"
+  biology: "生物学"
+  precision: "精密学"
+  chemistry: "化学"
 
 structure:
   formed: "<green>结构完整"
   missing: "<red>结构缺失"
 
 research:
-  mineral_refining: "矿物精炼"
-  basic_steam_science: "基础蒸汽学"
-  pressure_measurement: "压力测量"
-  boiler_technology: "锅炉技术"
-  steam_automation: "蒸汽自动化"
-  mechanical_transmission: "机械传动"
-  steam_equipment: "蒸汽工具"
-  steam_armor: "蒸汽护甲"
-  advanced_alloys: "高级合金"
-  advanced_boilers: "高级锅炉"
-  pressurized_furnace: "蒸汽加压炉"
-  advanced_ingots: "高级合金锭"
-  steam_turbine_tech: "高能涡轮"
+  # Tier 0 - 入门手工
+  material_basic_metals: "基础金属"
+  biology_plant_processing: "植物加工"
+  material_basic_construction: "基础建材"
+  # Tier 1 - 早期机械与合金
+  material_basic_machines: "蒸汽基础机器"
+  # Tier 2 - 中期加工
+  precision_steam_automation: "蒸汽自动化"
+  chemistry_basic_research: "基础蒸汽科研"
+  material_pressurized_furnace: "蒸汽加压炉"
+  # Tier 3 - 高级合金与流体
+  material_advanced_ingots: "高级合金锭"
+  material_advanced_boilers: "高级锅炉"
+  chemistry_heating_chamber: "蒸汽过热"
+  chemistry_distillation: "蒸汽精馏"
+  precision_milling: "精密铣削"
+  # Tier 4 - 终局
+  precision_turbines_1: "蒸汽涡轮I"
+  precision_turbines_2: "蒸汽涡轮II"
+  precision_steam_equipment: "蒸汽工具"
+  material_steam_armor: "蒸汽护甲"
 
 message:
   steam_arm:
@@ -734,3 +1020,5 @@ message:
     target_out_of_range: "<red>目标超出范围 (最大 %range% 格)"
     target_not_container: "<red>(%x%, %y%, %z%) 不是有效的容器方块"
     no_steam_arm_nearby: "<red>附近没有蒸汽动力臂在范围内"
+  steam_science_interface:
+    claimed: "<green>已领取 <aqua>%points%</aqua> 研究点数（累计 <aqua>%total%</aqua>）"
