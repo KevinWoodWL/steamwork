@@ -53,7 +53,7 @@ jobs:
       # --- Build pylon (uses rebar via composite build) ---
       - name: Build pylon
         working-directory: pylon
-        run: ./gradlew build -x test --include-build ../rebar --no-daemon
+        run: ./gradlew shadowJar -x test --include-build ../rebar --no-daemon
 
       # --- Build steamwork ---
       - name: Build steamwork
