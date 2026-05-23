@@ -116,6 +116,7 @@ public class SteamPressurizedFurnace extends RebarBlock implements
         processingToGuiOutput = pdc.getOrDefault(GUI_OUTPUT_KEY, RebarSerializers.BOOLEAN, true);
         currentRecipeKey = pdc.get(CURRENT_RECIPE_KEY, RebarSerializers.NAMESPACED_KEY);
         recipeTicksRemaining = pdc.getOrDefault(RECIPE_TICKS_REMAINING_KEY, PersistentDataType.INTEGER, 0);
+        try { getFacing(); } catch (IllegalStateException e) { setFacing(org.bukkit.block.BlockFace.SOUTH); }
     }
 
     @Override

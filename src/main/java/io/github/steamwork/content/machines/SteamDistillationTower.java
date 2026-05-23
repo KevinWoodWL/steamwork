@@ -158,6 +158,7 @@ public class SteamDistillationTower extends RebarBlock implements
         super(block, pdc);
         currentRecipeKey = pdc.get(CURRENT_RECIPE_KEY, RebarSerializers.NAMESPACED_KEY);
         recipeTicksRemaining = pdc.getOrDefault(TICKS_REMAINING_KEY, PersistentDataType.INTEGER, 0);
+        try { getFacing(); } catch (IllegalStateException e) { setFacing(org.bukkit.block.BlockFace.SOUTH); }
     }
 
     private static List<RebarFluid> possibleInputFluids() {

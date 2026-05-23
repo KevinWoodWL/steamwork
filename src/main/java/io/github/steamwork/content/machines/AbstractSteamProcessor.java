@@ -170,6 +170,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
         currentRecipeKey = pdc.get(currentRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
         recipeTicksRemaining = pdc.getOrDefault(ticksPdcKey, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
+        try { getFacing(); } catch (IllegalStateException e) { setFacing(org.bukkit.block.BlockFace.SOUTH); }
         lockedRecipeKey = pdc.get(lockedRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
     }
 

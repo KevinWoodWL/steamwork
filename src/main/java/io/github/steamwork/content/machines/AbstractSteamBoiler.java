@@ -106,6 +106,13 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
 
     protected AbstractSteamBoiler(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
+        // Rebar 不会在 PDC 构造器里自动恢复朝向，但 getFacing() 会在 onMultiblockFormed → scheduleBlockTextureItemRefresh 里被调用。
+        // 如果旧存档没有方向数据就会 IllegalStateException，这里兜底设一个默认方向。
+        try {
+            getFacing();
+        } catch (IllegalStateException e) {
+            setFacing(BlockFace.SOUTH);
+        }
     }
 
     @Override
