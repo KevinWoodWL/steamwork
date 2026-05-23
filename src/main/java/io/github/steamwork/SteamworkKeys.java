@@ -138,4 +138,5 @@ public final class SteamworkKeys {
 
     // Steam logistics
     public static final NamespacedKey STEAM_COMPRESSOR = steamworkKey("steam_compressor");
+    public static final NamespacedKey PNEUMATIC_CARGO_HUB = steamworkKey("pneumatic_cargo_hub");
 }

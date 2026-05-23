@@ -1,0 +1,4 @@
+tick-interval: 20
+pressurized-buffer: 500.0
+steam-per-send: 5.0
+max-distance: 256

@@ -422,7 +422,18 @@ public final class CraftingRecipes {
         steamCompressor.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamCompressor);
 
-        // ===== 分析样本 =====
+        // 气动货运站：铜漏斗 + 精密阀门（密封气道）+ 加压蒸汽管路 + 黄铜壳体
+        ShapedRecipe pneumaticCargoHub = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_CARGO_HUB, SteamworkItems.PNEUMATIC_CARGO_HUB);
+        pneumaticCargoHub.shape("VDV", "BPB", "GRG");
+        pneumaticCargoHub.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
+        pneumaticCargoHub.setIngredient('D', Material.DROPPER);
+        pneumaticCargoHub.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        pneumaticCargoHub.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        pneumaticCargoHub.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        pneumaticCargoHub.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        pneumaticCargoHub.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticCargoHub);
         // 每种样本提供三条合成路径：Steamwork 自家材料（产量低、最便宜），
         // 原版材料（产量中等），Pylon 材料（产量最高）。覆盖玩家现有资源。
         // 产量按研究耗时缩放：矿物/有机 400t 是基准，流体 440t 略高，冶金 500t 最高。

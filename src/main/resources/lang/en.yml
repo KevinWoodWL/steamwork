@@ -474,6 +474,16 @@ item:
       <arrow> <attr>Output per cycle:</attr> %output%
     waila: "Steam Compressor | Steam %steam-bar% | Pressurized %pressurized-bar% | %state%"
 
+  pneumatic_cargo_hub:
+    name: "Pneumatic Cargo Hub"
+    lore: |-
+      <arrow> Launches items to a paired hub using pressurized steam
+      <arrow> Pair two hubs with an iron ingot in hand, right-click this hub then the target
+      <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
+      <arrow> <attr>Steam per send:</attr> %steam-per-send%
+      <arrow> <attr>Max distance:</attr> %max-distance%
+    waila: "Pneumatic Cargo Hub | Pressurized %pressurized-bar% | Target %target% | %state%"
+
   steam_precision_mill:
     name: "Steam Precision Mill"
     lore: |-
@@ -880,6 +890,20 @@ gui:
       active: "<green>Active"
       idle: "<gray>Idle"
 
+  pneumatic_cargo_hub:
+    title: "<dark_gray>Pneumatic Cargo Hub"
+    pressurized_gauge: "<#00cfff>Pressurized Steam"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    steam_cost: "<gray>Steam per send: <reset><#00cfff>%cost% mB"
+    target_none: "<red>No Target"
+    target_hint: "<gray>Hold iron ingot, right-click this hub then target hub"
+    target_set: "<lime>Target Linked"
+    target_coords: "<gray>Location: <white>%x%, %y%, %z%"
+    target_clear_hint: "<gray>RMB to unlink target"
+    status:
+      active: "<green>Sending"
+      idle: "<gray>Idle"
+
   steam_distillation_tower:
     title: "<dark_gray>Steam Distillation Tower"
     steam_gauge: "<aqua>Superheated Steam"
@@ -1026,6 +1050,12 @@ research:
   material_steam_armor: "Steam Armor"
 
 message:
+  pneumatic_cargo_hub:
+    binding_start: "<yellow>Hold iron ingot and right-click a target Pneumatic Cargo Hub to link"
+    binding_cancel: "<gray>Linking cancelled"
+    bound: "<green>Linked to hub at %x%, %y%, %z%"
+    unbound: "<yellow>Target unlinked"
+    too_far: "<red>Target is too far away"
   steam_arm:
     selecting_input: "<yellow>Selecting input target... LMB to add/remove | RMB to keep selection"
     selecting_input_range: "<yellow>Selecting input target... Range: %range% blocks. LMB to add/remove | RMB to keep selection"

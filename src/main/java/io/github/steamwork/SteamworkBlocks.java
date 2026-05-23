@@ -5,6 +5,7 @@ import io.github.steamwork.content.machines.InvarBoiler;
 import io.github.steamwork.content.machines.ManganeseSteelBoiler;
 import io.github.steamwork.content.machines.SteamArm;
 import io.github.steamwork.content.machines.SteamAssemblyBench;
+import io.github.steamwork.content.machines.PneumaticCargoHub;
 import io.github.steamwork.content.machines.SteamCompressor;
 import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.SteamGrinder;
@@ -47,6 +48,7 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.STEAM_SCIENCE_INTERFACE, Material.LECTERN, SteamScienceInterface.class);
         RebarBlock.register(SteamworkKeys.STEAM_HEATING_CHAMBER, Material.BLAST_FURNACE, SteamHeatingChamber.class);
         RebarBlock.register(SteamworkKeys.STEAM_COMPRESSOR, Material.DISPENSER, SteamCompressor.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_CARGO_HUB, Material.DISPENSER, PneumaticCargoHub.class);
         RebarBlock.register(SteamworkKeys.STEAM_DISTILLATION_TOWER, Material.CAULDRON, SteamDistillationTower.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_TOWER_SECTION, Material.LIGHT_GRAY_STAINED_GLASS, RebarBlock.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_CONDENSER, Material.CUT_COPPER, RebarBlock.class);

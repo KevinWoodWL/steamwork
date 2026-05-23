@@ -93,7 +93,7 @@ public final class SteamworkResearches {
 
     public static final Research MATERIAL_STEAM_LOGISTICS = new Research(
             steamworkKey("material_steam_logistics"), SteamworkItems.STEAM_COMPRESSOR, 80L,
-            SteamworkKeys.STEAM_COMPRESSOR);
+            SteamworkKeys.STEAM_COMPRESSOR, SteamworkKeys.PNEUMATIC_CARGO_HUB);
 
     public static final Research CHEMISTRY_DISTILLATION = new Research(
             steamworkKey("chemistry_distillation"), SteamworkItems.STEAM_DISTILLATION_TOWER, 40L,

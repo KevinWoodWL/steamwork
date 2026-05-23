@@ -17,6 +17,7 @@ import io.github.steamwork.content.machines.SteamScienceInterface;
 import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamSteepingVat;
 import io.github.steamwork.content.machines.SteamSterilizer;
+import io.github.steamwork.content.machines.PneumaticCargoHub;
 import io.github.steamwork.content.machines.SteamCompressor;
 import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.SteamWashingTrough;
@@ -143,6 +144,7 @@ public final class SteamworkItems {
 
     // Steam logistics
     public static final ItemStack STEAM_COMPRESSOR = ItemStackBuilder.rebar(Material.DISPENSER, SteamworkKeys.STEAM_COMPRESSOR).build();
+    public static final ItemStack PNEUMATIC_CARGO_HUB = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.PNEUMATIC_CARGO_HUB).build();
 
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
@@ -358,6 +360,7 @@ public final class SteamworkItems {
 
         // Steam logistics
         RebarItem.register(SteamCompressor.Item.class, STEAM_COMPRESSOR, SteamworkKeys.STEAM_COMPRESSOR);
+        RebarItem.register(PneumaticCargoHub.Item.class, PNEUMATIC_CARGO_HUB, SteamworkKeys.PNEUMATIC_CARGO_HUB);
 
         // Precision mill products
         RebarItem.register(RebarItem.class, PRECISION_GEAR);

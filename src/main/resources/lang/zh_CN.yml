@@ -481,6 +481,16 @@ item:
       <arrow> <attr>每周期输出:</attr> %output%
     waila: "蒸汽加压机 | 蒸汽 %steam-bar% | 加压蒸汽 %pressurized-bar% | %state%"
 
+  pneumatic_cargo_hub:
+    name: "气动货运站"
+    lore: |-
+      <arrow> 消耗加压蒸汽，将物品发射到配对的目标货运站
+      <arrow> 手持铁锭右键本站进入配对模式，再右键目标站完成绑定
+      <arrow> <attr>加压蒸汽缓存:</attr> %pressurized-buffer%
+      <arrow> <attr>每次发送耗气:</attr> %steam-per-send%
+      <arrow> <attr>最大距离:</attr> %max-distance%
+    waila: "气动货运站 | 加压蒸汽 %pressurized-bar% | 目标 %target% | %state%"
+
   steam_precision_mill:
     name: "蒸汽精密铣床"
     lore: |-
@@ -888,6 +898,20 @@ gui:
       active: "<green>运行中"
       idle: "<gray>待机"
 
+  pneumatic_cargo_hub:
+    title: "<dark_gray>气动货运站"
+    pressurized_gauge: "<#00cfff>加压蒸汽"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    steam_cost: "<gray>每次发送: <reset><#00cfff>%cost% mB"
+    target_none: "<red>未绑定目标"
+    target_hint: "<gray>手持铁锭右键本站，再右键目标站完成绑定"
+    target_set: "<lime>已绑定目标"
+    target_coords: "<gray>坐标: <white>%x%, %y%, %z%"
+    target_clear_hint: "<gray>右键可解除绑定"
+    status:
+      active: "<green>发送中"
+      idle: "<gray>待机"
+
   steam_distillation_tower:
     title: "<dark_gray>蒸汽精馏塔"
     steam_gauge: "<aqua>过热蒸汽"
@@ -1034,6 +1058,12 @@ research:
   material_steam_armor: "蒸汽护甲"
 
 message:
+  pneumatic_cargo_hub:
+    binding_start: "<yellow>手持铁锭右键另一台气动货运站以完成绑定"
+    binding_cancel: "<gray>绑定已取消"
+    bound: "<green>已绑定到坐标 %x%, %y%, %z% 的货运站"
+    unbound: "<yellow>已解除目标绑定"
+    too_far: "<red>目标距离超过上限"
   steam_arm:
     selecting_input: "<yellow>正在选择输入目标...<gray> 左键点击容器添加/移除 | 右键保留选择<yellow>"
     selecting_input_range: "<yellow>正在选择输入目标...<gray> 只能选择半径%range%格内的容器<yellow>。左键点击添加/移除 | 右键保留选择"
