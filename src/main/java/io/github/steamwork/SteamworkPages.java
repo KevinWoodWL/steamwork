@@ -145,6 +145,7 @@ public final class SteamworkPages {
         ARMOR.addItem(SteamworkItems.STEAM_BOOTS);
 
         ROOT.addPage(SteamworkItems.BRASS_FLOW_VALVE, STEAM_LOGISTICS);
+        STEAM_LOGISTICS.addItem(SteamworkItems.STEAM_COMPRESSOR);
 
         ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
 
@@ -152,5 +153,6 @@ public final class SteamworkPages {
 
         ROOT.addFluid(SteamworkFluids.STEAM);
         ROOT.addFluid(SteamworkFluids.SUPERHEATED_STEAM);
+        ROOT.addFluid(SteamworkFluids.PRESSURIZED_STEAM);
     }
 }

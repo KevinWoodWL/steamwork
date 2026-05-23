@@ -1,0 +1,5 @@
+tick-interval: 10
+steam-buffer: 2000.0
+pressurized-buffer: 1000.0
+steam-input-per-cycle: 20.0
+pressurized-output-per-cycle: 10.0

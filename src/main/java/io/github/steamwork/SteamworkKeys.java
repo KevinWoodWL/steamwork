@@ -135,4 +135,7 @@ public final class SteamworkKeys {
     public static final NamespacedKey MILLING_BLADE = steamworkKey("milling_blade");
     public static final NamespacedKey CATALYST_CORE = steamworkKey("catalyst_core");
     public static final NamespacedKey PRECISION_BEARING = steamworkKey("precision_bearing");
+
+    // Steam logistics
+    public static final NamespacedKey STEAM_COMPRESSOR = steamworkKey("steam_compressor");
 }

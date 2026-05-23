@@ -463,6 +463,17 @@ item:
       <arrow> <attr>Superheated buffer:</attr> %superheated-buffer%
     waila: "Steam Heating Chamber | %state%"
 
+  steam_compressor:
+    name: "Steam Compressor"
+    lore: |-
+      <arrow> Compresses regular steam into pressurized steam at a 2:1 ratio
+      <arrow> Required to power the pneumatic cargo system
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
+      <arrow> <attr>Input per cycle:</attr> %input%
+      <arrow> <attr>Output per cycle:</attr> %output%
+    waila: "Steam Compressor | Steam %steam-bar% | Pressurized %pressurized-bar% | %state%"
+
   steam_precision_mill:
     name: "Steam Precision Mill"
     lore: |-
@@ -859,6 +870,16 @@ gui:
       active: "<green>Active"
       idle: "<gray>Idle"
 
+  steam_compressor:
+    title: "<dark_gray>Steam Compressor"
+    ratio: "<gray>Compression: <aqua>%input%<gray>mB → <#00cfff>%output%<gray>mB pressurized"
+    input_gauge: "<aqua>Steam Input"
+    output_gauge: "<#00cfff>Pressurized Output"
+    fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
   steam_distillation_tower:
     title: "<dark_gray>Steam Distillation Tower"
     steam_gauge: "<aqua>Superheated Steam"
@@ -939,6 +960,7 @@ guide:
 fluid:
   steam: "<#d8edf0>Steam"
   superheated_steam: "<#fff4d8>Superheated Steam"
+  pressurized_steam: "<#00cfff>Pressurized Steam"
   molten_zinc: "<#c4d4e0>Molten Zinc"
   molten_brass: "<#e3d45c>Molten Brass"
   distilled_water: "<#c8e7ff>Distilled Water"
@@ -994,6 +1016,7 @@ research:
   material_advanced_ingots: "Advanced Ingots"
   material_advanced_boilers: "Advanced Boilers"
   chemistry_heating_chamber: "Steam Superheating"
+  material_steam_logistics: "Steam Logistics"
   chemistry_distillation: "Steam Distillation"
   precision_milling: "Precision Milling"
   # Tier 4 - endgame

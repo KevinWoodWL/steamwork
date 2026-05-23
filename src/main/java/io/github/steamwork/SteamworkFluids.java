@@ -24,6 +24,11 @@ public final class SteamworkFluids {
             Material.WHITE_CONCRETE
     ).addTag(FluidTemperature.HOT);
 
+    public static final RebarFluid PRESSURIZED_STEAM = new RebarFluid(
+            steamworkKey("pressurized_steam"),
+            Material.CYAN_CONCRETE_POWDER
+    ).addTag(FluidTemperature.HOT);
+
     public static final RebarFluid MOLTEN_ZINC = new RebarFluid(
             steamworkKey("molten_zinc"),
             Material.LIGHT_BLUE_TERRACOTTA
@@ -70,6 +75,9 @@ public final class SteamworkFluids {
 
         SUPERHEATED_STEAM.register();
         IngredientCalculator.addBaseIngredient(SUPERHEATED_STEAM);
+
+        PRESSURIZED_STEAM.register();
+        IngredientCalculator.addBaseIngredient(PRESSURIZED_STEAM);
 
         MOLTEN_ZINC.register();
         IngredientCalculator.addBaseIngredient(MOLTEN_ZINC);

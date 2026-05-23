@@ -91,6 +91,10 @@ public final class SteamworkResearches {
             steamworkKey("chemistry_heating_chamber"), SteamworkItems.STEAM_HEATING_CHAMBER, 20L,
             SteamworkKeys.STEAM_HEATING_CHAMBER);
 
+    public static final Research MATERIAL_STEAM_LOGISTICS = new Research(
+            steamworkKey("material_steam_logistics"), SteamworkItems.STEAM_COMPRESSOR, 80L,
+            SteamworkKeys.STEAM_COMPRESSOR);
+
     public static final Research CHEMISTRY_DISTILLATION = new Research(
             steamworkKey("chemistry_distillation"), SteamworkItems.STEAM_DISTILLATION_TOWER, 40L,
             SteamworkKeys.STEAM_DISTILLATION_TOWER, SteamworkKeys.DISTILLATION_TOWER_SECTION,
@@ -142,6 +146,7 @@ public final class SteamworkResearches {
         MATERIAL_ADVANCED_INGOTS.register();
         MATERIAL_ADVANCED_BOILERS.register();
         CHEMISTRY_HEATING_CHAMBER.register();
+        MATERIAL_STEAM_LOGISTICS.register();
         CHEMISTRY_DISTILLATION.register();
         PRECISION_MILLING.register();
 

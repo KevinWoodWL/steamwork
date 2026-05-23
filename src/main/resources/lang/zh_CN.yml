@@ -470,6 +470,17 @@ item:
       <arrow> <attr>过热蒸汽缓存:</attr> %superheated-buffer%
     waila: "蒸汽加热室 | %state%"
 
+  steam_compressor:
+    name: "蒸汽加压机"
+    lore: |-
+      <arrow> 将普通蒸汽加压为加压蒸汽，比例 2:1
+      <arrow> 为气动货运系统提供动力的前提设备
+      <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
+      <arrow> <attr>加压蒸汽缓存:</attr> %pressurized-buffer%
+      <arrow> <attr>每周期输入:</attr> %input%
+      <arrow> <attr>每周期输出:</attr> %output%
+    waila: "蒸汽加压机 | 蒸汽 %steam-bar% | 加压蒸汽 %pressurized-bar% | %state%"
+
   steam_precision_mill:
     name: "蒸汽精密铣床"
     lore: |-
@@ -867,6 +878,16 @@ gui:
       active: "<green>运行中"
       idle: "<gray>待机"
 
+  steam_compressor:
+    title: "<dark_gray>蒸汽加压机"
+    ratio: "<gray>加压: <aqua>%input%<gray>mB → <#00cfff>%output%<gray>mB 加压蒸汽"
+    input_gauge: "<aqua>蒸汽输入"
+    output_gauge: "<#00cfff>加压蒸汽输出"
+    fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
   steam_distillation_tower:
     title: "<dark_gray>蒸汽精馏塔"
     steam_gauge: "<aqua>过热蒸汽"
@@ -947,6 +968,7 @@ guide:
 fluid:
   steam: "<#d8edf0>蒸汽"
   superheated_steam: "<#fff4d8>过热蒸汽"
+  pressurized_steam: "<#00cfff>加压蒸汽"
   molten_zinc: "<#c4d4e0>熔融锌"
   molten_brass: "<#e3d45c>熔融黄铜"
   distilled_water: "<#c8e7ff>蒸馏水"
@@ -1002,6 +1024,7 @@ research:
   material_advanced_ingots: "高级合金锭"
   material_advanced_boilers: "高级锅炉"
   chemistry_heating_chamber: "蒸汽过热"
+  material_steam_logistics: "蒸汽货运"
   chemistry_distillation: "蒸汽精馏"
   precision_milling: "精密铣削"
   # Tier 4 - 终局

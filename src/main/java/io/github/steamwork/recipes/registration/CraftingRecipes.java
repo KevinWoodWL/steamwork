@@ -409,6 +409,19 @@ public final class CraftingRecipes {
         steamDistillationTower.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamDistillationTower);
 
+        // 蒸汽加压机：铁砧活塞腔 + 黄铜密封 + 阀芯 + 压力表，将普通蒸汽压缩为加压蒸汽。
+        ShapedRecipe steamCompressor = new ShapedRecipe(
+                SteamworkKeys.STEAM_COMPRESSOR, SteamworkItems.STEAM_COMPRESSOR);
+        steamCompressor.shape("VPV", "GAG", "BRB");
+        steamCompressor.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        steamCompressor.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamCompressor.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamCompressor.setIngredient('A', Material.PISTON);
+        steamCompressor.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        steamCompressor.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        steamCompressor.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamCompressor);
+
         // ===== 分析样本 =====
         // 每种样本提供三条合成路径：Steamwork 自家材料（产量低、最便宜），
         // 原版材料（产量中等），Pylon 材料（产量最高）。覆盖玩家现有资源。
