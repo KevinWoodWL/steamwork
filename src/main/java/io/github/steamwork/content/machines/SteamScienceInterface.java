@@ -358,7 +358,7 @@ public class SteamScienceInterface extends RebarBlock implements
                         fluidAmount(SteamworkFluids.STEAM),
                         fluidCapacity(SteamworkFluids.STEAM),
                         16,
-                        TextColor.fromHexString("#fff4d8")
+                        TextColor.fromHexString("#d8edf0")
                 )),
                 RebarArgument.of("points", storedPoints),
                 RebarArgument.of("state", Component.translatable("steamwork.state." + currentReason.key()))
