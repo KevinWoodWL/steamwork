@@ -22,6 +22,9 @@ public final class SteamworkPages {
     public static final SimpleStaticGuidePage STEAM_MACHINES = new SimpleStaticGuidePage(steamworkKey("steam_machines"));
     public static final SimpleStaticGuidePage EQUIPMENT = new SimpleStaticGuidePage(steamworkKey("equipment"));
     public static final SimpleStaticGuidePage ARMOR = new SimpleStaticGuidePage(steamworkKey("armor"));
+    public static final SimpleStaticGuidePage STEAM_LOGISTICS = new SimpleStaticGuidePage(steamworkKey("steam_logistics"));
+    public static final SimpleStaticGuidePage STEAM_AUTOMATION = new SimpleStaticGuidePage(steamworkKey("steam_automation"));
+    public static final SimpleStaticGuidePage STEAM_DISTILLATION = new SimpleStaticGuidePage(steamworkKey("steam_distillation"));
 
     public static void initialize() {
         RebarGuide.getRootPage().addButton(new AddonPageButton(Steamwork.getInstance(), ROOT));
@@ -140,6 +143,12 @@ public final class SteamworkPages {
         ARMOR.addItem(SteamworkItems.STEAM_CHESTPLATE);
         ARMOR.addItem(SteamworkItems.STEAM_LEGGINGS);
         ARMOR.addItem(SteamworkItems.STEAM_BOOTS);
+
+        ROOT.addPage(SteamworkItems.BRASS_FLOW_VALVE, STEAM_LOGISTICS);
+
+        ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
+
+        ROOT.addPage(SteamworkItems.STEAM_DISTILLATION_TOWER, STEAM_DISTILLATION);
 
         ROOT.addFluid(SteamworkFluids.STEAM);
         ROOT.addFluid(SteamworkFluids.SUPERHEATED_STEAM);

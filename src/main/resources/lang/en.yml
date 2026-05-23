@@ -917,6 +917,12 @@ guide:
       name: "Steam Armor"
     steam_machines:
       name: "Steam Machines"
+    steam_logistics:
+      name: "Steam Logistics"
+    steam_automation:
+      name: "Steam Automation"
+    steam_distillation:
+      name: "Steam Distillation"
   page:
     root: "<white>蒸汽工坊"
     metals: "Ingots & Metals"
@@ -926,6 +932,9 @@ guide:
     equipment: "Steam Weapons/Tools"
     armor: "Steam Armor"
     steam_machines: "Steam Machines"
+    steam_logistics: "Steam Logistics"
+    steam_automation: "Steam Automation"
+    steam_distillation: "Steam Distillation"
 
 fluid:
   steam: "<#d8edf0>Steam"

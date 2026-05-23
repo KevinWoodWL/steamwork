@@ -925,6 +925,12 @@ guide:
       name: "蒸汽盔甲"
     steam_machines:
       name: "蒸汽机械"
+    steam_logistics:
+      name: "蒸汽货运"
+    steam_automation:
+      name: "蒸汽自动化"
+    steam_distillation:
+      name: "蒸汽蒸馏"
   page:
     root: "<white>蒸汽工坊"
     metals: "锭材与金属"
@@ -934,6 +940,9 @@ guide:
     equipment: "蒸汽武器/工具"
     armor: "蒸汽盔甲"
     steam_machines: "蒸汽机械"
+    steam_logistics: "蒸汽货运"
+    steam_automation: "蒸汽自动化"
+    steam_distillation: "蒸汽蒸馏"
 
 fluid:
   steam: "<#d8edf0>蒸汽"
