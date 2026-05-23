@@ -473,10 +473,11 @@ item:
   steam_precision_mill:
     name: "蒸汽精密铣床"
     lore: |-
-      <arrow> 用高压蒸汽驱动高速铣削，把合金锭加工为精密机械零件
+      <arrow> 向高速铣头持续注入过热蒸汽，将合金锭铣削为精密机械零件
+      <arrow> 需要蒸汽加热室提供过热蒸汽
       <arrow> 典型产物：精密齿轮、精密阀门、散热片
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
-    waila: "蒸汽精密铣床 | 蒸汽 %steam-bar% | %state%"
+      <arrow> <attr>过热蒸汽缓冲：</attr> %steam-buffer%
+    waila: "蒸汽精密铣床 | 过热蒸汽 %steam-bar% | %state%"
 
   # 精密铣床产物
   precision_gear:
@@ -788,8 +789,8 @@ gui:
 
   steam_precision_mill:
     title: "<dark_gray>蒸汽精密铣床"
-    steam_gauge: "<aqua>蒸汽储量"
-    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<gold>过热蒸汽储量"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
     progress: "<green>铣削进度"
     progress_bar: "<reset>%bar% <gray>%percent%"
     status:

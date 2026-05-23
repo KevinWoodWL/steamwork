@@ -160,7 +160,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         setFacing(context.getFacing());
         setTickInterval(tickInterval);
         createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
-        createFluidBuffer(SteamworkFluids.STEAM, steamBuffer, true, false);
+        createFluidBuffer(steamFluid(), steamBuffer, true, false);
     }
 
     protected AbstractSteamProcessor(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
@@ -185,6 +185,33 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     protected abstract @NotNull String translationPrefix();
 
     // ===== 可覆盖 hook =====
+
+    /**
+     * 本机器消耗的流体类型。默认为普通蒸汽；需要过热蒸汽的子类（如精密铣床）覆盖此方法。
+     */
+    protected @NotNull io.github.pylonmc.rebar.fluid.RebarFluid steamFluid() {
+        return SteamworkFluids.STEAM;
+    }
+
+    /**
+     * 蒸汽量仪的颜色主题。返回四个 Material，对应 [75%以上, 50%以上, 25%以上, 低于25%]。
+     * 默认为蓝色系（普通蒸汽）；过热蒸汽机器覆盖为橙红色系。
+     */
+    protected @NotNull Material[] steamGaugeMaterials() {
+        return new Material[]{
+            Material.LIGHT_BLUE_STAINED_GLASS,
+            Material.CYAN_STAINED_GLASS,
+            Material.BLUE_STAINED_GLASS,
+            Material.GRAY_STAINED_GLASS
+        };
+    }
+
+    /**
+     * WAILA 蒸汽条的颜色（hex 字符串）。默认淡蓝色；过热蒸汽机器覆盖为橙色。
+     */
+    protected @NotNull String steamBarColor() {
+        return "#d8edf0";
+    }
 
     /** 默认仅喷云雾粒子；洗选类可加水泡粒子。 */
     protected void spawnProcessingParticles(int count) {
@@ -290,7 +317,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             }
 
             double steamPerTick = recipe.steamCost() / recipe.timeTicks();
-            int progressTicks = Math.min(tickInterval, (int) Math.floor(fluidAmount(SteamworkFluids.STEAM) / steamPerTick));
+            int progressTicks = Math.min(tickInterval, (int) Math.floor(fluidAmount(steamFluid()) / steamPerTick));
 
             if (progressTicks <= 0) {
                 // 蒸汽不足 —— 进入"中断"状态，超过宽限期后开始回退进度。
@@ -300,7 +327,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                 return;
             }
 
-            removeFluid(SteamworkFluids.STEAM, steamPerTick * progressTicks);
+            removeFluid(steamFluid(), steamPerTick * progressTicks);
             progressRecipe(progressTicks);
             currentReason = StopReason.PROCESSING;
             interruptionTicks = 0; // 有进度就清零中断计数
@@ -368,7 +395,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private @NotNull StopReason tryStartRecipe() {
         if (isInputEmpty()) return StopReason.READY;
 
-        double currentSteam = fluidAmount(SteamworkFluids.STEAM);
+        double currentSteam = fluidAmount(steamFluid());
 
         // 锁定模式：只尝试该配方，失败时返回具体原因。
         if (lockedRecipeKey != null) {
@@ -565,7 +592,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             if (stack == null || stack.isEmpty()) continue;
 
             for (R recipe : recipes) {
-                if (fluidAmount(SteamworkFluids.STEAM) < recipe.steamCost()) continue;
+                if (fluidAmount(steamFluid()) < recipe.steamCost()) continue;
                 if (recipe.ingredient().matchesIgnoringAmount(stack) && canStoreOutput(recipe)) {
                     return recipe;
                 }
@@ -600,10 +627,10 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.STEAM),
-                        fluidCapacity(SteamworkFluids.STEAM),
+                        fluidAmount(steamFluid()),
+                        fluidCapacity(steamFluid()),
                         16,
-                        TextColor.fromHexString("#d8edf0")
+                        TextColor.fromHexString(steamBarColor())
                 )),
                 // %state% 占位符现在显示具体停摆原因（5 种之一），不再只是 active/idle 二值。
                 // 旧的 steamwork.state.active/idle 翻译键保留，给锅炉/涡轮等没有 StopReason 的方块继续用。
@@ -657,14 +684,15 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private final class SteamGaugeItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            double steam = fluidAmount(SteamworkFluids.STEAM);
-            double cap = fluidCapacity(SteamworkFluids.STEAM);
+            double steam = fluidAmount(steamFluid());
+            double cap = fluidCapacity(steamFluid());
             int pct = (int) Math.round(100.0 * steam / Math.max(1.0, cap));
 
-            Material mat = pct >= 75 ? Material.LIGHT_BLUE_STAINED_GLASS
-                    : pct >= 50 ? Material.CYAN_STAINED_GLASS
-                    : pct >= 25 ? Material.BLUE_STAINED_GLASS
-                    : Material.GRAY_STAINED_GLASS;
+            Material[] mats = steamGaugeMaterials();
+            Material mat = pct >= 75 ? mats[0]
+                    : pct >= 50 ? mats[1]
+                    : pct >= 25 ? mats[2]
+                    : mats[3];
 
             return ItemStackBuilder.of(mat)
                     .name(noItalic(Component.translatable(translationPrefix() + ".steam_gauge")))

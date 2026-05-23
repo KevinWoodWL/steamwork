@@ -466,10 +466,11 @@ item:
   steam_precision_mill:
     name: "Steam Precision Mill"
     lore: |-
-      <arrow> High-speed steam-driven milling that cuts alloy ingots into precision parts
+      <arrow> Feeds superheated steam into a high-speed milling head to cut alloy ingots into precision parts
+      <arrow> Requires a Steam Heating Chamber to supply superheated steam
       <arrow> Typical outputs: precision gears, valves, heat sinks
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-    waila: "Steam Precision Mill | Steam %steam-bar% | %state%"
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Steam Precision Mill | Superheated Steam %steam-bar% | %state%"
 
   # Precision mill products
   precision_gear:
@@ -780,8 +781,8 @@ gui:
 
   steam_precision_mill:
     title: "<dark_gray>Steam Precision Mill"
-    steam_gauge: "<aqua>Steam Storage"
-    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
     progress: "<green>Milling Progress"
     progress_bar: "<reset>%bar% <gray>%percent%"
     status:

@@ -1,9 +1,12 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
+import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.recipes.SteamMillingRecipe;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -13,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * 蒸汽精密铣床 —— 把合金锭铣削成精密零部件。
+ * 使用过热蒸汽（而非普通蒸汽），需要先建蒸汽加热室才能供能。
  * 典型输入：因瓦锭 → 精密齿轮、钨锭 → 精密阀门、硬铝锭 → 散热片。
  */
 public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecipe> {
@@ -46,7 +50,29 @@ public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecip
         return "steamwork.gui.steam_precision_mill";
     }
 
-    /** 铣削时喷细小火花（CRIT）+ 金属碎屑（ITEM_SLIME）+ 低频金属切削声。 */
+    @Override
+    protected @NotNull RebarFluid steamFluid() {
+        return SteamworkFluids.SUPERHEATED_STEAM;
+    }
+
+    /** 过热蒸汽量仪：橙→红色系，直观反映高温状态。 */
+    @Override
+    protected @NotNull Material[] steamGaugeMaterials() {
+        return new Material[]{
+            Material.ORANGE_STAINED_GLASS,
+            Material.YELLOW_STAINED_GLASS,
+            Material.RED_STAINED_GLASS,
+            Material.GRAY_STAINED_GLASS
+        };
+    }
+
+    /** WAILA 蒸汽条颜色：橙色，对应过热蒸汽。 */
+    @Override
+    protected @NotNull String steamBarColor() {
+        return "#ff8c00";
+    }
+
+    /** 铣削时喷细小火花（CRIT）+ 金属碎屑（DUST）+ 低频金属切削声。 */
     @Override
     protected void spawnProcessingParticles(int count) {
         Location loc = getBlock().getLocation().add(0.5, 0.8, 0.5);
