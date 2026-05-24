@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.steamwork.content.machines.PneumaticCargoHub;
+import io.github.steamwork.content.machines.PneumaticInput;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -40,6 +41,9 @@ public final class PneumaticUtils {
      * @return 成功推入返回 {@code true}；目标不存在或空间不足返回 {@code false}
      */
     public static boolean tryPushItem(@NotNull Block block, @NotNull ItemStack item) {
+        // 过滤检查：如果目标是汽动输入端，先校验黑/白名单
+        if (BlockStorage.get(block) instanceof PneumaticInput input && !input.isAllowed(item)) return false;
+
         ItemStack single = item.clone().asQuantity(1);
 
         // 1. Rebar 虚拟背包机器（优先 —— 某些机器底块本身是 Dispenser/Dropper 等 Container）
@@ -64,6 +68,9 @@ public final class PneumaticUtils {
      * @return 实际成功推入的数量
      */
     public static int tryPushItems(@NotNull Block block, @NotNull ItemStack item, int count) {
+        // 过滤检查：如果目标是汽动输入端，先校验黑/白名单
+        if (BlockStorage.get(block) instanceof PneumaticInput input && !input.isAllowed(item)) return 0;
+
         VirtualInventory vi = resolveInputInventory(block);
         if (vi != null) {
             int space = 0;
@@ -89,6 +96,9 @@ public final class PneumaticUtils {
 
     /** 判断目标方块的输入槽是否有空间放入指定物品（至少 1 个）。 */
     public static boolean hasSpace(@NotNull Block block, @NotNull ItemStack item) {
+        // 过滤检查：如果目标是汽动输入端，先校验黑/白名单
+        if (BlockStorage.get(block) instanceof PneumaticInput input && !input.isAllowed(item)) return false;
+
         VirtualInventory vi = resolveInputInventory(block);
         if (vi != null) return hasViSpace(vi, item.clone().asQuantity(1));
 

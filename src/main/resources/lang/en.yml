@@ -998,6 +998,12 @@ gui:
       active: "<green>Launching"
       idle: "<gray>Idle"
 
+  pneumatic_input:
+    title: "<dark_gray>Pneumatic Input"
+    whitelist: "<white>Whitelist"
+    blacklist: "<gray>Blacklist"
+    mode_hint: "<gray>Click to toggle filter mode"
+
   pneumatic_output:
     title: "<dark_gray>Pneumatic Output"
     extract_title: "<#ffd166>Send Amount"
