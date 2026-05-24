@@ -85,7 +85,7 @@ public class SteamCatapult extends RebarBlock implements
 
         setActive(true);
 
-        from.getWorld().playSound(from, Sound.BLOCK_PISTON_EXTEND, 0.8f, 0.6f);
+        from.getWorld().playSound(from, Sound.ENTITY_LLAMA_SPIT, 0.8f, 0.6f);
         from.getWorld().spawnParticle(Particle.CLOUD, from, 8, 0.15, 0.05, 0.15, 0.06);
 
         ItemDisplay display = from.getWorld().spawn(from, ItemDisplay.class, d -> {

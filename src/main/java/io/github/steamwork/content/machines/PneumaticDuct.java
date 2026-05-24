@@ -57,8 +57,16 @@ public class PneumaticDuct extends RebarBlock implements
     };
 
     private static final float SINGLE_SCALE = 0.35F;
-    private static final float LINE_THICKNESS = 0.3495F;
     private static final double HALF_SEGMENT = 0.5D;
+
+    /**
+     * Three slightly-different thicknesses assigned round-robin to face segments.
+     * Prevents Z-fighting where multiple segments originate from the same duct centre
+     * and their bounding boxes overlap in the joint area.
+     * 0.35F is intentionally excluded — that value is reserved for blocks that create
+     * seamless visual connections to CargoDuct (matching CargoDuct's own convention).
+     */
+    private static final float[] LINE_THICKNESSES = {0.3495F, 0.3490F, 0.3485F};
     private static final double DISPLAY_SCAN_RADIUS = 1.25D;
     private static final int MAX_CONNECTIONS = 3;
     private static final NamespacedKey DISPLAY_MARKER_KEY = steamworkKey("pneumatic_duct_display");
@@ -215,8 +223,8 @@ public class PneumaticDuct extends RebarBlock implements
         if (connectedFaces.isEmpty()) {
             newUuids.add(createSingleDisplay().getUniqueId());
         } else {
-            for (BlockFace face : connectedFaces) {
-                newUuids.add(createFaceDisplay(face).getUniqueId());
+            for (int i = 0; i < connectedFaces.size(); i++) {
+                newUuids.add(createFaceDisplay(connectedFaces.get(i), i).getUniqueId());
             }
         }
 
@@ -243,7 +251,8 @@ public class PneumaticDuct extends RebarBlock implements
         return display;
     }
 
-    private @NotNull ItemDisplay createFaceDisplay(@NotNull BlockFace face) {
+    private @NotNull ItemDisplay createFaceDisplay(@NotNull BlockFace face, int index) {
+        float thickness = LINE_THICKNESSES[index % LINE_THICKNESSES.length];
         Location center = getBlock().getLocation().toCenterLocation();
         Vector3d from = new Vector3d();
         Vector3d to = new Vector3d(face.getModX() * HALF_SEGMENT, face.getModY() * HALF_SEGMENT, face.getModZ() * HALF_SEGMENT);
@@ -253,8 +262,8 @@ public class PneumaticDuct extends RebarBlock implements
                 .transformation(new LineBuilder()
                         .from(from)
                         .to(to)
-                        .thickness(LINE_THICKNESS)
-                        .extraLength(LINE_THICKNESS)
+                        .thickness(thickness)
+                        .extraLength(thickness)
                         .build())
                 .persistent(true)
                 .build(center);

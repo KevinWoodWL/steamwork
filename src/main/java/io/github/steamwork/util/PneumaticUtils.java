@@ -123,21 +123,35 @@ public final class PneumaticUtils {
     // ── 从原版容器抽取 ────────────────────────────────────────────────────────
 
     /**
-     * 从原版容器中抽取最多 {@code maxCount} 个物品到目标 VI。
-     * 每次取 1 个，按槽位顺序遍历。
+     * 从原版容器或 Rebar 虚拟背包机器中抽取最多 {@code maxCount} 个物品到目标 VI。
+     *
+     * <p>支持：
+     * <ul>
+     *   <li>{@link PneumaticCargoHub} → 走其 {@code sendInventory}</li>
+     *   <li>其他 {@link RebarVirtualInventoryBlock} → 走 {@code "output"} VI（若存在）</li>
+     *   <li>原版容器（箱子、漏斗等）</li>
+     * </ul>
+     * </p>
      *
      * @return 实际抽取数量
      */
     public static int pullFromContainer(@NotNull Block source, @NotNull VirtualInventory target, int maxCount) {
-        if (!(source.getState() instanceof org.bukkit.block.Container c)) return 0;
         MachineUpdateReason reason = new MachineUpdateReason();
+
+        // 1. Rebar 虚拟背包机器
+        VirtualInventory sourceVi = resolveExtractInventory(source);
+        if (sourceVi != null) {
+            return pullFromVI(sourceVi, target, maxCount, reason);
+        }
+
+        // 2. 原版容器
+        if (!(source.getState() instanceof org.bukkit.block.Container c)) return 0;
         org.bukkit.inventory.Inventory inv = c.getInventory();
         int pulled = 0;
         for (int i = 0; i < inv.getSize() && pulled < maxCount; i++) {
             ItemStack s = inv.getItem(i);
             if (s == null || s.getType().isAir()) continue;
             int want = Math.min(s.getAmount(), maxCount - pulled);
-            // 计算 VI 对该物品剩余空间
             int space = 0;
             for (ItemStack vs : target.getItems()) {
                 if (vs == null || vs.getType().isAir()) space += s.getMaxStackSize();
@@ -151,6 +165,37 @@ public final class PneumaticUtils {
             } else {
                 s.setAmount(s.getAmount() - toTake);
                 inv.setItem(i, s);
+            }
+            pulled += toTake;
+        }
+        return pulled;
+    }
+
+    /**
+     * 从虚拟背包中抽取物品到目标 VI（内部复用逻辑）。
+     */
+    private static int pullFromVI(@NotNull VirtualInventory source, @NotNull VirtualInventory target,
+                                  int maxCount, @NotNull MachineUpdateReason reason) {
+        ItemStack[] items = source.getItems();
+        int pulled = 0;
+        for (int i = 0; i < items.length && pulled < maxCount; i++) {
+            ItemStack s = items[i];
+            if (s == null || s.getType().isAir()) continue;
+            int want = Math.min(s.getAmount(), maxCount - pulled);
+            int space = 0;
+            for (ItemStack ts : target.getItems()) {
+                if (ts == null || ts.getType().isAir()) space += s.getMaxStackSize();
+                else if (ts.isSimilar(s)) space += Math.max(0, s.getMaxStackSize() - ts.getAmount());
+            }
+            int toTake = Math.min(want, space);
+            if (toTake <= 0) continue;
+            target.addItem(reason, s.clone().asQuantity(toTake));
+            if (toTake >= s.getAmount()) {
+                source.setItem(reason, i, null);
+            } else {
+                ItemStack reduced = s.clone();
+                reduced.setAmount(s.getAmount() - toTake);
+                source.setItem(reason, i, reduced);
             }
             pulled += toTake;
         }
@@ -211,5 +256,17 @@ public final class PneumaticUtils {
         if (rb instanceof PneumaticCargoHub hub) return hub.getSendInventory();
         if (!(rb instanceof RebarVirtualInventoryBlock vib)) return null;
         return vib.getVirtualInventories().get("input");
+    }
+
+    /**
+     * 从方块解析出用于抽取物品的 {@link VirtualInventory}（与 resolveInputInventory 对称）。
+     *
+     * <p>对汽动货运站走特例（{@code "send"} 槽），其他 Rebar 机器按 {@code "output"} 槽查找。</p>
+     */
+    private static @Nullable VirtualInventory resolveExtractInventory(@NotNull Block block) {
+        RebarBlock rb = BlockStorage.get(block);
+        if (rb instanceof PneumaticCargoHub hub) return hub.getSendInventory();
+        if (!(rb instanceof RebarVirtualInventoryBlock vib)) return null;
+        return vib.getVirtualInventories().get("output");
     }
 }
