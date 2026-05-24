@@ -1004,6 +1004,12 @@ gui:
       active: "<green>弹射中"
       idle: "<gray>待机"
 
+  pneumatic_input:
+    title: "<dark_gray>汽动输入端"
+    whitelist: "<white>白名单"
+    blacklist: "<gray>黑名单"
+    mode_hint: "<gray>点击切换过滤模式"
+
   pneumatic_output:
     title: "<dark_gray>汽动输出端"
     extract_title: "<#ffd166>单次发送量"

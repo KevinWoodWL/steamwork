@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.block.base.RebarBreakHandler;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarEntityCulledBlock;
 import io.github.pylonmc.rebar.block.base.RebarFacadeBlock;
+import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
@@ -14,24 +15,35 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
+import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
+import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkKeys;
 import io.github.steamwork.util.PneumaticEndpointSupport;
 import io.github.steamwork.util.PneumaticUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.xenondevs.invui.Click;
+import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.inventory.VirtualInventory;
+import xyz.xenondevs.invui.item.AbstractItem;
+import xyz.xenondevs.invui.item.ItemProvider;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,24 +59,45 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  *   <li>本机每 tick 把缓冲中的物品推入 {@link #getFacing()} 方向的相邻容器/机器</li>
  * </ol>
  * 无需消耗蒸汽，是纯粹的终点中继。</p>
+ *
+ * <p>可选黑/白名单过滤：玩家在 GUI 中放入最多 3 个物品作为过滤模板，并切换模式。
+ * 网络推送时（{@link PneumaticUtils}）会先调用 {@link #isAllowed(ItemStack)} 检查过滤。</p>
  */
 public class PneumaticInput extends RebarBlock implements
         RebarBreakHandler,
         RebarDirectionalBlock,
         RebarEntityCulledBlock,
         RebarFacadeBlock,
+        RebarGuiBlock,
         RebarTickingBlock,
         RebarVirtualInventoryBlock {
 
+    // ── 过滤模式 ──────────────────────────────────────────────────────────────
+
+    public enum FilterMode { WHITELIST, BLACKLIST }
+
+    // ── 常量 ──────────────────────────────────────────────────────────────────
+
     private static final NamespacedKey DISPLAY_MARKER_KEY = steamworkKey("pneumatic_input_display");
     private static final NamespacedKey DISPLAY_OWNER_KEY  = steamworkKey("pneumatic_input_display_owner");
+    private static final NamespacedKey FILTER_MODE_KEY    = steamworkKey("pin_filter_mode");
 
     private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
+
+    // ── 状态字段 ──────────────────────────────────────────────────────────────
 
     /** 缓冲背包：网络将物品推入此处，本机再转发到相邻容器。 */
     private final VirtualInventory bufferInventory = new VirtualInventory(4);
 
+    /** 过滤槽：最多放 3 种物品作为黑/白名单模板（仅检查 Material，忽略 NBT）。 */
+    private final VirtualInventory filterInventory = new VirtualInventory(3);
+
+    /** 当前过滤模式，默认白名单（空过滤 = 全通）。 */
+    private FilterMode filterMode = FilterMode.WHITELIST;
+
     private volatile List<UUID> displayUuids = List.of();
+
+    private final FilterModeItem filterModeItem = new FilterModeItem();
 
     // ── 物品描述 ──────────────────────────────────────────────────────────────
 
@@ -79,6 +112,7 @@ public class PneumaticInput extends RebarBlock implements
     public PneumaticInput(@NotNull Block block, @NotNull BlockCreateContext context) {
         super(block, context);
         setFacing(PneumaticEndpointSupport.resolvePlacementFacing(context));
+        filterMode = FilterMode.WHITELIST;
         setTickInterval(tickInterval);
     }
 
@@ -86,7 +120,16 @@ public class PneumaticInput extends RebarBlock implements
     public PneumaticInput(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
         try { getFacing(); } catch (IllegalStateException e) { setFacing(BlockFace.SOUTH); }
+        int modeOrdinal = pdc.getOrDefault(FILTER_MODE_KEY, PersistentDataType.INTEGER, 0);
+        filterMode = (modeOrdinal >= 0 && modeOrdinal < FilterMode.values().length)
+                ? FilterMode.values()[modeOrdinal]
+                : FilterMode.WHITELIST;
         setTickInterval(tickInterval);
+    }
+
+    @Override
+    public void write(@NotNull PersistentDataContainer pdc) {
+        pdc.set(FILTER_MODE_KEY, PersistentDataType.INTEGER, filterMode.ordinal());
     }
 
     @Override
@@ -125,6 +168,32 @@ public class PneumaticInput extends RebarBlock implements
     @Override
     public @NotNull Iterable<UUID> getCulledEntityIds() {
         return displayUuids;
+    }
+
+    // ── 过滤 ──────────────────────────────────────────────────────────────────
+
+    /**
+     * 判断某物品是否允许被网络推入本输入端。
+     *
+     * <ul>
+     *   <li>过滤槽全空 → 始终允许</li>
+     *   <li>白名单：物品 Material 与任意过滤槽匹配 → 允许</li>
+     *   <li>黑名单：物品 Material 与任意过滤槽匹配 → 拒绝</li>
+     * </ul>
+     */
+    public boolean isAllowed(@NotNull ItemStack item) {
+        boolean hasFilter = false;
+        boolean matched = false;
+        for (ItemStack f : filterInventory.getItems()) {
+            if (f == null || f.getType().isAir()) continue;
+            hasFilter = true;
+            if (f.getType() == item.getType()) {
+                matched = true;
+                break;
+            }
+        }
+        if (!hasFilter) return true;
+        return filterMode == FilterMode.WHITELIST ? matched : !matched;
     }
 
     // ── 显示实体 ──────────────────────────────────────────────────────────────
@@ -198,11 +267,61 @@ public class PneumaticInput extends RebarBlock implements
 
     @Override
     public @NotNull Map<@NotNull String, @NotNull VirtualInventory> getVirtualInventories() {
-        return Map.of("input", bufferInventory);
+        // 使用 LinkedHashMap 保证顺序；onBreak 会自动 drop 所有 VI 中的物品
+        Map<String, VirtualInventory> map = new LinkedHashMap<>();
+        map.put("input", bufferInventory);
+        map.put("filter", filterInventory);
+        return map;
     }
+
+    // ── GUI ───────────────────────────────────────────────────────────────────
+
+    @Override
+    public @NotNull Gui createGui() {
+        return Gui.builder()
+                .setStructure("# # f f f # m # #")
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('f', filterInventory)
+                .addIngredient('m', filterModeItem)
+                .build();
+    }
+
+    @Override
+    public @NotNull Component getGuiTitle() {
+        return noItalic(Component.translatable("steamwork.gui.pneumatic_input.title"));
+    }
+
+    // ── WAILA ─────────────────────────────────────────────────────────────────
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey());
+    }
+
+    // ── GUI 物品 ──────────────────────────────────────────────────────────────
+
+    private final class FilterModeItem extends AbstractItem {
+
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            boolean isWhitelist = filterMode == FilterMode.WHITELIST;
+            Material mat = isWhitelist ? Material.WHITE_STAINED_GLASS_PANE : Material.BLACK_STAINED_GLASS_PANE;
+            String modeKey = isWhitelist
+                    ? "steamwork.gui.pneumatic_input.whitelist"
+                    : "steamwork.gui.pneumatic_input.blacklist";
+            return ItemStackBuilder.of(mat)
+                    .name(noItalic(Component.translatable(modeKey)))
+                    .lore(noItalic(Component.translatable("steamwork.gui.pneumatic_input.mode_hint")));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            filterMode = (filterMode == FilterMode.WHITELIST) ? FilterMode.BLACKLIST : FilterMode.WHITELIST;
+            notifyWindows();
+        }
+    }
+
+    private static @NotNull Component noItalic(@NotNull Component c) {
+        return c.decoration(TextDecoration.ITALIC, false);
     }
 }
