@@ -1,0 +1,4 @@
+tick-interval: 10
+pressurized-buffer: 500.0
+pressurized-per-item: 2.0
+default-extract: 8

@@ -1,0 +1,5 @@
+tick-interval: 10
+pressurized-buffer: 2000.0
+steam-per-item: 3.0
+items-per-tick: 8
+max-distance: 256

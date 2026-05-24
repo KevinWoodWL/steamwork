@@ -39,6 +39,7 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
         // 改为显式注册以替代 SteamArm 之前的 static {} 块注册方式。
         SteamArm.registerGlobalListeners();
         SteamPress.registerGlobalListeners();
+        io.github.steamwork.content.machines.PneumaticCargoHub.registerGlobalListeners();
 
         SteamworkResearches.initialize();
         SteamworkRecipes.initialize();

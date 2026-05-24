@@ -1,0 +1,4 @@
+tick-interval: 10
+pressurized-buffer: 500.0
+steam-per-item: 2.0
+items-per-tick: 4

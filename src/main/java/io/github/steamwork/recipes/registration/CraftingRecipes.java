@@ -7,6 +7,7 @@ import io.github.steamwork.SteamworkKeys;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
@@ -81,7 +82,7 @@ public final class CraftingRecipes {
         ShapelessRecipe nichromeDustCrude = new ShapelessRecipe(
                 steamworkKey("nichrome_dust_crude"), SteamworkItems.NICHROME_DUST);
         nichromeDustCrude.addIngredient(4, Material.BLAZE_POWDER);
-        nichromeDustCrude.addIngredient(Material.IRON_INGOT);
+        nichromeDustCrude.addIngredient(new RecipeChoice.ExactChoice(new ItemStack(Material.IRON_INGOT)));
         nichromeDustCrude.addIngredient(rebarChoice(SteamworkItems.ZINC_INGOT));
         nichromeDustCrude.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPELESS.addRecipe(nichromeDustCrude);
@@ -409,31 +410,114 @@ public final class CraftingRecipes {
         steamDistillationTower.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamDistillationTower);
 
-        // 蒸汽加压机：铁砧活塞腔 + 黄铜密封 + 阀芯 + 压力表，将普通蒸汽压缩为加压蒸汽。
+        // 蒸汽压缩机：镍铬合金（耐热压缩腔）+ 蒸汽马达 + 阀芯 + 压力表 + 黄铜 + 密封环
+        // 形状：VPV / NAN / BRB  （N=镍铬锭，A=活塞，V=阀芯）
         ShapedRecipe steamCompressor = new ShapedRecipe(
                 SteamworkKeys.STEAM_COMPRESSOR, SteamworkItems.STEAM_COMPRESSOR);
-        steamCompressor.shape("VPV", "GAG", "BRB");
+        steamCompressor.shape("VPV", "NAN", "BRB");
         steamCompressor.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
         steamCompressor.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
-        steamCompressor.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamCompressor.setIngredient('N', rebarChoice(SteamworkItems.NICHROME_INGOT));
         steamCompressor.setIngredient('A', Material.PISTON);
         steamCompressor.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
         steamCompressor.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         steamCompressor.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamCompressor);
 
-        // 气动货运站：铜漏斗 + 精密阀门（密封气道）+ 加压蒸汽管路 + 黄铜壳体
+        // 气动货运站：精密阀门 + 因瓦合金（低膨胀管路）+ 黄铜过滤器 + 压力表 + 密封环
+        // 形状：VFV / IPB / GRG  （I=因瓦锭，F=黄铜过滤器）
         ShapedRecipe pneumaticCargoHub = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_CARGO_HUB, SteamworkItems.PNEUMATIC_CARGO_HUB);
-        pneumaticCargoHub.shape("VDV", "BPB", "GRG");
+        pneumaticCargoHub.shape("VFV", "IPB", "GRG");
         pneumaticCargoHub.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
-        pneumaticCargoHub.setIngredient('D', Material.DROPPER);
-        pneumaticCargoHub.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        pneumaticCargoHub.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FILTER));
+        pneumaticCargoHub.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
         pneumaticCargoHub.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        pneumaticCargoHub.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
         pneumaticCargoHub.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
         pneumaticCargoHub.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         pneumaticCargoHub.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticCargoHub);
+
+        // 蒸汽弹射器：精密阀门 + 镍铬合金（弹射腔耐热壁）+ 发射器 + 活塞 + 垫圈 + 密封环
+        // 形状：VNV / DAD / GRG  （N=镍铬锭，D=发射器，A=活塞）
+        ShapedRecipe steamCatapult = new ShapedRecipe(
+                SteamworkKeys.STEAM_CATAPULT, SteamworkItems.STEAM_CATAPULT);
+        steamCatapult.shape("VNV", "DAD", "GRG");
+        steamCatapult.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
+        steamCatapult.setIngredient('N', rebarChoice(SteamworkItems.NICHROME_INGOT));
+        steamCatapult.setIngredient('D', Material.DISPENSER);
+        steamCatapult.setIngredient('A', Material.PISTON);
+        steamCatapult.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamCatapult.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        steamCatapult.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamCatapult);
+
+        // 蒸汽分拣机：因瓦合金（低膨胀分拣轨道）+ 黄铜过滤器 + 蒸汽马达 + 流量阀 + 黄铜 + 垫圈
+        // 形状：FIF / BMB / GBG  （I=因瓦锭，F=黄铜过滤器，M=蒸汽马达）
+        ShapedRecipe steamSorter = new ShapedRecipe(
+                SteamworkKeys.STEAM_SORTER, SteamworkItems.STEAM_SORTER);
+        steamSorter.shape("FIF", "BMB", "GBG");
+        steamSorter.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FILTER));
+        steamSorter.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        steamSorter.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        steamSorter.setIngredient('M', rebarChoice(SteamworkItems.STEAM_MOTOR));
+        steamSorter.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamSorter.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamSorter);
+
+        // 气动导管：因瓦合金（低膨胀管壁）+ 黄铜密封环，8个产量（管段量大，不能太贵）
+        // 形状：RIR / I I / RIR  （I=因瓦锭，R=密封环）
+        ShapedRecipe pneumaticDuct = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_DUCT, SteamworkItems.PNEUMATIC_DUCT.clone().asQuantity(8));
+        pneumaticDuct.shape("RIR", "I I", "RIR");
+        pneumaticDuct.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        pneumaticDuct.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        pneumaticDuct.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticDuct);
+
+        // 气动分发器：精密阀门 + 因瓦合金 + 黄铜过滤器 + 蒸汽马达 + 垫圈 + 镍铬合金
+        // 形状：VFV / NMN / GIG  （V=精密阀门，F=黄铜过滤器，N=镍铬锭，M=蒸汽马达，G=垫圈，I=因瓦锭）
+        ShapedRecipe pneumaticDistributor = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_DISTRIBUTOR, SteamworkItems.PNEUMATIC_DISTRIBUTOR);
+        pneumaticDistributor.shape("VFV", "NMN", "GIG");
+        pneumaticDistributor.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
+        pneumaticDistributor.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FILTER));
+        pneumaticDistributor.setIngredient('N', rebarChoice(SteamworkItems.NICHROME_INGOT));
+        pneumaticDistributor.setIngredient('M', rebarChoice(SteamworkItems.STEAM_MOTOR));
+        pneumaticDistributor.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        pneumaticDistributor.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        pneumaticDistributor.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticDistributor);
+
+        // 气动输入端（插入器）：无动力中继，接收网络推送后插入目标容器。
+        // 因瓦合金（低膨胀管壁）+ 分流阀（单向止回）+ 原版漏斗（插入头）+ 黄铜密封环
+        // 形状：RIR / FHF / RIR  （R=密封环 x4，I=因瓦锭 x2，F=分流阀 x2，H=漏斗）
+        ShapedRecipe pneumaticInput = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_INPUT, SteamworkItems.PNEUMATIC_INPUT);
+        pneumaticInput.shape("RIR", "FHF", "RIR");
+        pneumaticInput.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        pneumaticInput.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        pneumaticInput.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
+        pneumaticInput.setIngredient('H', Material.HOPPER);
+        pneumaticInput.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticInput);
+
+        // 气动输出端（提取器）：消耗蒸汽，从相邻容器抽取物品推入导管网络。
+        // 因瓦合金（低膨胀管壁）+ 压力表（监控抽取气压）+ 阀芯（精密流量控制）
+        // + 蒸汽马达（驱动抽吸机构）+ 橡胶垫圈（密封）+ 黄铜密封环（管接头）
+        // 形状：IPI / VMV / GRG  （I=因瓦锭，P=压力表，V=阀芯，M=蒸汽马达，G=垫圈，R=密封环）
+        ShapedRecipe pneumaticOutput = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_OUTPUT, SteamworkItems.PNEUMATIC_OUTPUT);
+        pneumaticOutput.shape("IPI", "VMV", "GRG");
+        pneumaticOutput.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        pneumaticOutput.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        pneumaticOutput.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        pneumaticOutput.setIngredient('M', rebarChoice(SteamworkItems.STEAM_MOTOR));
+        pneumaticOutput.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        pneumaticOutput.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        pneumaticOutput.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticOutput);
         // 每种样本提供三条合成路径：Steamwork 自家材料（产量低、最便宜），
         // 原版材料（产量中等），Pylon 材料（产量最高）。覆盖玩家现有资源。
         // 产量按研究耗时缩放：矿物/有机 400t 是基准，流体 440t 略高，冶金 500t 最高。

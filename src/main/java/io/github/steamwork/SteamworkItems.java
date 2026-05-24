@@ -18,7 +18,13 @@ import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamSteepingVat;
 import io.github.steamwork.content.machines.SteamSterilizer;
 import io.github.steamwork.content.machines.PneumaticCargoHub;
+import io.github.steamwork.content.machines.PneumaticDistributor;
+import io.github.steamwork.content.machines.PneumaticDuct;
+import io.github.steamwork.content.machines.PneumaticInput;
+import io.github.steamwork.content.machines.PneumaticOutput;
+import io.github.steamwork.content.machines.SteamCatapult;
 import io.github.steamwork.content.machines.SteamCompressor;
+import io.github.steamwork.content.machines.SteamSorter;
 import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.SteamWashingTrough;
 import io.github.steamwork.content.machines.TungstenBoiler;
@@ -37,6 +43,7 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.RebarUtils;
 import io.github.steamwork.util.SteamCharge;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import java.lang.reflect.Field;
@@ -143,8 +150,20 @@ public final class SteamworkItems {
     public static final ItemStack STEAM_PRECISION_MILL = ItemStackBuilder.rebar(Material.GRINDSTONE, SteamworkKeys.STEAM_PRECISION_MILL).build();
 
     // Steam logistics
-    public static final ItemStack STEAM_COMPRESSOR = ItemStackBuilder.rebar(Material.DISPENSER, SteamworkKeys.STEAM_COMPRESSOR).build();
-    public static final ItemStack PNEUMATIC_CARGO_HUB = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.PNEUMATIC_CARGO_HUB).build();
+    public static final ItemStack STEAM_COMPRESSOR = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.STEAM_COMPRESSOR).build();
+    public static final ItemStack PNEUMATIC_CARGO_HUB = ItemStackBuilder.rebar(Material.DISPENSER, SteamworkKeys.PNEUMATIC_CARGO_HUB).build();
+    public static final ItemStack STEAM_CATAPULT = ItemStackBuilder.rebar(Material.CUT_COPPER_SLAB, SteamworkKeys.STEAM_CATAPULT).build();
+    public static final ItemStack STEAM_SORTER = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.STEAM_SORTER).build();
+    public static final ItemStack PNEUMATIC_DUCT = ItemStackBuilder.rebar(Material.STRUCTURE_VOID, SteamworkKeys.PNEUMATIC_DUCT)
+            .set(DataComponentTypes.ITEM_MODEL, Material.GRAY_CONCRETE.getKey())
+            .build();
+    public static final ItemStack PNEUMATIC_INPUT = ItemStackBuilder.rebar(Material.STRUCTURE_VOID, SteamworkKeys.PNEUMATIC_INPUT)
+            .set(DataComponentTypes.ITEM_MODEL, Material.LIME_TERRACOTTA.getKey())
+            .build();
+    public static final ItemStack PNEUMATIC_OUTPUT = ItemStackBuilder.rebar(Material.STRUCTURE_VOID, SteamworkKeys.PNEUMATIC_OUTPUT)
+            .set(DataComponentTypes.ITEM_MODEL, Material.RED_TERRACOTTA.getKey())
+            .build();
+    public static final ItemStack PNEUMATIC_DISTRIBUTOR = ItemStackBuilder.rebar(Material.DISPENSER, SteamworkKeys.PNEUMATIC_DISTRIBUTOR).build();
 
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
@@ -361,6 +380,12 @@ public final class SteamworkItems {
         // Steam logistics
         RebarItem.register(SteamCompressor.Item.class, STEAM_COMPRESSOR, SteamworkKeys.STEAM_COMPRESSOR);
         RebarItem.register(PneumaticCargoHub.Item.class, PNEUMATIC_CARGO_HUB, SteamworkKeys.PNEUMATIC_CARGO_HUB);
+        RebarItem.register(SteamCatapult.Item.class, STEAM_CATAPULT, SteamworkKeys.STEAM_CATAPULT);
+        RebarItem.register(SteamSorter.Item.class, STEAM_SORTER, SteamworkKeys.STEAM_SORTER);
+        RebarItem.register(PneumaticDuct.Item.class, PNEUMATIC_DUCT, SteamworkKeys.PNEUMATIC_DUCT);
+        RebarItem.register(PneumaticInput.Item.class, PNEUMATIC_INPUT, SteamworkKeys.PNEUMATIC_INPUT);
+        RebarItem.register(PneumaticOutput.Item.class, PNEUMATIC_OUTPUT, SteamworkKeys.PNEUMATIC_OUTPUT);
+        RebarItem.register(PneumaticDistributor.Item.class, PNEUMATIC_DISTRIBUTOR, SteamworkKeys.PNEUMATIC_DISTRIBUTOR);
 
         // Precision mill products
         RebarItem.register(RebarItem.class, PRECISION_GEAR);

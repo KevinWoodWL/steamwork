@@ -1,4 +1,6 @@
-tick-interval: 20
-pressurized-buffer: 500.0
-steam-per-send: 5.0
-max-distance: 256
+tick-interval: 200
+pressurized-buffer: 3000.0
+steam-per-item: 3.0
+max-distance: 32
+flight-ticks: 30
+default-batch-size: 16

@@ -147,6 +147,12 @@ public final class SteamworkPages {
         ROOT.addPage(SteamworkItems.BRASS_FLOW_VALVE, STEAM_LOGISTICS);
         STEAM_LOGISTICS.addItem(SteamworkItems.STEAM_COMPRESSOR);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_CARGO_HUB);
+        STEAM_LOGISTICS.addItem(SteamworkItems.STEAM_CATAPULT);
+        STEAM_LOGISTICS.addItem(SteamworkItems.STEAM_SORTER);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_DUCT);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_INPUT);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_OUTPUT);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_DISTRIBUTOR);
 
         ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
 

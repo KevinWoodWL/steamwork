@@ -477,12 +477,81 @@ item:
   pneumatic_cargo_hub:
     name: "Pneumatic Cargo Hub"
     lore: |-
-      <arrow> Launches items to a paired hub using pressurized steam
-      <arrow> Pair two hubs with an iron ingot in hand, right-click this hub then the target
+      <arrow> Multiblock base — requires a Steam Catapult placed directly on top
+      <arrow> A ghost slab projection shows where to place the catapult when missing
+      <arrow> The current first item is shown as a hologram on top of the catapult
+      <arrow> Sends a batch of items every <attr>%interval%s</attr>; batch size (1–64) is adjusted in the GUI
+      <arrow> Target hub must also have a catapult on top to receive items
+      <arrow> Open the GUI and click the target slot to enter selection mode, then left-click the target hub in the world
       <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
-      <arrow> <attr>Steam per send:</attr> %steam-per-send%
+      <arrow> <attr>Steam per item:</attr> %steam-per-item%
       <arrow> <attr>Max distance:</attr> %max-distance%
-    waila: "Pneumatic Cargo Hub | Pressurized %pressurized-bar% | Target %target% | %state%"
+    waila: "Pneumatic Cargo Hub | Pressurized %pressurized-bar% | Catapult %catapult% | Target %target% | Batch %batch% | %state%"
+
+  steam_catapult:
+    name: "Steam Catapult"
+    lore: |-
+      <arrow> Upper module of the Pneumatic Cargo Hub multiblock — place directly on top of a hub
+      <arrow> Performs the parabolic launch animation when the hub below sends a batch
+    waila: "Steam Catapult | %state%"
+
+  steam_sorter:
+    name: "Steam Sorter"
+    lore: |-
+      <arrow> Consumes <white>pressurized steam</white> to push items into the pneumatic network
+      <arrow> Each face must connect to a <white>Pneumatic Output</white> or a <white>Pneumatic Input</white> via ducts
+      <arrow> Set filter slots to restrict which items go to which face
+      <arrow> Faces with no filter accept any item (round-robin)
+      <arrow> <attr>Pressurized steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per item:</attr> %steam-per-item%
+      <arrow> <attr>Max items per tick:</attr> %items-per-tick%
+    waila: "Steam Sorter | Pressurized %steam-bar% | %state%"
+
+  steam_discharge_hopper:
+    name: "Steam Discharge Hopper"
+    lore: |-
+      <arrow> Draws items from the container above and pushes them into the container below
+      <arrow> Far faster than a vanilla hopper — speed scales with available steam
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per item:</attr> %steam-per-item%
+      <arrow> <attr>Max items per tick:</attr> %items-per-tick%
+    waila: "Steam Discharge Hopper | Steam %steam-bar% | %state%"
+
+  pneumatic_duct:
+    name: "Pneumatic Duct"
+    lore: |-
+      <arrow> A pressurised pipe segment connecting catapults, sorters and hoppers
+      <arrow> Place between machines to form a cargo network
+      <arrow> Connects automatically to adjacent duct segments and logistics machines
+    waila: "Pneumatic Duct"
+
+  pneumatic_input:
+    name: "Pneumatic Input"
+    lore: |-
+      <arrow> Network endpoint — receives items pushed by the pneumatic network and inserts them into the adjacent container
+      <arrow> No steam required; passively relays buffered items each tick
+    waila: "Pneumatic Input"
+
+  pneumatic_output:
+    name: "Pneumatic Output"
+    lore: |-
+      <arrow> Network entry adapter with a built-in <white>9-slot storage</white>
+      <arrow> Each tick automatically pulls items from the adjacent source-side container into storage
+      <arrow> Every <white>%interval% ticks</white> sends up to <white>%extract% items</white> from storage into the network
+      <arrow> Compatible with vanilla containers, Rebar machines, and <white>Pneumatic Input</white> via ducts
+    waila: "Pneumatic Output | %extract% items every %interval% ticks | %state%"
+
+  pneumatic_distributor:
+    name: "Pneumatic Distributor"
+    lore: |-
+      <arrow> Consumes pressurized steam to route items into the pneumatic network
+      <arrow> Each face must connect to a <white>Pneumatic Output</white> or a <white>Pneumatic Input</white> via ducts
+      <arrow> Supports 1–6 output directions (N/S/E/W/Up/Down) — toggle each in the GUI
+      <arrow> Multiple enabled directions are served round-robin
+      <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
+      <arrow> <attr>Steam per item:</attr> %steam-per-item%
+      <arrow> <attr>Max items per tick:</attr> %items-per-tick%
+    waila: "Pneumatic Distributor | Pressurized %pressurized-bar% | %enabled-directions% direction(s) on | %state%"
 
   steam_precision_mill:
     name: "Steam Precision Mill"
@@ -543,6 +612,7 @@ item:
       <arrow> Reduces internal friction and improves transmission efficiency
 
   steam_distillation_tower:
+    name: "Steam Distillation Tower"
     lore: |-
       <arrow> A modular tower that distills materials with superheated steam
       <arrow> Stack 1-4 sections + condenser cap; more sections unlock complex recipes
@@ -894,14 +964,98 @@ gui:
     title: "<dark_gray>Pneumatic Cargo Hub"
     pressurized_gauge: "<#00cfff>Pressurized Steam"
     fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
-    steam_cost: "<gray>Steam per send: <reset><#00cfff>%cost% mB"
+    steam_cost: "<gray>Per send: <reset><#00cfff>%cost% mB <gray>(<reset><#00cfff>%per-item% <gray>× %batch%)"
+    interval: "<gray>Interval: <reset><white>%seconds%s"
+    batch_title: "<#ffd166>Batch Size"
+    batch_amount: "<gray>Per send: <white>%amount% <gray>/ <white>%max%"
+    batch_cost: "<gray>Steam this send: <#00cfff>%cost% mB"
+    batch_increase: "<gray>LMB <white>+1<gray>, Shift+LMB <white>+10"
+    batch_decrease: "<gray>RMB <white>-1<gray>, Shift+RMB <white>-10"
     target_none: "<red>No Target"
-    target_hint: "<gray>Hold iron ingot, right-click this hub then target hub"
+    target_set: "<green>Target Linked"
+    target_selecting: "<yellow>Selecting target..."
+    target_coords: "<gray>Location: <white>%x%, %y%, %z%"
+    target_range: "<gray>Max range: <white>%range% blocks"
+    target_clear_hint: "<gray>RMB to unlink target"
+    select_hint: "<gray>LMB to select target hub"
+    selecting_hint: "Left-click another hub to bind, right-click this hub to cancel"
+    status:
+      active: "<green>Sending"
+      idle: "<gray>Idle"
+      no_catapult: "<red>No catapult above"
+
+  steam_catapult:
+    title: "<dark_gray>Steam Catapult"
+    pressurized_gauge: "<#00cfff>Pressurized Steam"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    cost_hint: "<gray>%per-block% mB/block (min %min% mB)"
+    target_none: "<red>No Target"
+    target_hint: "<gray>Hold iron ingot, right-click catapult then target container"
     target_set: "<lime>Target Linked"
     target_coords: "<gray>Location: <white>%x%, %y%, %z%"
     target_clear_hint: "<gray>RMB to unlink target"
     status:
-      active: "<green>Sending"
+      active: "<green>Launching"
+      idle: "<gray>Idle"
+
+  pneumatic_output:
+    title: "<dark_gray>Pneumatic Output"
+    extract_title: "<#ffd166>Send Amount"
+    extract_amount: "<gray>Per send: <white>%amount% <gray>/ <white>%max%"
+    extract_increase: "<gray>LMB <white>+1<gray>, Shift+LMB <white>+10"
+    extract_decrease: "<gray>RMB <white>-1<gray>, Shift+RMB <white>-10"
+    tick_interval_title: "<#ffd166>Send Interval"
+    tick_interval: "<gray>Current interval: <white>%interval% ticks <gray>/ <white>%max%"
+    tick_interval_increase: "<gray>LMB <white>+1<gray>, Shift+LMB <white>+10"
+    tick_interval_decrease: "<gray>RMB <white>-1<gray>, Shift+RMB <white>-10"
+
+  pneumatic_distributor:
+    title: "<dark_gray>Pneumatic Distributor"
+    pressurized_gauge: "<#00cfff>Pressurized Steam"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    throughput: "<gray>%per-item% mB/item · max %max-items%/tick"
+    direction:
+      north: "<aqua>North"
+      south: "<red>South"
+      east: "<green>East"
+      west: "<white>West"
+      up: "<yellow>Up"
+      down: "<gold>Down"
+    toggle:
+      enabled: "<green>Direction Enabled"
+      disabled: "<red>Direction Disabled"
+      hint: "<gray>Click to toggle distribution on this face"
+    tick_interval_title: "<#ffd166>Tick Interval"
+    tick_interval: "<gray>Current interval: <white>%interval% tick <gray>/ <white>%max%"
+    tick_interval_increase: "<gray>LMB <white>+1<gray>, Shift+LMB <white>+10"
+    tick_interval_decrease: "<gray>RMB <white>-1<gray>, Shift+RMB <white>-10"
+    status:
+      active: "<green>Distributing"
+      idle: "<gray>Idle"
+
+  steam_sorter:
+    title: "<dark_gray>Steam Sorter"
+    steam_gauge: "<#00cfff>Pressurized Steam"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    throughput: "<gray>%per-item% mB/item · max %max-items%/tick"
+    filter:
+      north: "<aqua>North Filter"
+      south: "<red>South Filter"
+      east: "<green>East Filter"
+      west: "<white>West Filter"
+      up: "<yellow>Top Filter"
+      down: "<gold>Bottom Filter"
+      hint: "<gray>LMB slot to set filter; LMB with empty hand to clear"
+      empty: "<gray>Not set (accepts any item)"
+      set: "<white>Filter: %item%"
+      ghost_hint: "<dark_gray>LMB: set filter from cursor / main hand"
+      ghost_hint_clear: "<dark_gray>LMB: change filter | LMB empty hand: clear"
+    tick_interval_title: "<#ffd166>Tick Interval"
+    tick_interval: "<gray>Current interval: <white>%interval% tick <gray>/ <white>%max%"
+    tick_interval_increase: "<gray>LMB <white>+1<gray>, Shift+LMB <white>+10"
+    tick_interval_decrease: "<gray>RMB <white>-1<gray>, Shift+RMB <white>-10"
+    status:
+      active: "<green>Sorting"
       idle: "<gray>Idle"
 
   steam_distillation_tower:
@@ -1014,6 +1168,7 @@ state:
   no_sample: "<gray>No sample loaded"
   point_storage_full: "<yellow>Point buffer full"
   structure_missing: "<red>Structure missing"
+  missing: "<red>Missing"
 
 research_type:
   material: "Material"
@@ -1051,11 +1206,21 @@ research:
 
 message:
   pneumatic_cargo_hub:
-    binding_start: "<yellow>Hold iron ingot and right-click a target Pneumatic Cargo Hub to link"
-    binding_cancel: "<gray>Linking cancelled"
+    selecting: "<yellow>Selection mode — left-click target hub within %range% blocks, right-click this hub to cancel"
+    selection_cancelled: "<gray>Target selection cancelled"
     bound: "<green>Linked to hub at %x%, %y%, %z%"
     unbound: "<yellow>Target unlinked"
     too_far: "<red>Target is too far away"
+    invalid_target: "<red>Target must be a Pneumatic Cargo Hub"
+    target_no_catapult: "<red>Target hub needs a Steam Catapult on top"
+  steam_catapult:
+    binding_start: "<yellow>Hold iron ingot and right-click a target container to link"
+    binding_cancel: "<gray>Linking cancelled"
+    bound: "<green>Linked to container at %x%, %y%, %z%"
+    unbound: "<yellow>Target unlinked"
+    too_far: "<red>Target is too far away"
+    not_container: "<red>Target must be a container"
+  pneumatic_distributor: {}
   steam_arm:
     selecting_input: "<yellow>Selecting input target... LMB to add/remove | RMB to keep selection"
     selecting_input_range: "<yellow>Selecting input target... Range: %range% blocks. LMB to add/remove | RMB to keep selection"

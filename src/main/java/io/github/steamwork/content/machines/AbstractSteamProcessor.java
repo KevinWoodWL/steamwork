@@ -5,8 +5,10 @@ import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
 import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
+import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -34,8 +36,11 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
@@ -72,6 +77,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
         RebarGuiBlock,
+        RebarLogisticBlock,
         RebarTickingBlock,
         RebarVirtualInventoryBlock,
         SteamBoostable {
@@ -241,6 +247,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     @Override
     public void postInitialise() {
         outputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
+        createLogisticGroup("input", LogisticGroupType.INPUT, inputInventory);
+        createLogisticGroup("output", LogisticGroupType.OUTPUT, outputInventory);
     }
 
     @Override
@@ -300,6 +308,9 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     @Override
     public void tick() {
+        pullFromHopperAbove();
+        pushToContainerBelow();
+
         if (isProcessing()) {
             R recipe = getCurrentRecipe();
             if (recipe == null) {
@@ -600,6 +611,61 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             }
         }
         return null;
+    }
+
+    // ===== 原版漏斗 / 容器交互 =====
+
+    /**
+     * 从机器正上方的漏斗中拉取一个物品到输入槽。
+     * 每次 tick 最多转移一个物品，模拟原版漏斗节奏。
+     * Pylon CargoInserter 优先级更高，但二者并行工作互不干扰。
+     */
+    private void pullFromHopperAbove() {
+        Block above = getBlock().getRelative(BlockFace.UP);
+        if (!(above.getState() instanceof Hopper hopperState)) return;
+        Inventory hopperInv = hopperState.getInventory();
+        for (int i = 0; i < hopperInv.getSize(); i++) {
+            ItemStack stack = hopperInv.getItem(i);
+            if (stack == null || stack.isEmpty()) continue;
+            ItemStack single = stack.clone();
+            single.setAmount(1);
+            if (!inputInventory.canHold(single)) continue;
+            inputInventory.addItem(new MachineUpdateReason(), single);
+            if (stack.getAmount() <= 1) {
+                hopperInv.setItem(i, null);
+            } else {
+                stack.setAmount(stack.getAmount() - 1);
+                hopperInv.setItem(i, stack);
+            }
+            return; // 每 tick 最多转移一个
+        }
+    }
+
+    /**
+     * 将输出槽中的一个物品推入机器正下方的容器（包括漏斗）。
+     * 每次 tick 最多转移一个物品。
+     */
+    private void pushToContainerBelow() {
+        Block below = getBlock().getRelative(BlockFace.DOWN);
+        if (!(below.getState() instanceof Container containerState)) return;
+        Inventory targetInv = containerState.getInventory();
+        for (int i = 0; i < outputInventory.getSize(); i++) {
+            ItemStack stack = outputInventory.getItem(i);
+            if (stack == null || stack.isEmpty()) continue;
+            ItemStack single = stack.clone();
+            single.setAmount(1);
+            Map<Integer, ItemStack> leftover = targetInv.addItem(single);
+            if (leftover.isEmpty()) {
+                if (stack.getAmount() <= 1) {
+                    outputInventory.setItem(new MachineUpdateReason(), i, null);
+                } else {
+                    ItemStack updated = stack.clone();
+                    updated.setAmount(stack.getAmount() - 1);
+                    outputInventory.setItem(new MachineUpdateReason(), i, updated);
+                }
+                return; // 每 tick 最多转移一个
+            }
+        }
     }
 
     // ===== 视觉 / 状态 =====

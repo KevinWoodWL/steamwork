@@ -30,7 +30,8 @@ public final class SteamworkResearches {
             SteamworkKeys.BRASS_DISTILLATION_TUBE, SteamworkKeys.BRASS_FILTER,
             SteamworkKeys.BRASS_SIEVE, SteamworkKeys.BRASS_FLOW_VALVE,
             SteamworkKeys.BRASS_FAN_BLADE, SteamworkKeys.BRASS_VALVE_CORE,
-            SteamworkKeys.BRASS_SEAL_RING);
+            SteamworkKeys.BRASS_SEAL_RING,
+            SteamworkKeys.NICHROME_DUST, SteamworkKeys.NICHROME_INGOT);
 
     public static final Research BIOLOGY_PLANT_PROCESSING = new Research(
             steamworkKey("biology_plant_processing"), SteamworkItems.PLANT_FIBER, 12L,
@@ -80,7 +81,7 @@ public final class SteamworkResearches {
             SteamworkKeys.MANGANESE_STEEL_INGOT, SteamworkKeys.MANGANESE_BRONZE_INGOT,
             SteamworkKeys.INVAR_BLOCK, SteamworkKeys.DURALUMIN_BLOCK, SteamworkKeys.TUNGSTEN_BLOCK,
             SteamworkKeys.MANGANESE_STEEL_BLOCK, SteamworkKeys.MANGANESE_BRONZE_BLOCK,
-            SteamworkKeys.NICHROME_DUST, SteamworkKeys.NICHROME_INGOT, SteamworkKeys.HEATING_COIL);
+            SteamworkKeys.HEATING_COIL);
 
     public static final Research MATERIAL_ADVANCED_BOILERS = new Research(
             steamworkKey("material_advanced_boilers"), SteamworkItems.INVAR_BOILER, 100L,
@@ -92,8 +93,12 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_HEATING_CHAMBER);
 
     public static final Research MATERIAL_STEAM_LOGISTICS = new Research(
-            steamworkKey("material_steam_logistics"), SteamworkItems.STEAM_COMPRESSOR, 80L,
-            SteamworkKeys.STEAM_COMPRESSOR, SteamworkKeys.PNEUMATIC_CARGO_HUB);
+            steamworkKey("material_steam_logistics"), SteamworkItems.STEAM_COMPRESSOR, 35L,
+            SteamworkKeys.STEAM_COMPRESSOR,
+            SteamworkKeys.PNEUMATIC_DUCT, SteamworkKeys.PNEUMATIC_OUTPUT, SteamworkKeys.PNEUMATIC_INPUT,
+            SteamworkKeys.PNEUMATIC_CARGO_HUB,
+            SteamworkKeys.STEAM_CATAPULT, SteamworkKeys.STEAM_SORTER,
+            SteamworkKeys.PNEUMATIC_DISTRIBUTOR);
 
     public static final Research CHEMISTRY_DISTILLATION = new Research(
             steamworkKey("chemistry_distillation"), SteamworkItems.STEAM_DISTILLATION_TOWER, 40L,

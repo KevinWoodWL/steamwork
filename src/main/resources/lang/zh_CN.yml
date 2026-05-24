@@ -474,7 +474,7 @@ item:
     name: "蒸汽加压机"
     lore: |-
       <arrow> 将普通蒸汽加压为加压蒸汽，比例 2:1
-      <arrow> 为气动货运系统提供动力的前提设备
+      <arrow> 为汽动货运系统提供动力的前提设备
       <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
       <arrow> <attr>加压蒸汽缓存:</attr> %pressurized-buffer%
       <arrow> <attr>每周期输入:</attr> %input%
@@ -482,14 +482,81 @@ item:
     waila: "蒸汽加压机 | 蒸汽 %steam-bar% | 加压蒸汽 %pressurized-bar% | %state%"
 
   pneumatic_cargo_hub:
-    name: "气动货运站"
+    name: "汽动货运站"
     lore: |-
-      <arrow> 消耗加压蒸汽，将物品发射到配对的目标货运站
-      <arrow> 手持铁锭右键本站进入配对模式，再右键目标站完成绑定
+      <arrow> 多方块结构底座——正上方必须放置一台蒸汽弹射器
+      <arrow> 缺少弹射器时会以半透明台阶投影提示放置位置
+      <arrow> 当前首件物品会以全息方式悬浮在弹射器顶端
+      <arrow> 每 <attr>%interval%s</attr> 批量发货一次；批量大小（1–64）在 GUI 中调整
+      <arrow> 目标货运站的上方也必须有弹射器才能接收物品
+      <arrow> 打开 GUI 点击目标槽进入选择模式，再在世界中左键点击目标货运站完成绑定
       <arrow> <attr>加压蒸汽缓存:</attr> %pressurized-buffer%
-      <arrow> <attr>每次发送耗气:</attr> %steam-per-send%
+      <arrow> <attr>每件耗气:</attr> %steam-per-item%
       <arrow> <attr>最大距离:</attr> %max-distance%
-    waila: "气动货运站 | 加压蒸汽 %pressurized-bar% | 目标 %target% | %state%"
+    waila: "汽动货运站 | 加压蒸汽 %pressurized-bar% | 弹射器 %catapult% | 目标 %target% | 批量 %batch% | %state%"
+
+  steam_catapult:
+    name: "蒸汽弹射器"
+    lore: |-
+      <arrow> 汽动货运站多方块结构的上方组件——必须放置在货运站正上方
+      <arrow> 当下方货运站发货时，由本机执行抛物线弹射动画
+    waila: "蒸汽弹射器 | %state%"
+
+  steam_sorter:
+    name: "蒸汽分拣机"
+    lore: |-
+      <arrow> 消耗<white>加压蒸汽</white>，将输入槽物品按方向分发到汽动网络
+      <arrow> 每个面只能对接<white>汽动输出端</white>或通过导管连接<white>汽动输入端</white>
+      <arrow> 过滤槽（6格）对应六个面：有过滤时只推对应类型，无过滤时轮询空位
+      <arrow> <attr>加压蒸汽缓存:</attr> %steam-buffer%
+      <arrow> <attr>每个物品耗气:</attr> %steam-per-item%
+      <arrow> <attr>每 tick 最多推送:</attr> %items-per-tick% 个
+    waila: "蒸汽分拣机 | 加压蒸汽 %steam-bar% | %state%"
+
+  steam_discharge_hopper:
+    name: "蒸汽卸料斗"
+    lore: |-
+      <arrow> 从正上方容器吸取物品，推入正下方容器
+      <arrow> 速度远超原版漏斗，消耗蒸汽维持气压
+      <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
+      <arrow> <attr>每个物品耗气:</attr> %steam-per-item%
+      <arrow> <attr>每 tick 最多转移:</attr> %items-per-tick% 个
+    waila: "蒸汽卸料斗 | 蒸汽 %steam-bar% | %state%"
+
+  pneumatic_duct:
+    name: "汽动导管"
+    lore: |-
+      <arrow> 连接弹射器、分拣机与卸料斗的加压气管段
+      <arrow> 相邻导管段与货运机器自动连通，形成货运网络
+    waila: "汽动导管"
+
+  pneumatic_input:
+    name: "汽动输入端"
+    lore: |-
+      <arrow> 汽动导管网络的终点——接收网络推送的物品并插入朝向方向的相邻容器
+      <arrow> 无需消耗蒸汽，自动转发内部缓冲中的物品
+    waila: "汽动输入端"
+
+  pneumatic_output:
+    name: "汽动输出端"
+    lore: |-
+      <arrow> 汽动网络的<white>入口适配器</white>，内置 <white>9 格存储仓</white>
+      <arrow> 每 tick 自动从来源侧相邻容器补货到存储仓
+      <arrow> 每 <white>%interval% tick</white> 从存储仓取出最多 <white>%extract% 个</white>物品批量发送到网络
+      <arrow> 可直连原版容器、Rebar 机器或通过导管连接<white>汽动输入端</white>
+    waila: "汽动输出端 | 每 %interval% tick 发送 %extract% 个 | %state%"
+
+  pneumatic_distributor:
+    name: "汽动分发器"
+    lore: |-
+      <arrow> 消耗加压蒸汽，将输入槽物品按方向分发到汽动网络
+      <arrow> 每个面只能对接<white>汽动输出端</white>或通过导管连接<white>汽动输入端</white>
+      <arrow> 支持 1–6 个输出方向（北/南/东/西/上/下），可在 GUI 中逐一启用/禁用
+      <arrow> 多方向启用时轮询均衡分发
+      <arrow> <attr>加压蒸汽缓存:</attr> %pressurized-buffer%
+      <arrow> <attr>每个物品耗气:</attr> %steam-per-item%
+      <arrow> <attr>每 tick 最多发送:</attr> %items-per-tick% 个
+    waila: "汽动分发器 | 加压蒸汽 %pressurized-bar% | 已启用 %enabled-directions% 方向 | %state%"
 
   steam_precision_mill:
     name: "蒸汽精密铣床"
@@ -550,6 +617,7 @@ item:
       <arrow> 减少机器内部摩擦，提升传动效率
 
   steam_distillation_tower:
+    name: "蒸汽精馏塔"
     lore: |-
       <arrow> 利用过热蒸汽进行物料精馏的模块化高塔
       <arrow> 堆叠 1-4 个塔节 + 冷凝顶盖；段数越多可解锁更复杂的配方
@@ -899,17 +967,101 @@ gui:
       idle: "<gray>待机"
 
   pneumatic_cargo_hub:
-    title: "<dark_gray>气动货运站"
+    title: "<dark_gray>汽动货运站"
     pressurized_gauge: "<#00cfff>加压蒸汽"
     fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
-    steam_cost: "<gray>每次发送: <reset><#00cfff>%cost% mB"
+    steam_cost: "<gray>本次耗气: <reset><#00cfff>%cost% mB <gray>(<reset><#00cfff>%per-item% <gray>× %batch%)"
+    interval: "<gray>每 <reset><white>%seconds%s <gray>发货一次"
+    batch_title: "<#ffd166>每次运输量"
+    batch_amount: "<gray>每次发送: <white>%amount% <gray>/ <white>%max%"
+    batch_cost: "<gray>本次耗气: <#00cfff>%cost% mB"
+    batch_increase: "<gray>左键 <white>+1<gray>，Shift+左键 <white>+10"
+    batch_decrease: "<gray>右键 <white>-1<gray>，Shift+右键 <white>-10"
     target_none: "<red>未绑定目标"
-    target_hint: "<gray>手持铁锭右键本站，再右键目标站完成绑定"
+    target_set: "<green>已绑定目标"
+    target_selecting: "<yellow>正在选择目标..."
+    target_coords: "<gray>坐标: <white>%x%, %y%, %z%"
+    target_range: "<gray>最大射程: <white>%range% 格"
+    target_clear_hint: "<gray>右键可解除绑定"
+    select_hint: "<gray>左键开始选择目标货运站"
+    selecting_hint: "左键世界中的目标货运站完成绑定，右键本机取消"
+    status:
+      active: "<green>发送中"
+      idle: "<gray>待机"
+      no_catapult: "<red>上方缺少弹射器"
+
+  steam_catapult:
+    title: "<dark_gray>蒸汽弹射器"
+    pressurized_gauge: "<#00cfff>加压蒸汽"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    cost_hint: "<gray>%per-block% mB/格（最低 %min% mB）"
+    target_none: "<red>未绑定目标"
+    target_hint: "<gray>手持铁锭右键本机，再右键目标容器完成绑定"
     target_set: "<lime>已绑定目标"
     target_coords: "<gray>坐标: <white>%x%, %y%, %z%"
     target_clear_hint: "<gray>右键可解除绑定"
     status:
-      active: "<green>发送中"
+      active: "<green>弹射中"
+      idle: "<gray>待机"
+
+  pneumatic_output:
+    title: "<dark_gray>汽动输出端"
+    extract_title: "<#ffd166>单次发送量"
+    extract_amount: "<gray>每次发送: <white>%amount% <gray>/ <white>%max%"
+    extract_increase: "<gray>左键 <white>+1<gray>，Shift+左键 <white>+10"
+    extract_decrease: "<gray>右键 <white>-1<gray>，Shift+右键 <white>-10"
+    tick_interval_title: "<#ffd166>发送间隔"
+    tick_interval: "<gray>当前间隔: <white>%interval% tick <gray>/ <white>%max%"
+    tick_interval_increase: "<gray>左键 <white>+1<gray>，Shift+左键 <white>+10"
+    tick_interval_decrease: "<gray>右键 <white>-1<gray>，Shift+右键 <white>-10"
+
+  pneumatic_distributor:
+    title: "<dark_gray>汽动分发器"
+    pressurized_gauge: "<#00cfff>加压蒸汽"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    throughput: "<gray>%per-item% mB/个 · 每 tick 最多 %max-items% 个"
+    direction:
+      north: "<aqua>北"
+      south: "<red>南"
+      east: "<green>东"
+      west: "<white>西"
+      up: "<yellow>上"
+      down: "<gold>下"
+    toggle:
+      enabled: "<green>方向已启用"
+      disabled: "<red>方向已禁用"
+      hint: "<gray>点击切换此方向的分发"
+    tick_interval_title: "<#ffd166>工作间隔"
+    tick_interval: "<gray>当前间隔: <white>%interval% tick <gray>/ <white>%max%"
+    tick_interval_increase: "<gray>左键 <white>+1<gray>，Shift+左键 <white>+10"
+    tick_interval_decrease: "<gray>右键 <white>-1<gray>，Shift+右键 <white>-10"
+    status:
+      active: "<green>分发中"
+      idle: "<gray>待机"
+
+  steam_sorter:
+    title: "<dark_gray>蒸汽分拣机"
+    steam_gauge: "<#00cfff>加压蒸汽"
+    fluid_amount: "<gray><reset><#00cfff>%amount% <gray>/ <#00cfff>%capacity% mB"
+    throughput: "<gray>%per-item% mB/个 · 每 tick 最多 %max-items% 个"
+    filter:
+      north: "<aqua>北面过滤"
+      south: "<red>南面过滤"
+      east: "<green>东面过滤"
+      west: "<white>西面过滤"
+      up: "<yellow>上面过滤"
+      down: "<gold>下面过滤"
+      hint: "<gray>左键槽位以设置过滤物品；空手左键清除"
+      empty: "<gray>未设置（接受任意物品）"
+      set: "<white>过滤: %item%"
+      ghost_hint: "<dark_gray>左键：用手持/光标物品设置过滤"
+      ghost_hint_clear: "<dark_gray>左键：更换过滤 | 空手左键：清除"
+    tick_interval_title: "<#ffd166>工作间隔"
+    tick_interval: "<gray>当前间隔: <white>%interval% tick <gray>/ <white>%max%"
+    tick_interval_increase: "<gray>左键 <white>+1<gray>，Shift+左键 <white>+10"
+    tick_interval_decrease: "<gray>右键 <white>-1<gray>，Shift+右键 <white>-10"
+    status:
+      active: "<green>分拣中"
       idle: "<gray>待机"
 
   steam_distillation_tower:
@@ -1022,6 +1174,7 @@ state:
   no_sample: "<gray>未放入样本"
   point_storage_full: "<yellow>点数缓存已满"
   structure_missing: "<red>结构未完成"
+  missing: "<red>缺失"
 
 research_type:
   material: "材料学"
@@ -1059,11 +1212,21 @@ research:
 
 message:
   pneumatic_cargo_hub:
-    binding_start: "<yellow>手持铁锭右键另一台气动货运站以完成绑定"
-    binding_cancel: "<gray>绑定已取消"
+    selecting: "<yellow>选择模式 —— 左键 %range% 格内的目标货运站完成绑定，右键本机取消"
+    selection_cancelled: "<gray>已取消目标选择"
     bound: "<green>已绑定到坐标 %x%, %y%, %z% 的货运站"
     unbound: "<yellow>已解除目标绑定"
     too_far: "<red>目标距离超过上限"
+    invalid_target: "<red>目标必须是汽动货运站"
+    target_no_catapult: "<red>目标货运站上方未放置蒸汽弹射器"
+  steam_catapult:
+    binding_start: "<yellow>手持铁锭右键目标容器以完成绑定"
+    binding_cancel: "<gray>绑定已取消"
+    bound: "<green>已绑定到坐标 %x%, %y%, %z% 的容器"
+    unbound: "<yellow>已解除目标绑定"
+    too_far: "<red>目标距离超过上限"
+    not_container: "<red>目标必须是容器"
+  pneumatic_distributor: {}
   steam_arm:
     selecting_input: "<yellow>正在选择输入目标...<gray> 左键点击容器添加/移除 | 右键保留选择<yellow>"
     selecting_input_range: "<yellow>正在选择输入目标...<gray> 只能选择半径%range%格内的容器<yellow>。左键点击添加/移除 | 右键保留选择"
