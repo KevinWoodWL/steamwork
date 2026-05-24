@@ -1017,23 +1017,22 @@ public class SteamArm extends RebarBlock implements
     }
 
     /**
-     * Get blocks from target locations
+     * Get blocks from target locations.
+     * For large chests only the main block is added: calling getBlockInventory() on either
+     * half already returns the full 54-slot DoubleChestInventory, so adding both halves
+     * would cause the same inventory to be processed twice.
      */
     private List<Block> getBlocksFromTargets(List<BlockLocation> targets) {
         List<Block> blocks = new ArrayList<>();
         World world = getBlock().getWorld();
-        
+
         for (BlockLocation loc : targets) {
             Block mainBlock = new Location(world, loc.x(), loc.y(), loc.z()).getBlock();
             if (!mainBlock.isEmpty() && isContainer(mainBlock)) {
                 blocks.add(mainBlock);
             }
-            if (loc.isLargeChest()) {
-                Block partnerBlock = new Location(world, loc.partnerX(), loc.partnerY(), loc.partnerZ()).getBlock();
-                if (!partnerBlock.isEmpty() && isContainer(partnerBlock)) {
-                    blocks.add(partnerBlock);
-                }
-            }
+            // Partner block intentionally skipped: getBlockInventory(mainBlock) already
+            // returns the combined double-chest inventory for large chests.
         }
         return blocks;
     }
@@ -1197,7 +1196,9 @@ public class SteamArm extends RebarBlock implements
     }
 
     /**
-     * 检测并获取箱子位置，如果是大箱子则返回包含伙伴位置的位置对象
+     * 检测并获取箱子位置，如果是大箱子则返回包含伙伴位置的位置对象。
+     * 使用 Bukkit 的 Chest.Type 数据精确判断：只有 LEFT/RIGHT 类型才是真正的大箱子，
+     * SINGLE 类型即使相邻也是独立小箱子。
      */
     private BlockLocation detectLargeChest(Block target) {
         Material mat = target.getType();
@@ -1207,12 +1208,20 @@ public class SteamArm extends RebarBlock implements
             return new BlockLocation(target.getX(), target.getY(), target.getZ());
         }
 
-        // Try to find partner chest in all 4 directions
+        // Use Bukkit block data to check if this chest is actually part of a double chest.
+        // Chest.Type.SINGLE means it is a standalone chest even if another chest is adjacent.
+        if (!(target.getBlockData() instanceof org.bukkit.block.data.type.Chest chestData)
+                || chestData.getType() == org.bukkit.block.data.type.Chest.Type.SINGLE) {
+            return new BlockLocation(target.getX(), target.getY(), target.getZ());
+        }
+
+        // It IS part of a double chest — find the partner half (also non-SINGLE)
         BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
         for (BlockFace face : faces) {
             Block adjacent = target.getRelative(face);
-            if (adjacent.getType() == mat) {
-                // Found a partner - return large chest location
+            if (adjacent.getType() == mat
+                    && adjacent.getBlockData() instanceof org.bukkit.block.data.type.Chest adjData
+                    && adjData.getType() != org.bukkit.block.data.type.Chest.Type.SINGLE) {
                 return new BlockLocation(
                         target.getX(), target.getY(), target.getZ(),
                         adjacent.getX(), adjacent.getY(), adjacent.getZ()
@@ -1220,7 +1229,7 @@ public class SteamArm extends RebarBlock implements
             }
         }
 
-        // No partner found - return single block location
+        // Fallback: block data says double chest but partner not found; treat as single
         return new BlockLocation(target.getX(), target.getY(), target.getZ());
     }
 
@@ -1299,35 +1308,15 @@ public class SteamArm extends RebarBlock implements
     }
 
     /**
-     * 检查两个箱子是否构成有效的大箱子（保持原有Bukkit行为）
+     * 检查两个箱子是否真正构成大箱子：双方的 Chest.Type 都必须不是 SINGLE。
      */
     private boolean isValidDoubleChestPartner(Block chest1, Block chest2, BlockFace face) {
-        // 大箱子朝向检查：南北朝向时，合并NORTH-SOUTH
-        // 东西朝向时，合并EAST-WEST
-        // 这个检查确保只有正确的配对才能合并
         Material mat = chest1.getType();
-
-        // 检查是否是箱子类型
-        if (mat != Material.CHEST && mat != Material.TRAPPED_CHEST) {
-            return false;
-        }
-
-        // 使用Bukkit原生的方块数据值来检查箱子朝向
-        // Minecraft中箱子朝向：
-        // 0=西, 1=东, 2=北, 3=南, 4=单向(小箱子或独立大箱子), 5=单向
-
-        // 对于大箱子：
-        // 北/南朝向：左边是NORTH，右边是SOUTH
-        // 东/西朝向：左边是WEST，右边是EAST
-
-        // 简化的检查：如果是CHEST类型
-        if (mat == Material.CHEST || mat == Material.TRAPPED_CHEST) {
-            // 水平和垂直配对都是有效的
-            return (face == BlockFace.NORTH || face == BlockFace.SOUTH ||
-                    face == BlockFace.EAST || face == BlockFace.WEST);
-        }
-
-        return false;
+        if (mat != Material.CHEST && mat != Material.TRAPPED_CHEST) return false;
+        if (!(chest1.getBlockData() instanceof org.bukkit.block.data.type.Chest c1Data)) return false;
+        if (!(chest2.getBlockData() instanceof org.bukkit.block.data.type.Chest c2Data)) return false;
+        return c1Data.getType() != org.bukkit.block.data.type.Chest.Type.SINGLE
+                && c2Data.getType() != org.bukkit.block.data.type.Chest.Type.SINGLE;
     }
 
     private boolean matchesDirection(LogisticGroup group, boolean input) {
