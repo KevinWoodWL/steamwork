@@ -440,10 +440,12 @@ item:
   steam_assembly_bench:
     name: "Steam Assembly Bench"
     lore: |-
-      <arrow> Assembles bases + brass parts + alloy components into steam equipment
+      <arrow> Automatically crafts vanilla recipes from a 3x3 template
       <arrow> Requires a 3×1×3 structure: main block + 4 bronze blocks at the corners
-      <arrow> All steam tools, armor, and canisters are built here
-    waila: "Steam Assembly Bench | %structure%"
+      <arrow> Pneumatic inputs feed the material buffer; pneumatic outputs extract finished items
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per craft:</attr> %steam-per-craft%
+    waila: "Steam Assembly Bench | %structure% | Steam %steam-bar% | %state%"
 
   steam_science_interface:
     name: "Steam Science Interface"
@@ -882,11 +884,21 @@ gui:
 
   steam_assembly_bench:
     title: "<dark_gray>Steam Assembly Bench"
-    button: "<aqua>Assemble"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_cost: "<gray>Steam per craft: <reset><aqua>%steam%"
     status:
-      ready: "<green>Ingredients ready, click to assemble"
-      no_recipe: "<gray>Current inputs don't match any recipe"
+      active: "<green>Crafting"
+      idle: "<gray>Idle"
+    reason:
+      ready: "<gray>Template and ingredients ready"
       structure_missing: "<red>Structure incomplete: needs 4 bronze blocks at the corners"
+      no_template: "<gray>Set a 3x3 crafting template"
+      no_recipe: "<gray>Template doesn't match a vanilla recipe"
+      no_ingredients: "<gray>Missing materials in the input buffer"
+      no_steam: "<red>Insufficient steam"
+      output_full: "<yellow>Output slot full"
+      processing: "<green>Crafting"
 
   pressurized_furnace:
     title: "<dark_gray>Steam Pressurized Furnace"
@@ -1003,6 +1015,13 @@ gui:
     whitelist: "<white>Whitelist"
     blacklist: "<gray>Blacklist"
     mode_hint: "<gray>Click to toggle filter mode"
+    slot_mode_auto: "<#88ddff>Slot: Auto"
+    slot_mode_ingredient: "<#a0e6a0>Slot: Ingredient"
+    slot_mode_fuel: "<#ffb060>Slot: Fuel"
+    slot_mode_hint: |-
+      <gray>Click to cycle: Auto → Ingredient → Fuel
+      <dark_gray>Ingredient/Fuel only push to furnaces, blast furnaces,
+      <dark_gray>smokers (slot 0/1) or brewing stands (slot 3/4).
 
   pneumatic_output:
     title: "<dark_gray>Pneumatic Output"

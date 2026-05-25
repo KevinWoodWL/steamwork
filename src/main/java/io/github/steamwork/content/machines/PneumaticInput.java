@@ -76,11 +76,23 @@ public class PneumaticInput extends RebarBlock implements
 
     public enum FilterMode { WHITELIST, BLACKLIST }
 
+    /**
+     * 栏位模式：决定缓冲中的物品投入相邻容器时去哪一格。
+     * <ul>
+     *   <li>{@link #AUTO} —— 默认，让 Bukkit 自动选择空位（与原版漏斗一样的行为）</li>
+     *   <li>{@link #INGREDIENT} —— 强制投入熔炉/高炉/烟熏炉的原料槽（slot 0），或酿造台的原料槽（slot 3）</li>
+     *   <li>{@link #FUEL} —— 强制投入熔炉/高炉/烟熏炉的燃料槽（slot 1），或酿造台的烈焰粉槽（slot 4）</li>
+     * </ul>
+     * 对不支持燃料/原料区分的容器（如箱子），非 AUTO 模式下直接不推送。
+     */
+    public enum SlotMode { AUTO, INGREDIENT, FUEL }
+
     // ── 常量 ──────────────────────────────────────────────────────────────────
 
     private static final NamespacedKey DISPLAY_MARKER_KEY = steamworkKey("pneumatic_input_display");
     private static final NamespacedKey DISPLAY_OWNER_KEY  = steamworkKey("pneumatic_input_display_owner");
     private static final NamespacedKey FILTER_MODE_KEY    = steamworkKey("pin_filter_mode");
+    private static final NamespacedKey SLOT_MODE_KEY      = steamworkKey("pin_slot_mode");
 
     private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
 
@@ -95,9 +107,13 @@ public class PneumaticInput extends RebarBlock implements
     /** 当前过滤模式，默认白名单（空过滤 = 全通）。 */
     private FilterMode filterMode = FilterMode.WHITELIST;
 
+    /** 当前栏位模式，默认自动。 */
+    private SlotMode slotMode = SlotMode.AUTO;
+
     private volatile List<UUID> displayUuids = List.of();
 
     private final FilterModeItem filterModeItem = new FilterModeItem();
+    private final SlotModeItem   slotModeItem   = new SlotModeItem();
 
     // ── 物品描述 ──────────────────────────────────────────────────────────────
 
@@ -113,6 +129,7 @@ public class PneumaticInput extends RebarBlock implements
         super(block, context);
         setFacing(PneumaticEndpointSupport.resolvePlacementFacing(context));
         filterMode = FilterMode.WHITELIST;
+        slotMode   = SlotMode.AUTO;
         setTickInterval(tickInterval);
     }
 
@@ -124,12 +141,17 @@ public class PneumaticInput extends RebarBlock implements
         filterMode = (modeOrdinal >= 0 && modeOrdinal < FilterMode.values().length)
                 ? FilterMode.values()[modeOrdinal]
                 : FilterMode.WHITELIST;
+        int slotOrdinal = pdc.getOrDefault(SLOT_MODE_KEY, PersistentDataType.INTEGER, 0);
+        slotMode = (slotOrdinal >= 0 && slotOrdinal < SlotMode.values().length)
+                ? SlotMode.values()[slotOrdinal]
+                : SlotMode.AUTO;
         setTickInterval(tickInterval);
     }
 
     @Override
     public void write(@NotNull PersistentDataContainer pdc) {
         pdc.set(FILTER_MODE_KEY, PersistentDataType.INTEGER, filterMode.ordinal());
+        pdc.set(SLOT_MODE_KEY,   PersistentDataType.INTEGER, slotMode.ordinal());
     }
 
     @Override
@@ -247,11 +269,22 @@ public class PneumaticInput extends RebarBlock implements
         Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
         if (!PneumaticUtils.isItemTarget(target)) return;
 
+        // 非 AUTO 模式：解析目标槽位；解析失败（容器不支持）就跳过本 tick
+        int forcedSlot = -1;
+        if (slotMode != SlotMode.AUTO) {
+            forcedSlot = resolveTargetSlot(target);
+            if (forcedSlot < 0) return;
+        }
+
         MachineUpdateReason reason = new MachineUpdateReason();
         for (int i = 0; i < bufferInventory.getSize(); i++) {
             ItemStack s = bufferInventory.getItem(i);
             if (s == null || s.getType().isAir()) continue;
-            int pushed = PneumaticUtils.tryPushItems(target, s, s.getAmount());
+
+            int pushed = (forcedSlot >= 0)
+                    ? PneumaticUtils.tryPushItemsToSlot(target, s, s.getAmount(), forcedSlot)
+                    : PneumaticUtils.tryPushItems(target, s, s.getAmount());
+
             if (pushed <= 0) continue;
             if (pushed >= s.getAmount()) {
                 bufferInventory.setItem(reason, i, null);
@@ -261,6 +294,24 @@ public class PneumaticInput extends RebarBlock implements
                 bufferInventory.setItem(reason, i, copy);
             }
         }
+    }
+
+    /**
+     * 根据 {@link #slotMode} 解析目标容器对应的槽位下标，-1 表示当前模式与容器不兼容。
+     *
+     * <p>支持：熔炉 / 高炉 / 烟熏炉（原料 0、燃料 1）、酿造台（原料 3、燃料 4）。
+     * 其他容器（箱子、漏斗、Rebar VI 机器等）在非 AUTO 模式下不予推送。</p>
+     */
+    private int resolveTargetSlot(@NotNull Block target) {
+        if (!(target.getState() instanceof org.bukkit.block.Container c)) return -1;
+        org.bukkit.inventory.Inventory inv = c.getInventory();
+        if (inv instanceof org.bukkit.inventory.FurnaceInventory) {
+            return slotMode == SlotMode.FUEL ? 1 : 0;
+        }
+        if (inv instanceof org.bukkit.inventory.BrewerInventory) {
+            return slotMode == SlotMode.FUEL ? 4 : 3;
+        }
+        return -1;
     }
 
     // ── 接口实现 ──────────────────────────────────────────────────────────────
@@ -279,10 +330,11 @@ public class PneumaticInput extends RebarBlock implements
     @Override
     public @NotNull Gui createGui() {
         return Gui.builder()
-                .setStructure("# # f f f # m # #")
+                .setStructure("# # f f f m s # #")
                 .addIngredient('#', GuiItems.background())
                 .addIngredient('f', filterInventory)
                 .addIngredient('m', filterModeItem)
+                .addIngredient('s', slotModeItem)
                 .build();
     }
 
@@ -317,6 +369,30 @@ public class PneumaticInput extends RebarBlock implements
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
             filterMode = (filterMode == FilterMode.WHITELIST) ? FilterMode.BLACKLIST : FilterMode.WHITELIST;
+            notifyWindows();
+        }
+    }
+
+    private final class SlotModeItem extends AbstractItem {
+
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            Material mat;
+            String key;
+            switch (slotMode) {
+                case INGREDIENT -> { mat = Material.IRON_ORE;   key = "steamwork.gui.pneumatic_input.slot_mode_ingredient"; }
+                case FUEL       -> { mat = Material.COAL;       key = "steamwork.gui.pneumatic_input.slot_mode_fuel"; }
+                default         -> { mat = Material.COMPASS;    key = "steamwork.gui.pneumatic_input.slot_mode_auto"; }
+            }
+            return ItemStackBuilder.of(mat)
+                    .name(noItalic(Component.translatable(key)))
+                    .lore(noItalic(Component.translatable("steamwork.gui.pneumatic_input.slot_mode_hint")));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            SlotMode[] values = SlotMode.values();
+            slotMode = values[(slotMode.ordinal() + 1) % values.length];
             notifyWindows();
         }
     }

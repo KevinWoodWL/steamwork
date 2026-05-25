@@ -94,6 +94,41 @@ public final class PneumaticUtils {
         return 0;
     }
 
+    /**
+     * 向原版容器的指定槽位推入物品（仅对原版 {@link org.bukkit.block.Container} 有效）。
+     *
+     * <p>用于汽动输入端的「栏位模式」功能：把物品精确投到熔炉燃料槽、酿造台原料槽等。
+     * 槽位越界、不是容器、目标槽已被不同物品占用 → 返回 0。</p>
+     *
+     * @param targetSlot 目标槽位下标（0-based）
+     * @return 实际推入数量
+     */
+    public static int tryPushItemsToSlot(@NotNull Block block, @NotNull ItemStack item, int count, int targetSlot) {
+        if (!(block.getState() instanceof org.bukkit.block.Container c)) return 0;
+        Inventory inv = c.getInventory();
+        if (targetSlot < 0 || targetSlot >= inv.getSize()) return 0;
+
+        ItemStack existing = inv.getItem(targetSlot);
+        if (existing == null || existing.getType().isAir()) {
+            int put = Math.min(count, item.getMaxStackSize());
+            ItemStack copy = item.clone();
+            copy.setAmount(put);
+            inv.setItem(targetSlot, copy);
+            return put;
+        }
+        if (existing.isSimilar(item)) {
+            int space = Math.max(0, existing.getMaxStackSize() - existing.getAmount());
+            int put = Math.min(count, space);
+            if (put > 0) {
+                ItemStack updated = existing.clone();
+                updated.setAmount(existing.getAmount() + put);
+                inv.setItem(targetSlot, updated);
+            }
+            return put;
+        }
+        return 0;
+    }
+
     /** 判断目标方块的输入槽是否有空间放入指定物品（至少 1 个）。 */
     public static boolean hasSpace(@NotNull Block block, @NotNull ItemStack item) {
         // 过滤检查：如果目标是汽动输入端，先校验黑/白名单

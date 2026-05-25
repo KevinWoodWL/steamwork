@@ -1009,6 +1009,13 @@ gui:
     whitelist: "<white>白名单"
     blacklist: "<gray>黑名单"
     mode_hint: "<gray>点击切换过滤模式"
+    slot_mode_auto: "<#88ddff>栏位：自动"
+    slot_mode_ingredient: "<#a0e6a0>栏位：原料栏"
+    slot_mode_fuel: "<#ffb060>栏位：燃料栏"
+    slot_mode_hint: |-
+      <gray>点击切换：自动 → 原料 → 燃料
+      <dark_gray>原料/燃料模式仅向熔炉、高炉、烟熏炉
+      <dark_gray>（槽 0/1）或酿造台（槽 3/4）投放。
 
   pneumatic_output:
     title: "<dark_gray>汽动输出端"
