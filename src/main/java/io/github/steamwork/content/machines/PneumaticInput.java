@@ -262,6 +262,48 @@ public class PneumaticInput extends RebarBlock implements
         return PneumaticEndpointSupport.pneumaticConnectionFace(getBlock(), getFacing());
     }
 
+    // ── 栏位模式辅助 ──────────────────────────────────────────────────────────
+
+    /**
+     * 读取输出侧方块，返回当前连接容器支持的 {@link SlotMode} 列表。
+     * <ul>
+     *   <li>熔炉 / 高炉 / 烟熏炉 ({@link org.bukkit.inventory.FurnaceInventory})
+     *       → AUTO + INGREDIENT + FUEL</li>
+     *   <li>酿造台 ({@link org.bukkit.inventory.BrewerInventory})
+     *       → AUTO + INGREDIENT + FUEL</li>
+     *   <li>其他容器（箱子、桶、漏斗、Rebar 机器等）→ 仅 AUTO</li>
+     * </ul>
+     */
+    private @NotNull List<SlotMode> getAvailableModes() {
+        Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
+        if (target.getState() instanceof org.bukkit.block.Container c) {
+            org.bukkit.inventory.Inventory inv = c.getInventory();
+            if (inv instanceof org.bukkit.inventory.FurnaceInventory
+                    || inv instanceof org.bukkit.inventory.BrewerInventory) {
+                return List.of(SlotMode.AUTO, SlotMode.INGREDIENT, SlotMode.FUEL);
+            }
+        }
+        return List.of(SlotMode.AUTO);
+    }
+
+    /**
+     * 返回输出侧容器类型对应的翻译 key，用于 GUI lore 显示。
+     */
+    private @NotNull String getConnectedContainerKey() {
+        Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
+        if (!(target.getState() instanceof org.bukkit.block.Container c)) {
+            return "steamwork.gui.pneumatic_input.container_none";
+        }
+        org.bukkit.inventory.Inventory inv = c.getInventory();
+        if (inv instanceof org.bukkit.inventory.FurnaceInventory) {
+            return "steamwork.gui.pneumatic_input.container_furnace";
+        }
+        if (inv instanceof org.bukkit.inventory.BrewerInventory) {
+            return "steamwork.gui.pneumatic_input.container_brewer";
+        }
+        return "steamwork.gui.pneumatic_input.container_generic";
+    }
+
     // ── tick：将缓冲转发到目标容器 ─────────────────────────────────────────────
 
     @Override
@@ -377,22 +419,49 @@ public class PneumaticInput extends RebarBlock implements
 
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            List<SlotMode> available = getAvailableModes();
+
+            // 如果当前模式在此容器上不可用，显示警告状态
+            boolean valid = available.contains(slotMode);
+            SlotMode display = valid ? slotMode : SlotMode.AUTO;
+
             Material mat;
-            String key;
-            switch (slotMode) {
-                case INGREDIENT -> { mat = Material.IRON_ORE;   key = "steamwork.gui.pneumatic_input.slot_mode_ingredient"; }
-                case FUEL       -> { mat = Material.COAL;       key = "steamwork.gui.pneumatic_input.slot_mode_fuel"; }
-                default         -> { mat = Material.COMPASS;    key = "steamwork.gui.pneumatic_input.slot_mode_auto"; }
+            String modeKey;
+            switch (display) {
+                case INGREDIENT -> { mat = Material.IRON_ORE; modeKey = "steamwork.gui.pneumatic_input.slot_mode_ingredient"; }
+                case FUEL       -> { mat = Material.COAL;     modeKey = "steamwork.gui.pneumatic_input.slot_mode_fuel"; }
+                default         -> { mat = Material.COMPASS;  modeKey = "steamwork.gui.pneumatic_input.slot_mode_auto"; }
             }
+
+            List<Component> lore = new ArrayList<>();
+            // 第一行：当前模式描述
+            lore.add(noItalic(Component.translatable(modeKey)));
+            // 第二行：连接的容器类型
+            lore.add(noItalic(Component.translatable(getConnectedContainerKey())));
+            // 第三行：交互提示（只有一种可用模式时提示不可切换）
+            if (available.size() > 1) {
+                lore.add(noItalic(Component.translatable("steamwork.gui.pneumatic_input.slot_mode_hint")));
+            } else {
+                lore.add(noItalic(Component.translatable("steamwork.gui.pneumatic_input.slot_mode_only_auto")));
+            }
+
             return ItemStackBuilder.of(mat)
-                    .name(noItalic(Component.translatable(key)))
-                    .lore(noItalic(Component.translatable("steamwork.gui.pneumatic_input.slot_mode_hint")));
+                    .name(noItalic(Component.translatable("steamwork.gui.pneumatic_input.slot_mode_title")))
+                    .lore(lore);
         }
 
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
-            SlotMode[] values = SlotMode.values();
-            slotMode = values[(slotMode.ordinal() + 1) % values.length];
+            List<SlotMode> available = getAvailableModes();
+            // 如果当前模式不在可用列表里，先归位到 AUTO
+            if (!available.contains(slotMode)) {
+                slotMode = SlotMode.AUTO;
+                notifyWindows();
+                return;
+            }
+            // 只在可用模式里循环
+            int idx = available.indexOf(slotMode);
+            slotMode = available.get((idx + 1) % available.size());
             notifyWindows();
         }
     }

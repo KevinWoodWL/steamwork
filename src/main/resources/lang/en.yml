@@ -443,9 +443,9 @@ item:
       <arrow> Automatically crafts vanilla recipes from a 3x3 template
       <arrow> Requires a 3×1×3 structure: main block + 4 bronze blocks at the corners
       <arrow> Pneumatic inputs feed the material buffer; pneumatic outputs extract finished items
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-      <arrow> <attr>Steam per craft:</attr> %steam-per-craft%
-    waila: "Steam Assembly Bench | %structure% | Steam %steam-bar% | %state%"
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Superheated steam per craft:</attr> %steam-per-craft%
+    waila: "Steam Assembly Bench | %structure% | Superheated Steam %steam-bar% | %state%"
 
   steam_science_interface:
     name: "Steam Science Interface"
@@ -564,6 +564,24 @@ item:
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
     waila: "Steam Precision Mill | Superheated Steam %steam-bar% | %state%"
 
+  precision_foundry:
+    name: "Precision Foundry"
+    lore: |-
+      <arrow> Forms alloy ingots directly from metals, flux, and superheated steam
+      <arrow> Skips the dust-to-smelting loop for high-throughput alloy lines
+      <arrow> Pneumatic inputs feed the material buffer; pneumatic outputs extract finished ingots
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Precision Foundry | Superheated Steam %steam-bar% | %state%"
+
+  precision_catalytic_reactor:
+    name: "Precision Catalytic Reactor"
+    lore: |-
+      <arrow> Consumes catalyst cores to synthesize advanced materials
+      <arrow> Creates new outputs such as palladium alloy and high polymer
+      <arrow> Pneumatic inputs feed reactants; pneumatic outputs extract products
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Precision Catalytic Reactor | Superheated Steam %steam-bar% | %state%"
+
   # Precision mill products
   precision_gear:
     name: "Precision Gear"
@@ -612,6 +630,18 @@ item:
     lore: |-
       <arrow> A high-speed rotary load carrier milled from steel
       <arrow> Reduces internal friction and improves transmission efficiency
+
+  palladium_alloy_ingot:
+    name: "Palladium Alloy Ingot"
+    lore: |-
+      <arrow> Catalyst-stabilized palladium alloy with excellent thermal endurance
+      <arrow> A late precision material for advanced steam automation
+
+  high_polymer:
+    name: "High Polymer"
+    lore: |-
+      <arrow> Dense polymer synthesized from fiber, vulcanized rubber, and a catalyst core
+      <arrow> Useful for seals, insulation, and advanced reaction components
 
   steam_distillation_tower:
     name: "Steam Distillation Tower"
@@ -882,11 +912,31 @@ gui:
       active: "<green>Active"
       idle: "<gray>Idle"
 
+  precision_foundry:
+    title: "<dark_gray>Precision Foundry"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>Foundry Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Casting"
+      idle: "<gray>Idle"
+
+  precision_catalytic_reactor:
+    title: "<dark_gray>Precision Catalytic Reactor"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>Reaction Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Reacting"
+      idle: "<gray>Idle"
+
   steam_assembly_bench:
     title: "<dark_gray>Steam Assembly Bench"
-    steam_gauge: "<aqua>Steam Storage"
-    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
-    steam_cost: "<gray>Steam per craft: <reset><aqua>%steam%"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    steam_cost: "<gray>Superheated steam per craft: <reset><gold>%steam%"
     status:
       active: "<green>Crafting"
       idle: "<gray>Idle"
@@ -1015,6 +1065,16 @@ gui:
     whitelist: "<white>Whitelist"
     blacklist: "<gray>Blacklist"
     mode_hint: "<gray>Click to toggle filter mode"
+    slot_mode_title: "<#ffd166>Slot Mode"
+    slot_mode_auto: "<gray>Current: <white>Auto"
+    slot_mode_ingredient: "<gray>Current: <white>Ingredient Slot"
+    slot_mode_fuel: "<gray>Current: <white>Fuel Slot"
+    slot_mode_hint: "<gray>Click to cycle slot mode"
+    slot_mode_only_auto: "<dark_gray>Only Auto available for this container"
+    container_none: "<gray>Connected: <red>None"
+    container_furnace: "<gray>Connected: <white>Furnace / Smelter"
+    container_brewer: "<gray>Connected: <white>Brewing Stand"
+    container_generic: "<gray>Connected: <white>Container"
     slot_mode_auto: "<#88ddff>Slot: Auto"
     slot_mode_ingredient: "<#a0e6a0>Slot: Ingredient"
     slot_mode_fuel: "<#ffb060>Slot: Fuel"
@@ -1119,6 +1179,8 @@ guide:
     steam_pressing: "<gray>Steam pressing | %steam% steam | %time%"
     steam_grinding: "<gray>Steam grinding | %steam% steam | %time%"
     steam_milling: "<gray>Steam milling | %steam% steam | %time%"
+    steam_foundry: "<gray>Precision foundry | %steam% superheated | %time%"
+    steam_catalytic_reaction: "<gray>Catalytic reaction | %steam% superheated | %time%"
     steam_research: "<gray>Steam research | %discipline% | %points% pts | %steam% steam | %time%"
     steam_distillation: "<gray>Steam distillation | %sections% sections | %steam% superheated | %time%"
     phosphor_bronze: "<gray>Phosphor Bronze - Pylon Tin synergy"
@@ -1185,6 +1247,8 @@ state:
   # Detailed states used by steam processors (StopReason), called by %state% in WAILA.
   # Boilers/turbines without StopReason still use the active/idle binary above.
   ready: "<gray>Awaiting input"
+  no_template: "<gray>No template set"
+  no_recipe: "<gray>No matching recipe"
   no_ingredients: "<gray>No matching recipe"
   no_steam: "<red>Insufficient steam"
   output_full: "<yellow>Output full"
