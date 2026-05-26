@@ -1,6 +1,12 @@
 package io.github.steamwork;
 
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.steamwork.content.machines.HeavyImpactCrusher;
+import io.github.steamwork.content.machines.HydraulicForge;
+import io.github.steamwork.content.machines.PrecisionCatalyticReactor;
+import io.github.steamwork.content.machines.PrecisionCentrifuge;
+import io.github.steamwork.content.machines.PrecisionCrystallizer;
+import io.github.steamwork.content.machines.PrecisionFoundry;
 import io.github.steamwork.content.machines.SteamGrinder;
 import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamPress;
@@ -9,7 +15,13 @@ import io.github.steamwork.content.machines.SteamSteepingVat;
 import io.github.steamwork.content.machines.SteamSterilizer;
 import io.github.steamwork.content.machines.SteamWashingTrough;
 import io.github.steamwork.recipes.SteamAssemblyRecipe;
+import io.github.steamwork.recipes.SteamCatalyticReactionRecipe;
+import io.github.steamwork.recipes.SteamCentrifugationRecipe;
+import io.github.steamwork.recipes.SteamCrushingRecipe;
+import io.github.steamwork.recipes.SteamCrystallizingRecipe;
 import io.github.steamwork.recipes.SteamDistillationRecipe;
+import io.github.steamwork.recipes.SteamForgingRecipe;
+import io.github.steamwork.recipes.SteamFoundryRecipe;
 import io.github.steamwork.recipes.SteamGrindingRecipe;
 import io.github.steamwork.recipes.SteamMillingRecipe;
 import io.github.steamwork.recipes.SteamPressingRecipe;
@@ -19,10 +31,16 @@ import io.github.steamwork.recipes.SteamSteepingRecipe;
 import io.github.steamwork.recipes.SteamSterilizingRecipe;
 import io.github.steamwork.recipes.SteamWashingRecipe;
 import io.github.steamwork.recipes.registration.AssemblyRecipes;
+import io.github.steamwork.recipes.registration.CatalyticReactionRecipes;
 import io.github.steamwork.recipes.registration.CookingRecipes;
 import io.github.steamwork.recipes.registration.CraftingRecipes;
 import io.github.steamwork.recipes.registration.DistillationRecipes;
+import io.github.steamwork.recipes.registration.FoundryRecipes;
 import io.github.steamwork.recipes.registration.GrindingRecipes;
+import io.github.steamwork.recipes.registration.CentrifugationRecipes;
+import io.github.steamwork.recipes.registration.CrushingRecipes;
+import io.github.steamwork.recipes.registration.CrystallizingRecipes;
+import io.github.steamwork.recipes.registration.ForgingRecipes;
 import io.github.steamwork.recipes.registration.MillingRecipes;
 import io.github.steamwork.recipes.registration.PressingRecipes;
 import io.github.steamwork.recipes.registration.PressurizingRecipes;
@@ -143,9 +161,15 @@ public final class SteamworkRecipes {
         safeRegisterRecipeType(SteamPressingRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamGrindingRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamMillingRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamFoundryRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamCatalyticReactionRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamAssemblyRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamResearchRecipe.RECIPE_TYPE);
         safeRegisterRecipeType(SteamDistillationRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamCrushingRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamForgingRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamCentrifugationRecipe.RECIPE_TYPE);
+        safeRegisterRecipeType(SteamCrystallizingRecipe.RECIPE_TYPE);
     }
 
     private static void registerAllRecipes() {
@@ -158,7 +182,13 @@ public final class SteamworkRecipes {
         WashingRecipes.register();
         PressingRecipes.register();
         GrindingRecipes.register();
+        CentrifugationRecipes.register();
+        CrushingRecipes.register();
+        CrystallizingRecipes.register();
+        ForgingRecipes.register();
         MillingRecipes.register();
+        FoundryRecipes.register();
+        CatalyticReactionRecipes.register();
         AssemblyRecipes.register();
         ResearchRecipes.register();
         DistillationRecipes.register();
@@ -172,5 +202,11 @@ public final class SteamworkRecipes {
         SteamPress.refreshRecipeCache();
         SteamGrinder.refreshRecipeCache();
         SteamPrecisionMill.refreshRecipeCache();
+        PrecisionFoundry.refreshRecipeCache();
+        PrecisionCatalyticReactor.refreshRecipeCache();
+        HeavyImpactCrusher.refreshRecipeCache();
+        HydraulicForge.refreshRecipeCache();
+        PrecisionCrystallizer.refreshRecipeCache();
+        PrecisionCentrifuge.refreshRecipeCache();
     }
 }

@@ -2,7 +2,10 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.pylonmc.pylon.recipes.CrudeAlloyFurnaceRecipe;
+import io.github.steamwork.recipes.SteamProcessRecipe;
 import io.github.steamwork.recipes.SteamSteepingRecipe;
+import io.github.steamwork.recipes.pylon.CrudeAlloyFurnaceRecipeWrapper;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -12,6 +15,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * 蒸汽浸煮桶 —— 用于蒸煮、萃取、软化植物质与树脂。
  * 典型输入：竹子、原木、根须、蜂巢、粘土、植物纤维。
@@ -20,6 +26,13 @@ public class SteamSteepingVat extends AbstractSteamProcessor<SteamSteepingRecipe
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }
+    }
+
+    /** 静态版联动配方列表，供 {@link Item} 构造器和 {@link #buildPylonRecipes()} 共用。 */
+    public static @NotNull List<SteamProcessRecipe> pylonRecipesForItem() {
+        return CrudeAlloyFurnaceRecipe.RECIPE_TYPE.getRecipes().stream()
+                .map(r -> (SteamProcessRecipe) new CrudeAlloyFurnaceRecipeWrapper(r, 40.0, 200))
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unused")
@@ -40,6 +53,14 @@ public class SteamSteepingVat extends AbstractSteamProcessor<SteamSteepingRecipe
     @Override
     protected @NotNull String pdcKeyPrefix() {
         return "steeping";
+    }
+
+    @Override
+    public int upgradeSlotCount() { return 2; }
+
+    @Override
+    protected @NotNull List<SteamProcessRecipe> buildPylonRecipes() {
+        return pylonRecipesForItem();
     }
 
     @Override

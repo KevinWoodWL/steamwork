@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
 import io.github.pylonmc.rebar.block.base.RebarGhostBlockHolder;
-import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarInteractBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
@@ -75,7 +75,7 @@ public class SteamPress extends RebarBlock implements
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
         RebarGhostBlockHolder,
-        RebarGuiBlock,
+        RebarInventoryBlock,
         RebarInteractBlock,
         RebarTickingBlock,
         SteamBoostable {
@@ -440,7 +440,7 @@ public class SteamPress extends RebarBlock implements
         if (priority != EventPriority.LOWEST) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (event.getHand() != EquipmentSlot.HAND) return;
-        // Machine block GUI is opened automatically by RebarGuiBlock - nothing extra needed here
+        // Machine block GUI is opened automatically by RebarInventoryBlock - nothing extra needed here
     }
 
     // ===== Tick =====

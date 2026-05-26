@@ -4,7 +4,7 @@ import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
@@ -57,7 +57,7 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 public class SteamScienceInterface extends RebarBlock implements
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
-        RebarGuiBlock,
+        RebarInventoryBlock,
         RebarTickingBlock,
         RebarVirtualInventoryBlock {
 

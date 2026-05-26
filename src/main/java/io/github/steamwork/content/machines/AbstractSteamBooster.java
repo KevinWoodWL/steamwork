@@ -4,9 +4,10 @@ import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarProcessor;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
+import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
@@ -17,6 +18,11 @@ import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
+import io.github.steamwork.content.machines.upgrade.UpgradeModule;
+import io.github.steamwork.content.machines.upgrade.UpgradeType;
+import io.github.steamwork.content.machines.upgrade.UpgradeableMachine;
+import xyz.xenondevs.invui.inventory.VirtualInventory;
+import xyz.xenondevs.invui.window.Window;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -60,14 +66,18 @@ import java.util.Set;
 public abstract class AbstractSteamBooster extends RebarBlock implements
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
-        RebarGuiBlock,
-        RebarTickingBlock {
+        RebarInventoryBlock,
+        RebarTickingBlock,
+        RebarVirtualInventoryBlock,
+        UpgradeableMachine {
 
     protected final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     protected final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
     protected final double steamPerOperation = getSettings().getOrThrow("steam-per-operation", ConfigAdapter.DOUBLE);
     protected final int speedBoostTicks = getSettings().getOrThrow("speed-boost-ticks", ConfigAdapter.INTEGER);
     protected final int scanRadius = getSettings().getOrThrow("scan-radius", ConfigAdapter.INTEGER);
+
+    @Nullable protected final VirtualInventory upgradeInventory;
 
     protected boolean lastActive = false;
     protected int lastTargetsFound = 0;
@@ -123,6 +133,7 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
 
     protected AbstractSteamBooster(@NotNull Block block, @NotNull BlockCreateContext context) {
         super(block, context);
+        this.upgradeInventory = upgradeSlotCount() > 0 ? new VirtualInventory(upgradeSlotCount()) : null;
         setFacing(context.getFacing());
         setTickInterval(tickInterval);
         createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
@@ -131,6 +142,117 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
 
     protected AbstractSteamBooster(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
+        this.upgradeInventory = upgradeSlotCount() > 0 ? new VirtualInventory(upgradeSlotCount()) : null;
+    }
+
+    @Override
+    public void postInitialise() {
+        if (upgradeInventory != null) {
+            upgradeInventory.addPreUpdateHandler(event -> {
+                ItemStack newItem = event.getNewItem();
+                if (newItem == null || newItem.isEmpty()) return;
+                if (!(RebarItem.fromStack(newItem) instanceof UpgradeModule module)) {
+                    event.setCancelled(true);
+                    return;
+                }
+                // 涡轮只接受节能、扫描半径、加速力度三种模组；
+                // AUTO_INPUT / AUTO_OUTPUT / BULK / PYLON_COMPAT 对涡轮无效，拒绝入槽。
+                UpgradeType type = module.getUpgradeType();
+                if (type != UpgradeType.ENERGY_SAVE
+                        && type != UpgradeType.RANGE
+                        && type != UpgradeType.BOOST) {
+                    event.setCancelled(true);
+                }
+            });
+        }
+    }
+
+    @Override
+    public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
+        if (upgradeInventory != null) {
+            return Map.of("upgrades", upgradeInventory);
+        }
+        return Map.of();
+    }
+
+    @Override
+    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull io.github.pylonmc.rebar.block.context.BlockBreakContext context) {
+        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+        RebarFluidBufferBlock.super.onBreak(drops, context);
+    }
+
+    @Override
+    public void openUpgradeGui(@NotNull Player player) {
+        if (upgradeInventory == null) return;
+        Window.builder()
+                .setUpperGui(buildUpgradeGui())
+                .setTitle(noItalic(Component.translatable("steamwork.gui.upgrade.title")))
+                .setViewer(player)
+                .build()
+                .open();
+    }
+
+    private @NotNull Gui buildUpgradeGui() {
+        String middleRow = switch (upgradeSlotCount()) {
+            case 1 -> "# # # # u # # # #";
+            case 2 -> "# # # u u # # # #";
+            case 3 -> "# # # u u u # # #";
+            default -> "# # u u u u # # #";
+        };
+        return Gui.builder()
+                .setStructure(
+                        "# # # # # # # # #",
+                        middleRow,
+                        "# # # # c # # # #"
+                )
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('u', upgradeInventory)
+                .addIngredient('c', new CloseItem())
+                .build();
+    }
+
+    private final class CloseItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            return ItemStackBuilder.of(Material.BARRIER)
+                    .name(noItalic(Component.translatable("steamwork.gui.upgrade.close")));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            player.closeInventory();
+        }
+    }
+
+    // ===== 升级生效辅助 =====
+
+    private int countUpgrade(@NotNull UpgradeType type) {
+        if (upgradeInventory == null) return 0;
+        int count = 0;
+        for (int i = 0; i < upgradeInventory.getSize(); i++) {
+            ItemStack stack = upgradeInventory.getItem(i);
+            if (stack != null && !stack.isEmpty()
+                    && RebarItem.fromStack(stack) instanceof UpgradeModule module
+                    && module.getUpgradeType() == type) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** 实际扫描半径 = 基础半径 + RANGE 模组数。 */
+    private int effectiveScanRadius() {
+        return scanRadius + countUpgrade(UpgradeType.RANGE);
+    }
+
+    /** 实际 boost tick 数 = 基础 tick + BOOST 模组数。 */
+    private int effectiveBoostTicks() {
+        return speedBoostTicks + countUpgrade(UpgradeType.BOOST);
+    }
+
+    /** 蒸汽消耗倍率：每个 ENERGY_SAVE 模组 -20%，最低保留 20%。 */
+    private double effectiveSteamCost() {
+        return steamPerOperation * Math.max(0.2, 1.0 - 0.2 * countUpgrade(UpgradeType.ENERGY_SAVE));
     }
 
     // ===== 子类接口 =====
@@ -145,6 +267,10 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     protected abstract @Nullable TargetType identifyTarget(@NotNull Block block);
 
     // ===== 子类可复用的 helper =====
+
+    /** 升级槽数量，0 表示不支持升级。子类覆盖此方法来开启升级功能。 */
+    @Override
+    public int upgradeSlotCount() { return 0; }
 
     /** vanilla 熔炉识别 helper，让子类的 {@link #identifyTarget} 复用。 */
     protected final boolean isVanillaFurnace(@NotNull Block block) {
@@ -192,20 +318,21 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
 
     /** 推进目标的进度。 */
     private void boost(@NotNull Block block, @NotNull TargetType type) {
+        int boostTicks = effectiveBoostTicks();
         try {
             switch (type) {
                 case VANILLA_FURNACE:
-                    boostFurnace(block);
+                    boostFurnace(block, boostTicks);
                     break;
                 case STEAMWORK_BOOSTABLE:
                     if (BlockStorage.get(block) instanceof SteamBoostable boostable) {
-                        boostable.boostProcess(speedBoostTicks);
+                        boostable.boostProcess(boostTicks);
                     }
                     break;
                 case REBAR_PROCESSOR:
                     RebarBlock rb = BlockStorage.get(block);
                     if (rb instanceof RebarProcessor processor) {
-                        processor.progressProcess(speedBoostTicks);
+                        processor.progressProcess(boostTicks);
                     }
                     break;
             }
@@ -214,9 +341,9 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
         }
     }
 
-    private void boostFurnace(@NotNull Block block) {
+    private void boostFurnace(@NotNull Block block, int boostTicks) {
         Furnace furnace = (Furnace) block.getState();
-        int newCookTime = Math.min(furnace.getCookTimeTotal() - 1, furnace.getCookTime() + speedBoostTicks);
+        int newCookTime = Math.min(furnace.getCookTimeTotal() - 1, furnace.getCookTime() + boostTicks);
         furnace.setCookTime((short) newCookTime);
         furnace.update(true, false);
     }
@@ -235,7 +362,8 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     /** 环境哈希用于检测周围方块是否变化（便宜的 invalidation 策略）。 */
     private int calculateEnvironmentHash() {
         int hash = 0;
-        int checkRadius = Math.min(scanRadius + 2, 12);
+        int radius = effectiveScanRadius();
+        int checkRadius = Math.min(radius + 2, 12);
         for (int x = -checkRadius; x <= checkRadius; x++) {
             for (int y = -checkRadius; y <= checkRadius; y++) {
                 for (int z = -checkRadius; z <= checkRadius; z++) {
@@ -265,12 +393,13 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     }
 
     private Map<Block, TargetType> scanForTargets() {
+        int radius = effectiveScanRadius();
         Map<Block, TargetType> targets = new HashMap<>();
-        for (int x = -scanRadius; x <= scanRadius; x++) {
-            for (int y = -scanRadius; y <= scanRadius; y++) {
-                for (int z = -scanRadius; z <= scanRadius; z++) {
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
                     if (x == 0 && y == 0 && z == 0) continue;
-                    if (x * x + y * y + z * z > scanRadius * scanRadius) continue;
+                    if (x * x + y * y + z * z > radius * radius) continue;
 
                     Block target = getBlock().getRelative(x, y, z);
                     TargetType type = identifyTarget(target);
@@ -284,19 +413,20 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     }
 
     private void processCachedTargets(Map<Block, TargetType> targets) {
+        double steamCost = effectiveSteamCost();
         for (Map.Entry<Block, TargetType> entry : targets.entrySet()) {
             Block target = entry.getKey();
             TargetType type = entry.getValue();
 
             lastTargetsFound++;
-            if (!canBoost(target, type) || fluidAmount(SteamworkFluids.STEAM) < steamPerOperation) {
+            if (!canBoost(target, type) || fluidAmount(SteamworkFluids.STEAM) < steamCost) {
                 continue;
             }
 
-            removeFluid(SteamworkFluids.STEAM, steamPerOperation);
+            removeFluid(SteamworkFluids.STEAM, steamCost);
             boost(target, type);
             lastTargetsBoosted++;
-            lastSteamUsed += steamPerOperation;
+            lastSteamUsed += steamCost;
         }
     }
 
@@ -456,12 +586,15 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     private final class ScanItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            int effectiveRadius = effectiveScanRadius();
+            int effectiveTicks  = effectiveBoostTicks();
+            double effectiveSteam = effectiveSteamCost();
             return ItemStackBuilder.of(Material.SPYGLASS)
                     .name(noItalic(Component.translatable(translationPrefix() + ".scan")))
                     .lore(List.of(
                             noItalic(Component.translatable(
                                     translationPrefix() + ".scan_radius",
-                                    RebarArgument.of("radius", UnitFormat.BLOCKS.format(scanRadius))
+                                    RebarArgument.of("radius", UnitFormat.BLOCKS.format(effectiveRadius))
                             )),
                             noItalic(Component.translatable(
                                     translationPrefix() + ".targets_found",
@@ -469,8 +602,8 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
                             )),
                             noItalic(Component.translatable(
                                     translationPrefix() + ".boost",
-                                    RebarArgument.of("ticks", speedBoostTicks),
-                                    RebarArgument.of("steam", UnitFormat.MILLIBUCKETS.format(steamPerOperation).decimalPlaces(0))
+                                    RebarArgument.of("ticks", effectiveTicks),
+                                    RebarArgument.of("steam", UnitFormat.MILLIBUCKETS.format(effectiveSteam).decimalPlaces(0))
                             ))
                     ));
         }

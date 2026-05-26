@@ -65,7 +65,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class SteamArm extends RebarBlock implements
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
-        RebarGuiBlock,
+        RebarInventoryBlock,
         RebarVirtualInventoryBlock,
         RebarTickingBlock,
         RebarInteractBlock {

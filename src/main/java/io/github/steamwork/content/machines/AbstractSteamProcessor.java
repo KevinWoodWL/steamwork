@@ -4,7 +4,7 @@ import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
@@ -50,13 +50,16 @@ import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.inventory.VirtualInventory;
 import xyz.xenondevs.invui.item.AbstractItem;
 import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.window.Window;
+import io.github.steamwork.content.machines.upgrade.UpgradeModule;
+import io.github.steamwork.content.machines.upgrade.UpgradeType;
+import io.github.steamwork.content.machines.upgrade.UpgradeableMachine;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
@@ -76,11 +79,12 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> extends RebarBlock implements
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
-        RebarGuiBlock,
+        RebarInventoryBlock,
         RebarLogisticBlock,
         RebarTickingBlock,
         RebarVirtualInventoryBlock,
-        SteamBoostable {
+        SteamBoostable,
+        UpgradeableMachine {
 
     protected final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     protected final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
@@ -95,6 +99,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     // 配方缓存（实例级，避免每 tick 都 iterate RecipeType）
     private List<R> recipeListCache = null;
+    // Pylon 配方包装器缓存（仅在安装了 PYLON_COMPAT 模组时填充）
+    private List<io.github.steamwork.recipes.SteamProcessRecipe> pylonRecipeCache = null;
 
     private final NamespacedKey currentRecipePdcKey;
     private final NamespacedKey ticksPdcKey;
@@ -118,6 +124,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
      * {@code steamwork.state.<key>}。
      */
     public enum StopReason {
+        /** 多方块结构未完成，机器拒绝工作。 */
+        NO_STRUCTURE("structure_missing"),
         /** 输入槽为空，等待玩家投料。 */
         READY("ready"),
         /** 输入槽有物品但都不匹配任何配方。 */
@@ -138,11 +146,31 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     protected final VirtualInventory inputInventory = new VirtualInventory(9);
     protected final VirtualInventory outputInventory = new VirtualInventory(9);
+    @Nullable protected final VirtualInventory upgradeInventory;
+
+    private static final org.bukkit.block.BlockFace[] CARDINAL_FACES = {
+        org.bukkit.block.BlockFace.UP, org.bukkit.block.BlockFace.DOWN,
+        org.bukkit.block.BlockFace.NORTH, org.bukkit.block.BlockFace.SOUTH,
+        org.bukkit.block.BlockFace.EAST, org.bukkit.block.BlockFace.WEST
+    };
 
     private final StatusItem statusItem = new StatusItem();
     private final SteamGaugeItem steamGaugeItem = new SteamGaugeItem();
     private final ProgressItem progressItem = new ProgressItem();
     private final RecipeLockItem recipeLockItem = new RecipeLockItem();
+    private final PylonCompatItem pylonCompatItem = new PylonCompatItem();
+
+    /**
+     * 本机当前配方已锁定的产出物品。在 {@link #startRecipe(SteamProcessRecipe)} 时
+     * 于 {@code onRecipeStart()} 之后立即固定，确保离心机等随机产出配方在整个加工周期
+     * 内（从 canStoreOutput 检查到实际放出）看到同一个物品。
+     *
+     * <p>存储在实例字段而非共享的配方对象上，支持多台机器同时执行同一配方互不干扰。</p>
+     *
+     * <p>TODO: 服务器重启时若配方正在进行中，此字段重置为 null，完成时会重新随机。
+     * 属于极低频边缘情况，暂不做 PDC 持久化。</p>
+     */
+    @Nullable private ItemStack fixedRecipeOutput = null;
 
     /** 蒸汽机器物品基类，子类只需写一行构造即可。 */
     public static abstract class BaseItem extends RebarItem {
@@ -163,6 +191,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         this.currentRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_recipe");
         this.ticksPdcKey = steamworkKey(pdcKeyPrefix() + "_ticks");
         this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
+        this.upgradeInventory = upgradeSlotCount() > 0 ? new VirtualInventory(upgradeSlotCount()) : null;
         setFacing(context.getFacing());
         setTickInterval(tickInterval);
         createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
@@ -174,6 +203,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         this.currentRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_recipe");
         this.ticksPdcKey = steamworkKey(pdcKeyPrefix() + "_ticks");
         this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
+        this.upgradeInventory = upgradeSlotCount() > 0 ? new VirtualInventory(upgradeSlotCount()) : null;
         currentRecipeKey = pdc.get(currentRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
         recipeTicksRemaining = pdc.getOrDefault(ticksPdcKey, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
         try { getFacing(); } catch (IllegalStateException e) { setFacing(org.bukkit.block.BlockFace.SOUTH); }
@@ -191,7 +221,20 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     /** 翻译键前缀，例如 "steamwork.gui.steam_sterilizer"。 */
     protected abstract @NotNull String translationPrefix();
 
+    /** 升级槽数量，0 表示不支持升级。子类覆盖此方法来开启升级功能。 */
+    @Override
+    public int upgradeSlotCount() { return 0; }
+
     // ===== 可覆盖 hook =====
+
+    /**
+     * 是否满足多方块结构要求。默认返回 true（单方块机器）；
+     * 多方块子类覆盖此方法实现结构校验，并可在此更新 ghost 提示块。
+     * 每 tick 在主逻辑之前调用，结构缺失时机器立即停摆。
+     */
+    protected boolean hasValidStructure() {
+        return true;
+    }
 
     /**
      * 本机器消耗的流体类型。默认为普通蒸汽；需要过热蒸汽的子类（如精密铣床）覆盖此方法。
@@ -238,7 +281,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     }
 
     /** 进度条 lore 末尾追加额外行（默认无）。 */
-    protected @NotNull List<Component> additionalProgressLore(@NotNull R recipe) {
+    protected @NotNull List<Component> additionalProgressLore(@NotNull SteamProcessRecipe recipe) {
         return List.of();
     }
 
@@ -249,6 +292,21 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         outputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
         createLogisticGroup("input", LogisticGroupType.INPUT, inputInventory);
         createLogisticGroup("output", LogisticGroupType.OUTPUT, outputInventory);
+        if (upgradeInventory != null) {
+            upgradeInventory.addPreUpdateHandler(event -> {
+                ItemStack newItem = event.getNewItem();
+                if (newItem == null || newItem.isEmpty()) return;
+                if (!(RebarItem.fromStack(newItem) instanceof UpgradeModule module)) {
+                    event.setCancelled(true);
+                    return;
+                }
+                // 涡轮专用模组（扫描半径、加速力度）不能装入加工机
+                UpgradeType type = module.getUpgradeType();
+                if (type == UpgradeType.RANGE || type == UpgradeType.BOOST) {
+                    event.setCancelled(true);
+                }
+            });
+        }
     }
 
     @Override
@@ -269,6 +327,29 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     @Override
     public @NotNull Gui createGui() {
+        // 只有支持 Pylon 联动的机器才在右下角显示联动配方指示物品。
+        // 注意：InvUI 要求 setStructure 必须在 addIngredient 之前调用，
+        // 因此两个分支都独立构造完整的 builder 链，不共享 builder 变量。
+        if (!pylonCompatItem.getPreview().isEmpty()) {
+            return Gui.builder()
+                    .setStructure(
+                            "# # # # # # # # #",
+                            "# i i i i i p o #",
+                            "# # # # # # # # #",
+                            "# # l # s # a # #",
+                            "# # # # P # # # #"
+                    )
+                    .addIngredient('#', GuiItems.background())
+                    .addIngredient('i', inputInventory)
+                    .addIngredient('o', outputInventory)
+                    .addIngredient('p', progressItem)
+                    .addIngredient('s', steamGaugeItem)
+                    .addIngredient('a', statusItem)
+                    .addIngredient('l', recipeLockItem)
+                    .addIngredient('P', pylonCompatItem)
+                    .build();
+        }
+
         return Gui.builder()
                 .setStructure(
                         "# # # # # # # # #",
@@ -294,10 +375,10 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     @Override
     public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
-        return Map.of(
-                "input", inputInventory,
-                "output", outputInventory
-        );
+        if (upgradeInventory != null) {
+            return Map.of("input", inputInventory, "output", outputInventory, "upgrades", upgradeInventory);
+        }
+        return Map.of("input", inputInventory, "output", outputInventory);
     }
 
     @Override
@@ -308,11 +389,27 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     @Override
     public void tick() {
-        pullFromHopperAbove();
-        pushToContainerBelow();
+        // 多方块结构检查（单方块机器默认 true，直接跳过）。
+        if (!hasValidStructure()) {
+            resetRecipe();
+            currentReason = StopReason.NO_STRUCTURE;
+            notifyGuiItems();
+            return;
+        }
+
+        if (hasAutoInput()) {
+            pullFromAllAdjacent();
+        } else {
+            pullFromHopperAbove();
+        }
+        if (hasAutoOutput()) {
+            pushToAllAdjacent();
+        } else {
+            pushToContainerBelow();
+        }
 
         if (isProcessing()) {
-            R recipe = getCurrentRecipe();
+            SteamProcessRecipe recipe = getCurrentRecipe();
             if (recipe == null) {
                 resetRecipe();
                 currentReason = StopReason.READY;
@@ -328,8 +425,10 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                 return;
             }
 
-            double steamPerTick = recipe.steamCost() / recipe.timeTicks();
-            int progressTicks = Math.min(tickInterval, (int) Math.floor(fluidAmount(steamFluid()) / steamPerTick));
+            double steamPerProgressTick = recipe.steamCost() / recipe.timeTicks() * getSteamMultiplier();
+            int maxProgressBySpeed = tickInterval;
+            int maxProgressBySteam = (int) Math.floor(fluidAmount(steamFluid()) / steamPerProgressTick);
+            int progressTicks = Math.min(maxProgressBySpeed, maxProgressBySteam);
 
             if (progressTicks <= 0) {
                 // 蒸汽不足 —— 进入"中断"状态，超过宽限期后开始回退进度。
@@ -339,7 +438,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                 return;
             }
 
-            removeFluid(steamFluid(), steamPerTick * progressTicks);
+            removeFluid(steamFluid(), steamPerProgressTick * progressTicks);
             progressRecipe(progressTicks);
             currentReason = StopReason.PROCESSING;
             interruptionTicks = 0; // 有进度就清零中断计数
@@ -360,7 +459,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
      *   <li>进度完全回退到 0：reset + 喷烟 + 产 1 个机器废屑（"配方崩溃"）</li>
      * </ul>
      */
-    private void handleInterruption(@NotNull R recipe) {
+    private void handleInterruption(@NotNull SteamProcessRecipe recipe) {
         if (interruptionGraceTicks <= 0) return; // yml 关闭该机制
         interruptionTicks += tickInterval;
         if (interruptionTicks <= interruptionGraceTicks) return;
@@ -415,7 +514,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             if (locked == null) return StopReason.NO_INGREDIENTS;
             Map<Integer, Integer> reserved = findIngredients(locked);
             if (reserved == null) return StopReason.NO_INGREDIENTS;
-            if (currentSteam < locked.steamCost()) return StopReason.NO_STEAM;
+            if (currentSteam < locked.steamCost() * getSteamMultiplier()) return StopReason.NO_STEAM;
             if (hasMixedOutput(locked.producedStack())) return StopReason.MIXED_OUTPUT;
             if (!outputInventory.canHold(locked.producedStack())) return StopReason.OUTPUT_FULL;
             consumeReserved(reserved);
@@ -434,7 +533,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             Map<Integer, Integer> reserved = findIngredients(cached);
             if (reserved != null) {
                 anyMatchedInputs = true;
-                if (currentSteam >= cached.steamCost()) {
+                if (currentSteam >= cached.steamCost() * getSteamMultiplier()) {
                     anyHadEnoughSteam = true;
                     if (canStoreOutput(cached)) {
                         consumeReserved(reserved);
@@ -453,7 +552,26 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             if (reserved == null) continue;
             anyMatchedInputs = true;
 
-            if (currentSteam < recipe.steamCost()) continue;
+            if (currentSteam < recipe.steamCost() * getSteamMultiplier()) continue;
+            anyHadEnoughSteam = true;
+
+            if (hasMixedOutput(recipe.producedStack())) { anyMixed = true; continue; }
+            if (!outputInventory.canHold(recipe.producedStack())) continue;
+            anyCanStore = true;
+
+            consumeReserved(reserved);
+            startRecipe(recipe);
+            spawnProcessingParticles(8);
+            return StopReason.PROCESSING;
+        }
+
+        // Pylon 联动配方（仅在安装了 PYLON_COMPAT 模组时扫描）
+        for (SteamProcessRecipe recipe : getPylonRecipeCache()) {
+            Map<Integer, Integer> reserved = findIngredients(recipe);
+            if (reserved == null) continue;
+            anyMatchedInputs = true;
+
+            if (currentSteam < recipe.steamCost() * getSteamMultiplier()) continue;
             anyHadEnoughSteam = true;
 
             if (hasMixedOutput(recipe.producedStack())) { anyMixed = true; continue; }
@@ -484,25 +602,28 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     /** 检查输入槽能否凑齐 {@code recipe} 的原料，凑得齐返回每槽的预约扣减表，凑不齐返回 null。本方法不修改库存。 */
     @Nullable
-    private Map<Integer, Integer> findIngredients(@NotNull R recipe) {
+    private Map<Integer, Integer> findIngredients(@NotNull SteamProcessRecipe recipe) {
         Map<Integer, Integer> reserved = new LinkedHashMap<>();
-        RecipeInput.Item need = recipe.ingredient();
-        int stillNeeded = need.getAmount();
+        for (RecipeInput.Item need : recipe.ingredients()) {
+            int stillNeeded = need.getAmount();
 
-        for (int slot = 0; slot < inputInventory.getSize(); slot++) {
-            ItemStack stack = inputInventory.getItem(slot);
-            int alreadyReserved = reserved.getOrDefault(slot, 0);
-            if (stack == null || stack.isEmpty() || stack.getAmount() <= alreadyReserved) continue;
-            if (!need.matchesIgnoringAmount(stack)) continue;
+            for (int slot = 0; slot < inputInventory.getSize(); slot++) {
+                ItemStack stack = inputInventory.getItem(slot);
+                int alreadyReserved = reserved.getOrDefault(slot, 0);
+                if (stack == null || stack.isEmpty() || stack.getAmount() <= alreadyReserved) continue;
+                if (!need.matchesIgnoringAmount(stack)) continue;
 
-            int available = stack.getAmount() - alreadyReserved;
-            int amountToTake = Math.min(stillNeeded, available);
-            reserved.merge(slot, amountToTake, Integer::sum);
-            stillNeeded -= amountToTake;
-            if (stillNeeded <= 0) break;
+                int available = stack.getAmount() - alreadyReserved;
+                int amountToTake = Math.min(stillNeeded, available);
+                reserved.merge(slot, amountToTake, Integer::sum);
+                stillNeeded -= amountToTake;
+                if (stillNeeded <= 0) break;
+            }
+
+            if (stillNeeded > 0) return null;
         }
 
-        return stillNeeded > 0 ? null : reserved;
+        return reserved;
     }
 
     /** 按预约表实际扣减输入槽。前提：{@link #findIngredients(SteamProcessRecipe)} 返回了非 null。 */
@@ -515,7 +636,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         }
     }
 
-    private boolean canStoreOutput(@NotNull R recipe) {
+    private boolean canStoreOutput(@NotNull SteamProcessRecipe recipe) {
         if (hasMixedOutput(recipe.producedStack())) return false;
         return outputInventory.canHold(recipe.producedStack());
     }
@@ -530,19 +651,38 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         return false;
     }
 
-    private void startRecipe(@NotNull R recipe) {
+    private void startRecipe(@NotNull SteamProcessRecipe recipe) {
+        recipe.onRecipeStart(); // 让随机产出配方（如砂轮包装器）提前固定本轮结果
+        fixedRecipeOutput = recipe.producedStack(); // 固定本机本轮产出，与后续 progressRecipe 保持一致
         currentRecipeKey = recipe.getKey();
         recipeTicksRemaining = recipe.timeTicks();
         setActive(true);
     }
 
+    /**
+     * 返回本轮已锁定的产出物品。
+     * 正常流程下 {@link #fixedRecipeOutput} 由 {@link #startRecipe} 设置，此处仅作防御回退。
+     */
+    private @NotNull ItemStack getLockedOutput(@NotNull SteamProcessRecipe recipe) {
+        return fixedRecipeOutput != null ? fixedRecipeOutput.clone() : recipe.producedStack();
+    }
+
     private void progressRecipe(int ticks) {
         recipeTicksRemaining -= ticks;
         if (recipeTicksRemaining <= 0) {
-            R recipe = getCurrentRecipe();
+            SteamProcessRecipe recipe = getCurrentRecipe();
             if (recipe != null) {
-                outputInventory.addItem(new MachineUpdateReason(), recipe.producedStack());
+                ItemStack output = getLockedOutput(recipe);
+                outputInventory.addItem(new MachineUpdateReason(), output);
                 tryProduceScrap();
+                int bulkBonus = countUpgrade(UpgradeType.BULK);
+                for (int i = 0; i < bulkBonus; i++) {
+                    Map<Integer, Integer> extra = findIngredients(recipe);
+                    if (extra == null || !outputInventory.canHold(output)) break;
+                    consumeReserved(extra);
+                    outputInventory.addItem(new MachineUpdateReason(), output.clone());
+                    tryProduceScrap();
+                }
                 spawnProcessingParticles(12);
             }
             resetRecipe();
@@ -564,15 +704,24 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 1.0, 0.5), SteamworkItems.MACHINE_SCRAP.clone());
     }
 
-    private void resetRecipe() {
+    protected void resetRecipe() {
         currentRecipeKey = null;
         recipeTicksRemaining = 0;
+        fixedRecipeOutput = null;
         setActive(false);
     }
 
     @Nullable
-    private R getCurrentRecipe() {
-        return currentRecipeKey == null ? null : recipeType().getRecipe(currentRecipeKey);
+    private SteamProcessRecipe getCurrentRecipe() {
+        if (currentRecipeKey == null) return null;
+        R native_ = recipeType().getRecipe(currentRecipeKey);
+        if (native_ != null) return native_;
+        // 当前配方是 Pylon 包装器
+        List<SteamProcessRecipe> pylon = getPylonRecipeCache();
+        for (SteamProcessRecipe p : pylon) {
+            if (p.getKey().equals(currentRecipeKey)) return p;
+        }
+        return null;
     }
 
     private boolean isProcessing() {
@@ -594,20 +743,35 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     /** 全局刷新本机器实例的配方缓存（建议在每次注册新配方后由 SteamworkRecipes 调用对应子类的此方法）。 */
     public void clearRecipeCache() {
         recipeListCache = null;
+        pylonRecipeCache = null;
+    }
+
+    /**
+     * 子类返回该机器支持的 Pylon 配方包装器列表（默认空列表）。
+     * 仅在 PYLON_COMPAT 升级模组已插入时会被调用。
+     */
+    protected @NotNull List<SteamProcessRecipe> buildPylonRecipes() {
+        return List.of();
+    }
+
+    private @NotNull List<SteamProcessRecipe> getPylonRecipeCache() {
+        if (countUpgrade(io.github.steamwork.content.machines.upgrade.UpgradeType.PYLON_COMPAT) == 0) {
+            pylonRecipeCache = null;
+            return List.of();
+        }
+        if (pylonRecipeCache == null) {
+            pylonRecipeCache = buildPylonRecipes();
+        }
+        return pylonRecipeCache;
     }
 
     @Nullable
     private R findCachedRecipe() {
         List<R> recipes = getRecipeCache();
-        for (int slot = 0; slot < inputInventory.getSize(); slot++) {
-            ItemStack stack = inputInventory.getItem(slot);
-            if (stack == null || stack.isEmpty()) continue;
-
-            for (R recipe : recipes) {
-                if (fluidAmount(steamFluid()) < recipe.steamCost()) continue;
-                if (recipe.ingredient().matchesIgnoringAmount(stack) && canStoreOutput(recipe)) {
-                    return recipe;
-                }
+        for (R recipe : recipes) {
+            if (fluidAmount(steamFluid()) < recipe.steamCost()) continue;
+            if (findIngredients(recipe) != null && canStoreOutput(recipe)) {
+                return recipe;
             }
         }
         return null;
@@ -668,12 +832,135 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         }
     }
 
+    /** 自动进料：从所有相邻容器拉取物品，每 tick 最多转移一个。 */
+    private void pullFromAllAdjacent() {
+        for (org.bukkit.block.BlockFace face : CARDINAL_FACES) {
+            Block adjacent = getBlock().getRelative(face);
+            if (!(adjacent.getState() instanceof Container containerState)) continue;
+            Inventory adjInv = containerState.getInventory();
+            for (int i = 0; i < adjInv.getSize(); i++) {
+                ItemStack stack = adjInv.getItem(i);
+                if (stack == null || stack.isEmpty()) continue;
+                ItemStack single = stack.clone();
+                single.setAmount(1);
+                if (!inputInventory.canHold(single)) continue;
+                inputInventory.addItem(new MachineUpdateReason(), single);
+                if (stack.getAmount() <= 1) {
+                    adjInv.setItem(i, null);
+                } else {
+                    stack.setAmount(stack.getAmount() - 1);
+                    adjInv.setItem(i, stack);
+                }
+                return;
+            }
+        }
+    }
+
+    /** 自动出料：向所有相邻容器推送物品，每 tick 最多转移一个。 */
+    private void pushToAllAdjacent() {
+        for (int i = 0; i < outputInventory.getSize(); i++) {
+            ItemStack stack = outputInventory.getItem(i);
+            if (stack == null || stack.isEmpty()) continue;
+            ItemStack single = stack.clone();
+            single.setAmount(1);
+            for (org.bukkit.block.BlockFace face : CARDINAL_FACES) {
+                Block adjacent = getBlock().getRelative(face);
+                if (!(adjacent.getState() instanceof Container containerState)) continue;
+                Map<Integer, ItemStack> leftover = containerState.getInventory().addItem(single.clone());
+                if (leftover.isEmpty()) {
+                    if (stack.getAmount() <= 1) {
+                        outputInventory.setItem(new MachineUpdateReason(), i, null);
+                    } else {
+                        ItemStack updated = stack.clone();
+                        updated.setAmount(stack.getAmount() - 1);
+                        outputInventory.setItem(new MachineUpdateReason(), i, updated);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    // ===== 升级辅助 =====
+
+    private int countUpgrade(@NotNull UpgradeType type) {
+        if (upgradeInventory == null) return 0;
+        int count = 0;
+        for (int i = 0; i < upgradeInventory.getSize(); i++) {
+            ItemStack stack = upgradeInventory.getItem(i);
+            if (stack != null && !stack.isEmpty()
+                    && RebarItem.fromStack(stack) instanceof UpgradeModule module
+                    && module.getUpgradeType() == type) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private double getSteamMultiplier() {
+        return Math.max(0.2, 1.0 - 0.2 * countUpgrade(UpgradeType.ENERGY_SAVE));
+    }
+
+    private boolean hasAutoInput() {
+        return countUpgrade(UpgradeType.AUTO_INPUT) > 0;
+    }
+
+    private boolean hasAutoOutput() {
+        return countUpgrade(UpgradeType.AUTO_OUTPUT) > 0;
+    }
+
+    // ===== 升级 GUI =====
+
+    @Override
+    public void openUpgradeGui(@NotNull Player player) {
+        if (upgradeInventory == null) return;
+        Window.builder()
+                .setUpperGui(buildUpgradeGui())
+                .setTitle(noItalic(Component.translatable("steamwork.gui.upgrade.title")))
+                .setViewer(player)
+                .build()
+                .open();
+    }
+
+    private @NotNull Gui buildUpgradeGui() {
+        String middleRow = switch (upgradeSlotCount()) {
+            case 1 -> "# # # # u # # # #";
+            case 2 -> "# # # u u # # # #";
+            case 3 -> "# # # u u u # # #";
+            default -> "# # u u u u # # #";
+        };
+        return Gui.builder()
+                .setStructure(
+                        "# # # # # # # # #",
+                        middleRow,
+                        "# # # # c # # # #"
+                )
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('u', upgradeInventory)
+                .addIngredient('c', new CloseItem())
+                .build();
+    }
+
+    private final class CloseItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            return ItemStackBuilder.of(Material.BARRIER)
+                    .name(noItalic(Component.translatable("steamwork.gui.upgrade.close")));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            player.closeInventory();
+        }
+    }
+
     // ===== 视觉 / 状态 =====
 
     private void notifyGuiItems() {
         statusItem.notifyWindows();
         steamGaugeItem.notifyWindows();
         progressItem.notifyWindows();
+        pylonCompatItem.notifyWindows(); // 已安装/未安装状态会随模组变化更新
     }
 
     private void setActive(boolean active) {
@@ -719,7 +1006,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             // 玻璃板颜色按"严重程度"分级：红=蒸汽不足、黄=输出满、灰=待料、绿=运行。
             Material mat = switch (currentReason) {
                 case PROCESSING -> Material.GREEN_STAINED_GLASS_PANE;
-                case NO_STEAM -> Material.RED_STAINED_GLASS_PANE;
+                case NO_STEAM, NO_STRUCTURE -> Material.RED_STAINED_GLASS_PANE;
                 case OUTPUT_FULL, MIXED_OUTPUT -> Material.YELLOW_STAINED_GLASS_PANE;
                 case NO_INGREDIENTS, READY -> Material.GRAY_STAINED_GLASS_PANE;
             };
@@ -779,7 +1066,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private final class ProgressItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            R recipe = getCurrentRecipe();
+            SteamProcessRecipe recipe = getCurrentRecipe();
             boolean processing = recipe != null && recipeTicksRemaining > 0;
 
             if (!processing) {
@@ -787,6 +1074,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                         .name(noItalic(Component.translatable(translationPrefix() + ".progress")))
                         .lore(List.of(noItalic(Component.translatable(SHARED_KEY + ".progress_idle"))));
             }
+            assert recipe != null;
 
             int totalTicks = Math.max(1, recipe.timeTicks());
             int remaining = Math.max(0, recipeTicksRemaining);
@@ -876,6 +1164,64 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             lockedRecipeKey = matchable.get((currentIdx + 1) % matchable.size()).getKey();
             notifyWindows();
         }
+    }
+
+    /**
+     * 右下角 Pylon 联动配方指示物品。
+     * <ul>
+     *   <li>仅对覆盖了 {@link #buildPylonRecipes()} 的机器出现（通过 getPreview() 检测）。</li>
+     *   <li>未安装联动模组时显示可解锁配方列表（灰色提示）；已安装时高亮并显示已激活配方。</li>
+     *   <li>previewCache 独立于 pylonRecipeCache，保证预览与实际执行互不干扰。</li>
+     * </ul>
+     */
+    private final class PylonCompatItem extends AbstractItem {
+        @Nullable private List<SteamProcessRecipe> previewCache = null;
+
+        /** 懒加载 Pylon 配方预览列表（不受联动模组安装状态影响）。 */
+        @NotNull List<SteamProcessRecipe> getPreview() {
+            if (previewCache == null) {
+                previewCache = buildPylonRecipes();
+            }
+            return previewCache;
+        }
+
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            List<SteamProcessRecipe> recipes = getPreview();
+            boolean installed = countUpgrade(UpgradeType.PYLON_COMPAT) > 0;
+
+            List<Component> lore = new ArrayList<>();
+            if (installed) {
+                lore.add(noItalic(Component.translatable(SHARED_KEY + ".pylon_compat.status_active")));
+            } else {
+                lore.add(noItalic(Component.translatable(SHARED_KEY + ".pylon_compat.status_inactive")));
+            }
+            lore.add(Component.empty());
+            lore.add(noItalic(Component.translatable(SHARED_KEY + ".pylon_compat.recipes_header",
+                    RebarArgument.of("count", recipes.size()))));
+
+            int max = Math.min(recipes.size(), 12);
+            for (int i = 0; i < max; i++) {
+                lore.add(noItalic(
+                        Component.text("  ").append(recipes.get(i).producedStack().effectiveName())
+                ));
+            }
+            if (recipes.size() > max) {
+                lore.add(noItalic(Component.translatable(
+                        SHARED_KEY + ".pylon_compat.more",
+                        RebarArgument.of("count", recipes.size() - max)
+                )));
+            }
+
+            Material mat = installed ? Material.NETHER_STAR : Material.ECHO_SHARD;
+            String titleKey = SHARED_KEY + ".pylon_compat." + (installed ? "title_active" : "title_inactive");
+            return ItemStackBuilder.of(mat)
+                    .name(noItalic(Component.translatable(titleKey)))
+                    .lore(lore);
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
     }
 
     /** 返回当前输入槽原料能匹配的所有配方（不重复）。 */

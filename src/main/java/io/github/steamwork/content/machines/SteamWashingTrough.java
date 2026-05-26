@@ -3,6 +3,7 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.steamwork.recipes.SteamProcessRecipe;
 import io.github.steamwork.recipes.SteamWashingRecipe;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -46,6 +47,9 @@ public class SteamWashingTrough extends AbstractSteamProcessor<SteamWashingRecip
     }
 
     @Override
+    public int upgradeSlotCount() { return 2; }
+
+    @Override
     protected @NotNull String translationPrefix() {
         return "steamwork.gui.steam_washing_trough";
     }
@@ -66,7 +70,7 @@ public class SteamWashingTrough extends AbstractSteamProcessor<SteamWashingRecip
 
     /** 在进度条上追加"产出: N×物品"信息，提示玩家本次配方的实际产量。 */
     @Override
-    protected @NotNull List<Component> additionalProgressLore(@NotNull SteamWashingRecipe recipe) {
+    protected @NotNull List<Component> additionalProgressLore(@NotNull SteamProcessRecipe recipe) {
         ItemStack produced = recipe.producedStack();
         return List.of(Component.translatable(
                 "steamwork.gui.steam_processor.output_summary",

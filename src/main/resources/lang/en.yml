@@ -560,6 +560,7 @@ item:
     lore: |-
       <arrow> Feeds superheated steam into a high-speed milling head to cut alloy ingots into precision parts
       <arrow> Requires a Steam Heating Chamber to supply superheated steam
+      <arrow> Multiblock: place 3 Pylon Steel Blocks horizontally below the machine
       <arrow> Typical outputs: precision gears, valves, heat sinks
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
     waila: "Steam Precision Mill | Superheated Steam %steam-bar% | %state%"
@@ -581,6 +582,116 @@ item:
       <arrow> Pneumatic inputs feed reactants; pneumatic outputs extract products
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
     waila: "Precision Catalytic Reactor | Superheated Steam %steam-bar% | %state%"
+
+  heavy_impact_crusher:
+    name: "Heavy Impact Crusher"
+    lore: |-
+      <arrow> A manganese steel crusher built for hard blocks and ores
+      <arrow> Complements the steam grinder: grinder makes fine dust, crusher delivers coarse output and ore doubling
+      <arrow> Slot in a Pylon Compat module to also run grindstone recipes (slower and more steam-hungry to fit the heavy duty role)
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Heavy Impact Crusher | Superheated Steam %steam-bar% | %state%"
+
+  hydraulic_forge:
+    name: "Hydraulic Forge"
+    lore: |-
+      <arrow> Manganese bronze high-pressure forge dedicated to hydraulic system parts
+      <arrow> The core source for high-pressure pipes, flanges, pistons, seals, and forged plates
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Hydraulic Forge | Superheated Steam %steam-bar% | %state%"
+
+  precision_crystallizer:
+    name: "Precision Crystallizer"
+    lore: |-
+      <arrow> An invar-walled chamber that holds a perfectly stable temperature for hours of slow crystallization
+      <arrow> Refines raw ores, dusts, and ore fragments into high-purity ingots and vanilla gems
+      <arrow> Never duplicates material — strict refinement ratios (4 dust → 1 ingot, 4 raw ore → 1 steel ingot)
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Precision Crystallizer | Superheated Steam %steam-bar% | %state%"
+
+  precision_centrifuge:
+    name: "Precision Centrifuge"
+    lore: |-
+      <arrow> A duralumin rotor spins fast enough to separate mixtures by density into weighted random outputs
+      <arrow> Processes samples, scrap, and composite dusts: every cycle yields one randomly weighted product
+      <arrow> The premium recovery route for analysis samples, machine scrap, and other "fuzzy" inputs
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+    waila: "Precision Centrifuge | Superheated Steam %steam-bar% | %state%"
+
+  high_pressure_pipe:
+    name: "High-Pressure Pipe"
+    lore: <arrow> A forged pressure-rated pipe segment, the standard piece for hydraulic and high-pressure boiler lines
+
+  high_pressure_flange:
+    name: "High-Pressure Flange"
+    lore: |-
+      <arrow> Forged from invar alloy for minimal thermal expansion
+      <arrow> Holds its seal across a wide temperature range
+
+  hydraulic_piston:
+    name: "Hydraulic Piston"
+    lore: |-
+      <arrow> A wear-resistant manganese bronze reciprocating element
+      <arrow> The core moving part of any hydraulic actuator
+
+  hydraulic_seal:
+    name: "Hydraulic Seal"
+    lore: |-
+      <arrow> Vulcanized rubber forged into a metal shell under pressure
+      <arrow> Provides high-pressure sealing between piston and cylinder
+
+  forged_plate:
+    name: "Forged Plate"
+    lore: |-
+      <arrow> A high-density structural plate evened out under forging pressure
+      <arrow> The load-bearing shell and chassis stock for heavy machinery
+
+  machine_calibrator:
+    name: "<gray>Precision Calibrator"
+    lore: |-
+      <arrow> Right-click a machine to open its upgrade slots
+
+  upgrade_module_energy_save:
+    name: "<aqua>Energy Save Module"
+    lore: |-
+      <arrow> Reduces steam consumption by 20%
+      <arrow> Stacks up to 80% reduction
+
+  upgrade_module_range:
+    name: "<light_purple>Range Module"
+    lore: |-
+      <arrow> Turbine only: extends scan radius by 1 block per module
+      <arrow> Lets the turbine reach more nearby machines
+
+  upgrade_module_boost:
+    name: "<gold>Boost Module"
+    lore: |-
+      <arrow> Turbine only: adds +1 boost tick per operation per module
+      <arrow> Stacks for stronger acceleration of nearby machines
+
+  upgrade_module_pylon_compat:
+    name: "<aqua>Pylon Compat Module"
+    lore: |-
+      <arrow> Unlocks Pylon recipes for this machine
+      <arrow> Grinder: Grindstone recipes
+      <arrow> Heavy Impact Crusher: Grindstone recipes (higher steam cost)
+      <arrow> Steeping Vat: Crude Alloy Furnace recipes
+      <arrow> Precision Foundry: Forming / Pipe Bending / Table Saw recipes
+      <arrow> Catalytic Reactor: Kiln recipes (item output only)
+
+  upgrade_module_auto_input:
+    name: "<green>Auto-Input Module"
+    lore: <arrow> Automatically pulls items from all adjacent containers
+
+  upgrade_module_auto_output:
+    name: "<red>Auto-Output Module"
+    lore: <arrow> Automatically pushes output items to all adjacent containers
+
+  upgrade_module_bulk:
+    name: "<gold>Bulk Processing Module"
+    lore: |-
+      <arrow> Produces one extra output per recipe if ingredients are available
+      <arrow> Each module adds one more extra output attempt
 
   # Precision mill products
   precision_gear:
@@ -642,6 +753,27 @@ item:
     lore: |-
       <arrow> Dense polymer synthesized from fiber, vulcanized rubber, and a catalyst core
       <arrow> Useful for seals, insulation, and advanced reaction components
+
+  sequenced_workpiece:
+    name: "Sequenced Workpiece"
+    lore: |-
+      <arrow> A data-bearing intermediate item for multi-step production lines
+      <arrow> Its durability bar shows the current sequence step
+      <arrow> Pneumatic automation can route it between matching machines
+    tooltip:
+      header: "<gray>Steamwork sequenced workpiece"
+      line: "<dark_gray>Process: <gold>%line%"
+      step: "<dark_gray>Step: <aqua>%step% / %steps%"
+    palladium_alloy:
+      line_name: "Palladium Alloy"
+      step_1:
+        name: "<aqua>Activated Palladium Matrix"
+      step_2:
+        name: "<gold>Rough Palladium Alloy Ingot"
+      step_3:
+        name: "<yellow>Calibrated Palladium Alloy Blank"
+      step_4:
+        name: "<white>Sequenced Palladium Alloy Workpiece"
 
   steam_distillation_tower:
     name: "Steam Distillation Tower"
@@ -830,6 +962,7 @@ gui:
     time_remaining: "<gray>Time left: <yellow>%time%"
     output_summary: "<aqua>Yield: <yellow>%amount%</yellow> × <reset>%item%"
     reason:
+      structure_missing: "<gray>Reason: <reset><red>Structure incomplete — 3 Pylon Steel Blocks required below"
       ready: "<gray>Reason: <reset><gray>Awaiting input"
       no_ingredients: "<gray>Reason: <reset><gray>No matching recipe"
       no_steam: "<gray>Reason: <reset><red>Insufficient steam"
@@ -846,6 +979,13 @@ gui:
       hint_click: "<dark_gray>Left-click to select an output"
       hint_next: "<dark_gray>Left-click to cycle to next output"
       hint_unlock: "<dark_gray>Right-click to clear selection"
+    pylon_compat:
+      title_inactive: "<gold>Pylon Linked Recipes"
+      title_active: "<aqua>Pylon Linked Recipes (Active)"
+      status_inactive: "<gray>Install the <aqua>Pylon Compat Module</aqua> to unlock these recipes"
+      status_active: "<green>Compat module installed — recipes below are now active"
+      recipes_header: "<gray>Available recipes (<yellow>%count%</yellow> total):"
+      more: "<dark_gray>…and <yellow>%count%</yellow> more"
 
   steam_sterilizer:
     title: "<dark_gray>Steam Sterilizer"
@@ -931,6 +1071,50 @@ gui:
     status:
       active: "<green>Reacting"
       idle: "<gray>Idle"
+
+  heavy_impact_crusher:
+    title: "<dark_gray>Heavy Impact Crusher"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>Crushing Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Crushing"
+      idle: "<gray>Idle"
+
+  hydraulic_forge:
+    title: "<dark_gray>Hydraulic Forge"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>Forging Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Forging"
+      idle: "<gray>Idle"
+
+  precision_crystallizer:
+    title: "<dark_gray>Precision Crystallizer"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>Crystallizing Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Crystallizing"
+      idle: "<gray>Idle"
+
+  precision_centrifuge:
+    title: "<dark_gray>Precision Centrifuge"
+    steam_gauge: "<gold>Superheated Steam"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>Centrifuging Progress"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>Centrifuging"
+      idle: "<gray>Idle"
+
+  upgrade:
+    title: "<dark_gray>Machine Upgrades"
+    close: "<gray>Close"
 
   steam_assembly_bench:
     title: "<dark_gray>Steam Assembly Bench"
@@ -1171,6 +1355,8 @@ gui:
       processing: "<green>Distilling the loaded materials"
 
 guide:
+  button:
+    chain_recipes: "View Production Chain"
   recipe:
     steam_pressurizing: "<gray>Steam pressurizing | %steam% steam | %time%"
     steam_sterilizing: "<gray>Steam sterilizing | %steam% steam | %time%"
@@ -1178,6 +1364,10 @@ guide:
     steam_washing: "<gray>Steam washing | %steam% steam | %time%"
     steam_pressing: "<gray>Steam pressing | %steam% steam | %time%"
     steam_grinding: "<gray>Steam grinding | %steam% steam | %time%"
+    steam_crushing: "<gray>Heavy impact crushing | %steam% steam | %time%"
+    steam_forging: "<gray>Hydraulic forging | %steam% steam | %time%"
+    steam_crystallizing: "<gray>Precision crystallizing | %steam% steam | %time%"
+    steam_centrifugation: "<gray>Precision centrifuging | %steam% steam | %time%"
     steam_milling: "<gray>Steam milling | %steam% steam | %time%"
     steam_foundry: "<gray>Precision foundry | %steam% superheated | %time%"
     steam_catalytic_reaction: "<gray>Catalytic reaction | %steam% superheated | %time%"
@@ -1207,6 +1397,8 @@ guide:
       name: "Steam Logistics"
     steam_automation:
       name: "Steam Automation"
+    steam_calibration:
+      name: "Steam Calibration"
     steam_distillation:
       name: "Steam Distillation"
   page:
@@ -1220,6 +1412,7 @@ guide:
     steam_machines: "Steam Machines"
     steam_logistics: "Steam Logistics"
     steam_automation: "Steam Automation"
+    steam_calibration: "Steam Calibration"
     steam_distillation: "Steam Distillation"
 
 fluid:
@@ -1279,7 +1472,6 @@ research:
   # Tier 2 - mid-tier processing
   precision_steam_automation: "Steam Automation"
   chemistry_basic_research: "Basic Steam Research"
-  material_pressurized_furnace: "Pressurized Furnace"
   # Tier 3 - advanced alloys & fluids
   material_advanced_ingots: "Advanced Ingots"
   material_advanced_boilers: "Advanced Boilers"
@@ -1329,3 +1521,4 @@ message:
     target_out_of_range: "<red>Target out of range (max %range% blocks)"
   steam_science_interface:
     claimed: "<green>Claimed <aqua>%points%</aqua> research points (total <aqua>%total%</aqua>)"
+

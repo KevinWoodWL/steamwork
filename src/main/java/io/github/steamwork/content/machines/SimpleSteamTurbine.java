@@ -37,6 +37,11 @@ public class SimpleSteamTurbine extends AbstractSteamBooster {
         return 2;
     }
 
+    @Override
+    public int upgradeSlotCount() {
+        return 2;
+    }
+
     /** 简易涡轮只识别原版熔炉系列。 */
     @Override
     protected @Nullable TargetType identifyTarget(@NotNull Block block) {

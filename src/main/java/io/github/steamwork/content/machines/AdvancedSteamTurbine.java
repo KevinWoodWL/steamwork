@@ -47,6 +47,11 @@ public class AdvancedSteamTurbine extends AbstractSteamBooster {
         return 4;
     }
 
+    @Override
+    public int upgradeSlotCount() {
+        return 3;
+    }
+
     /**
      * 优先识别原版熔炉，再识别 Steamwork 自家加工机器，最后识别 Pylon/Rebar 处理类机器。
      * 排除自身避免自加速死循环。

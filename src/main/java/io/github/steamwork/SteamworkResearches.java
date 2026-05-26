@@ -50,6 +50,7 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_STERILIZER, SteamworkKeys.STEAM_STEEPING_VAT,
             SteamworkKeys.STEAM_WASHING_TROUGH,
             SteamworkKeys.STEAM_PRESS, SteamworkKeys.STEAM_GRINDER,
+            SteamworkKeys.STEAM_PRESSURIZED_FURNACE,
             SteamworkKeys.HEAT_TREATED_METAL, SteamworkKeys.MACHINE_SCRAP);
 
     // ---- Tier 2: mid-tier processing ------------------------------------
@@ -66,10 +67,6 @@ public final class SteamworkResearches {
             SteamworkKeys.MINERAL_ANALYSIS_SAMPLE, SteamworkKeys.ORGANIC_ANALYSIS_SAMPLE,
             SteamworkKeys.METALLURGICAL_ANALYSIS_SAMPLE, SteamworkKeys.FLUID_ANALYSIS_SAMPLE,
             SteamworkKeys.STEAM_SCIENCE_INTERFACE, SteamworkKeys.ANALYSIS_RESIDUE);
-
-    public static final Research MATERIAL_PRESSURIZED_FURNACE = new Research(
-            steamworkKey("material_pressurized_furnace"), SteamworkItems.STEAM_PRESSURIZED_FURNACE, 220L,
-            SteamworkKeys.STEAM_PRESSURIZED_FURNACE);
 
     // ---- Tier 3: advanced alloys & fluids -------------------------------
 
@@ -146,7 +143,6 @@ public final class SteamworkResearches {
 
         PRECISION_STEAM_AUTOMATION.register();
         CHEMISTRY_BASIC_RESEARCH.register();
-        MATERIAL_PRESSURIZED_FURNACE.register();
 
         MATERIAL_ADVANCED_INGOTS.register();
         MATERIAL_ADVANCED_BOILERS.register();

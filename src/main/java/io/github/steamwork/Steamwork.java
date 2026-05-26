@@ -40,6 +40,8 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
         SteamArm.registerGlobalListeners();
         SteamPress.registerGlobalListeners();
         io.github.steamwork.content.machines.PneumaticCargoHub.registerGlobalListeners();
+        getServer().getPluginManager().registerEvents(
+                new io.github.steamwork.content.machines.upgrade.MachineUpgradeListener(), this);
 
         SteamworkResearches.initialize();
         SteamworkRecipes.initialize();

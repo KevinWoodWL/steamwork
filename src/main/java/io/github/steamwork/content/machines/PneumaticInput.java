@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.block.base.RebarBreakHandler;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarEntityCulledBlock;
 import io.github.pylonmc.rebar.block.base.RebarFacadeBlock;
-import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
@@ -68,7 +68,7 @@ public class PneumaticInput extends RebarBlock implements
         RebarDirectionalBlock,
         RebarEntityCulledBlock,
         RebarFacadeBlock,
-        RebarGuiBlock,
+        RebarInventoryBlock,
         RebarTickingBlock,
         RebarVirtualInventoryBlock {
 

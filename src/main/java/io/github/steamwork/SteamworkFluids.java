@@ -4,6 +4,7 @@ import io.github.pylonmc.pylon.api.MeltingPoint;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature;
 import io.github.pylonmc.rebar.recipe.IngredientCalculator;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
@@ -16,58 +17,69 @@ public final class SteamworkFluids {
 
     public static final RebarFluid STEAM = new RebarFluid(
             steamworkKey("steam"),
-            Material.WHITE_CONCRETE_POWDER
-    ).addTag(FluidTemperature.HOT);
+            TextColor.fromHexString("#d8edf0"),
+            Material.WHITE_CONCRETE_POWDER,
+            FluidTemperature.HOT);
 
     public static final RebarFluid SUPERHEATED_STEAM = new RebarFluid(
             steamworkKey("superheated_steam"),
-            Material.WHITE_CONCRETE
-    ).addTag(FluidTemperature.HOT);
+            TextColor.fromHexString("#ff8c00"),
+            Material.WHITE_CONCRETE,
+            FluidTemperature.HOT);
 
     public static final RebarFluid PRESSURIZED_STEAM = new RebarFluid(
             steamworkKey("pressurized_steam"),
-            Material.CYAN_CONCRETE_POWDER
-    ).addTag(FluidTemperature.HOT);
+            TextColor.fromHexString("#18c0d8"),
+            Material.CYAN_CONCRETE_POWDER,
+            FluidTemperature.HOT);
 
     public static final RebarFluid MOLTEN_ZINC = new RebarFluid(
             steamworkKey("molten_zinc"),
-            Material.LIGHT_BLUE_TERRACOTTA
-    ).addTag(FluidTemperature.HOT).addTag(new MeltingPoint(419.5));
+            TextColor.fromHexString("#b0bec5"),
+            Material.LIGHT_BLUE_TERRACOTTA,
+            FluidTemperature.HOT).addTag(new MeltingPoint(419.5));
 
     public static final RebarFluid MOLTEN_BRASS = new RebarFluid(
             steamworkKey("molten_brass"),
-            Material.YELLOW_CONCRETE
-    ).addTag(FluidTemperature.HOT).addTag(new MeltingPoint(920.0));
+            TextColor.fromHexString("#d4a017"),
+            Material.YELLOW_CONCRETE,
+            FluidTemperature.HOT).addTag(new MeltingPoint(920.0));
 
     public static final RebarFluid DISTILLED_WATER = new RebarFluid(
             steamworkKey("distilled_water"),
-            Material.LIGHT_BLUE_CONCRETE
-    ).addTag(FluidTemperature.NORMAL);
+            TextColor.fromHexString("#29b6d6"),
+            Material.LIGHT_BLUE_CONCRETE,
+            FluidTemperature.NORMAL);
 
     public static final RebarFluid MINERAL_LEACHATE = new RebarFluid(
             steamworkKey("mineral_leachate"),
-            Material.LIME_CONCRETE_POWDER
-    ).addTag(FluidTemperature.NORMAL);
+            TextColor.fromHexString("#8bc34a"),
+            Material.LIME_CONCRETE_POWDER,
+            FluidTemperature.NORMAL);
 
     public static final RebarFluid WASTE_ACID = new RebarFluid(
             steamworkKey("waste_acid"),
-            Material.GREEN_CONCRETE
-    ).addTag(FluidTemperature.NORMAL);
+            TextColor.fromHexString("#4caf50"),
+            Material.GREEN_CONCRETE,
+            FluidTemperature.NORMAL);
 
     public static final RebarFluid LIGHT_FRACTION = new RebarFluid(
             steamworkKey("light_fraction"),
-            Material.WHITE_TERRACOTTA
-    ).addTag(FluidTemperature.NORMAL);
+            TextColor.fromHexString("#d9c9a8"),
+            Material.WHITE_TERRACOTTA,
+            FluidTemperature.NORMAL);
 
     public static final RebarFluid MEDIUM_FRACTION = new RebarFluid(
             steamworkKey("medium_fraction"),
-            Material.YELLOW_TERRACOTTA
-    ).addTag(FluidTemperature.NORMAL);
+            TextColor.fromHexString("#c8a060"),
+            Material.YELLOW_TERRACOTTA,
+            FluidTemperature.NORMAL);
 
     public static final RebarFluid HEAVY_FRACTION = new RebarFluid(
             steamworkKey("heavy_fraction"),
-            Material.BROWN_TERRACOTTA
-    ).addTag(FluidTemperature.NORMAL);
+            TextColor.fromHexString("#6d4c41"),
+            Material.BROWN_TERRACOTTA,
+            FluidTemperature.NORMAL);
 
     static {
         STEAM.register();

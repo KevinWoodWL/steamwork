@@ -37,14 +37,9 @@ val minecraftVersion = project.properties["minecraft.version"] as String
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT")
-    // rebar 0.39 / pylon 0.37 还没推到任何公开 Maven 仓库（jitpack 构建失败、
-    // papermc maven 最新只到 rebar 0.38 / pylon 0.33.1）。这里直接引用本地
-    // 仓库构建出来的 jar：
-    //   ../rebar  HEAD = 0.39.0 tag
-    //   ../pylon  HEAD ≈ 0.37.0 tag
-    // 等公开 Maven 跟上后再切回 io.github.pylonmc:* 坐标。
-    compileOnly(files("../rebar/rebar/build/libs/rebar-1.0.0-SNAPSHOT.jar"))
-    compileOnly(files("../pylon/build/libs/pylon-1.0.0-SNAPSHOT.jar"))
+    // rebar 0.40.0-26.1 / pylon 0.38.0-26.1 尚未推到公开 Maven，直接引用本地构建 jar。
+    compileOnly(files("../rebar/rebar-0.40.0-26.1/rebar/build/libs/rebar-1.0.0-SNAPSHOT.jar"))
+    compileOnly(files("../pylon/pylon-0.38.0-26.1/build/libs/pylon-1.0.0-SNAPSHOT.jar"))
     // 本地 jar 不带 transitive，所以这里要手动给 steamwork 暴露 Kotlin stdlib。
     // 运行时 Paper 通过 rebar 的 paperLibraryApi 加载，所以仍是 compileOnly。
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")

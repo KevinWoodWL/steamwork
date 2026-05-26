@@ -120,6 +120,9 @@ public final class SteamworkKeys {
     // Machine components
     public static final NamespacedKey STEAM_MOTOR = steamworkKey("steam_motor");
 
+    // Upgrade tool
+    public static final NamespacedKey MACHINE_CALIBRATOR = steamworkKey("machine_calibrator");
+
     // Equipment workshop
     public static final NamespacedKey STEAM_ASSEMBLY_BENCH = steamworkKey("steam_assembly_bench");
 
@@ -135,6 +138,33 @@ public final class SteamworkKeys {
     public static final NamespacedKey MILLING_BLADE = steamworkKey("milling_blade");
     public static final NamespacedKey CATALYST_CORE = steamworkKey("catalyst_core");
     public static final NamespacedKey PRECISION_BEARING = steamworkKey("precision_bearing");
+    public static final NamespacedKey PALLADIUM_ALLOY_INGOT = steamworkKey("palladium_alloy_ingot");
+    public static final NamespacedKey HIGH_POLYMER = steamworkKey("high_polymer");
+    public static final NamespacedKey SEQUENCED_WORKPIECE = steamworkKey("sequenced_workpiece");
+
+    // Steam automation machines
+    public static final NamespacedKey PRECISION_FOUNDRY = steamworkKey("precision_foundry");
+    public static final NamespacedKey PRECISION_CATALYTIC_REACTOR = steamworkKey("precision_catalytic_reactor");
+    public static final NamespacedKey HEAVY_IMPACT_CRUSHER = steamworkKey("heavy_impact_crusher");
+    public static final NamespacedKey HYDRAULIC_FORGE = steamworkKey("hydraulic_forge");
+    public static final NamespacedKey PRECISION_CRYSTALLIZER = steamworkKey("precision_crystallizer");
+    public static final NamespacedKey PRECISION_CENTRIFUGE = steamworkKey("precision_centrifuge");
+
+    // Hydraulic forge products
+    public static final NamespacedKey HIGH_PRESSURE_PIPE = steamworkKey("high_pressure_pipe");
+    public static final NamespacedKey HIGH_PRESSURE_FLANGE = steamworkKey("high_pressure_flange");
+    public static final NamespacedKey HYDRAULIC_PISTON = steamworkKey("hydraulic_piston");
+    public static final NamespacedKey HYDRAULIC_SEAL = steamworkKey("hydraulic_seal");
+    public static final NamespacedKey FORGED_PLATE = steamworkKey("forged_plate");
+
+    // Upgrade modules
+    public static final NamespacedKey UPGRADE_MODULE_ENERGY_SAVE = steamworkKey("upgrade_module_energy_save");
+    public static final NamespacedKey UPGRADE_MODULE_AUTO_INPUT = steamworkKey("upgrade_module_auto_input");
+    public static final NamespacedKey UPGRADE_MODULE_AUTO_OUTPUT = steamworkKey("upgrade_module_auto_output");
+    public static final NamespacedKey UPGRADE_MODULE_BULK = steamworkKey("upgrade_module_bulk");
+    public static final NamespacedKey UPGRADE_MODULE_RANGE = steamworkKey("upgrade_module_range");
+    public static final NamespacedKey UPGRADE_MODULE_BOOST = steamworkKey("upgrade_module_boost");
+    public static final NamespacedKey UPGRADE_MODULE_PYLON_COMPAT = steamworkKey("upgrade_module_pylon_compat");
 
     // Steam logistics
     public static final NamespacedKey STEAM_COMPRESSOR = steamworkKey("steam_compressor");
