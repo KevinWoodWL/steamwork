@@ -1,9 +1,11 @@
 package io.github.steamwork.recipes.registration;
 
 import io.github.pylonmc.pylon.PylonItems;
+import io.github.pylonmc.rebar.recipe.RebarRecipe;
 import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.steamwork.SteamworkItems;
 import io.github.steamwork.recipes.SteamMillingRecipe;
+import io.github.steamwork.util.SequencedWorkpiece;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
@@ -16,12 +18,29 @@ public final class MillingRecipes {
     public static void register() {
         // ===== 因瓦合金系列 =====
         // 低热膨胀性 → 精密传动零件，精密齿轮是中期机器的核心零件。
+        // 钯合金工序链第 3 步
+        SteamMillingRecipe millBlank = new SteamMillingRecipe(
+                steamworkKey("mill_palladium_alloy_blank"),
+                RecipeInput.of(SequencedWorkpiece.palladiumAlloy(2)),
+                SequencedWorkpiece.palladiumAlloy(3),
+                160.0,
+                300);
+        SteamMillingRecipe.RECIPE_TYPE.addRecipe(millBlank);
+        RebarRecipe.setPriority(millBlank, 10.0);
+
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
                 steamworkKey("mill_invar_to_precision_gear"),
                 RecipeInput.of(SteamworkItems.INVAR_INGOT, 2),
                 SteamworkItems.PRECISION_GEAR.clone().asQuantity(3),
                 80.0,
                 320));
+
+        SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
+                steamworkKey("mill_duralumin_to_precision_gear"),
+                RecipeInput.of(SteamworkItems.DURALUMIN_INGOT, 1),
+                SteamworkItems.PRECISION_GEAR.clone().asQuantity(2),
+                70.0,
+                280));
 
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
                 steamworkKey("mill_invar_to_precision_screw"),
@@ -64,6 +83,13 @@ public final class MillingRecipes {
                 85.0,
                 340));
 
+        SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
+                steamworkKey("mill_manganese_bronze_to_precision_bearing"),
+                RecipeInput.of(SteamworkItems.MANGANESE_BRONZE_INGOT, 2),
+                SteamworkItems.PRECISION_BEARING.clone().asQuantity(3),
+                85.0,
+                340));
+
         // ===== Pylon 协同 =====
         // 钯金 → 精密催化芯（稀有材料，产出高价值零件）。
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
@@ -72,6 +98,13 @@ public final class MillingRecipes {
                 SteamworkItems.CATALYST_CORE.clone().asQuantity(1),
                 120.0,
                 480));
+
+        SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
+                steamworkKey("mill_palladium_alloy_to_catalyst_core"),
+                RecipeInput.of(SteamworkItems.PALLADIUM_ALLOY_INGOT, 1),
+                SteamworkItems.CATALYST_CORE.clone().asQuantity(3),
+                140.0,
+                560));
 
         // 钢 → 精密轴承（Pylon 钢的铣床出路）。
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(

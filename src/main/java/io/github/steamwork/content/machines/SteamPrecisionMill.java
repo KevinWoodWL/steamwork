@@ -46,6 +46,9 @@ public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecip
     }
 
     @Override
+    public int upgradeSlotCount() { return 3; }
+
+    @Override
     protected @NotNull String translationPrefix() {
         return "steamwork.gui.steam_precision_mill";
     }

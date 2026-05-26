@@ -43,6 +43,9 @@ public class SteamSterilizer extends AbstractSteamProcessor<SteamSterilizingReci
     }
 
     @Override
+    public int upgradeSlotCount() { return 2; }
+
+    @Override
     protected @NotNull String translationPrefix() {
         return "steamwork.gui.steam_sterilizer";
     }

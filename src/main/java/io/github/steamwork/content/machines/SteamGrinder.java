@@ -2,7 +2,12 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.pylonmc.pylon.recipes.GrindstoneRecipe;
+import io.github.pylonmc.pylon.recipes.TableSawRecipe;
+import io.github.steamwork.recipes.SteamProcessRecipe;
 import io.github.steamwork.recipes.SteamGrindingRecipe;
+import io.github.steamwork.recipes.pylon.GrindstoneRecipeWrapper;
+import io.github.steamwork.recipes.pylon.TableSawRecipeWrapper;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -10,6 +15,9 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 蒸汽研磨机 —— 干法粉碎，把岩石 / 原矿 / 合金锭磨成粉末。
@@ -19,6 +27,18 @@ public class SteamGrinder extends AbstractSteamProcessor<SteamGrindingRecipe> {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }
+    }
+
+    /** 静态版联动配方列表，供 {@link Item} 构造器和 {@link #buildPylonRecipes()} 共用。 */
+    public static @NotNull List<SteamProcessRecipe> pylonRecipesForItem() {
+        List<SteamProcessRecipe> list = new ArrayList<>();
+        GrindstoneRecipe.RECIPE_TYPE.getRecipes().stream()
+                .map(r -> (SteamProcessRecipe) new GrindstoneRecipeWrapper(r, 30.0, 180))
+                .forEach(list::add);
+        TableSawRecipe.RECIPE_TYPE.getRecipes().stream()
+                .map(r -> (SteamProcessRecipe) new TableSawRecipeWrapper(r, 25.0, 120))
+                .forEach(list::add);
+        return list;
     }
 
     @SuppressWarnings("unused")
@@ -39,6 +59,14 @@ public class SteamGrinder extends AbstractSteamProcessor<SteamGrindingRecipe> {
     @Override
     protected @NotNull String pdcKeyPrefix() {
         return "grinding";
+    }
+
+    @Override
+    public int upgradeSlotCount() { return 2; }
+
+    @Override
+    protected @NotNull List<SteamProcessRecipe> buildPylonRecipes() {
+        return pylonRecipesForItem();
     }
 
     @Override

@@ -1,32 +1,44 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.PylonKeys;
+import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
+import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
 import io.github.pylonmc.rebar.block.base.RebarGuiBlock;
 import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
 import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock.MultiblockComponent;
+import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
+import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
-import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.RebarUtils;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
+import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
-import io.github.steamwork.recipes.SteamAssemblyRecipe;
+import io.github.steamwork.SteamworkFluids;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.RecipeChoice;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,60 +49,107 @@ import xyz.xenondevs.invui.inventory.VirtualInventory;
 import xyz.xenondevs.invui.item.AbstractItem;
 import xyz.xenondevs.invui.item.ItemProvider;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * 蒸汽装配台：把若干部件（底座 + 合金件 + 黄铜组件）组装成蒸汽装备。
- * <p>
- * - 3×1×3 多方块结构：主方块在中心，4 角青铜块。
- * - GUI：5 个输入槽 + 1 个装配按钮 + 1 个输出槽。
- * - 不耗蒸汽、不 tick；玩家点击按钮即时完成。
- * - 输入顺序不计较；按 {@link SteamAssemblyRecipe} 的逐项匹配 + 占位算法消耗。
- * <p>
- * 现阶段所有"未充气"蒸汽装备（5 工具、4 护甲、3 罐子）的合成都在这里完成，
- * 原版工作台配方已撤掉。让"做出蒸汽装备 → 必须先建一个工作车间"成为玩法门槛。
+ * Automatic steam crafting table. The template inventory defines a vanilla crafting recipe,
+ * while the exposed input/output inventories let the pneumatic network feed and extract items.
  */
 public class SteamAssemblyBench extends RebarBlock implements
         RebarDirectionalBlock,
+        RebarFluidBufferBlock,
         RebarGuiBlock,
         RebarSimpleMultiblock,
+        RebarTickingBlock,
         RebarVirtualInventoryBlock {
 
-    private static final int INPUT_SIZE = 5;
+    private static final int TEMPLATE_SIZE = 9;
+    private static final int STORAGE_SIZE = 9;
 
-    public static class Item extends RebarItem {
-        public Item(@NotNull ItemStack stack) {
-            super(stack);
+    private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
+    private final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
+    private final double steamPerCraft = getSettings().getOrThrow("steam-per-craft", ConfigAdapter.DOUBLE);
+
+    private final VirtualInventory templateInventory = new VirtualInventory(TEMPLATE_SIZE);
+    private final VirtualInventory inputInventory = new VirtualInventory(STORAGE_SIZE);
+    private final VirtualInventory outputInventory = new VirtualInventory(1);
+
+    private final StatusItem statusItem = new StatusItem();
+    private final SteamGaugeItem steamGaugeItem = new SteamGaugeItem();
+
+    private boolean lastActive = false;
+    private StopReason currentReason = StopReason.READY;
+
+    public enum StopReason {
+        READY("ready"),
+        STRUCTURE_MISSING("structure_missing"),
+        NO_TEMPLATE("no_template"),
+        NO_RECIPE("no_recipe"),
+        NO_INGREDIENTS("no_ingredients"),
+        NO_STEAM("no_steam"),
+        OUTPUT_FULL("output_full"),
+        PROCESSING("processing");
+
+        private final String key;
+
+        StopReason(String key) {
+            this.key = key;
+        }
+
+        public @NotNull String key() {
+            return key;
         }
     }
 
-    protected final VirtualInventory inputInventory = new VirtualInventory(INPUT_SIZE);
-    protected final VirtualInventory outputInventory = new VirtualInventory(1);
-    private final AssembleButton assembleButton = new AssembleButton();
+    public static class Item extends RebarItem {
+        private final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
+        private final double steamPerCraft = getSettings().getOrThrow("steam-per-craft", ConfigAdapter.DOUBLE);
+
+        public Item(@NotNull ItemStack stack) {
+            super(stack);
+        }
+
+        @Override
+        public @NotNull List<RebarArgument> getPlaceholders() {
+            return List.of(
+                    RebarArgument.of("steam-buffer", UnitFormat.MILLIBUCKETS.format(steamBuffer)),
+                    RebarArgument.of("steam-per-craft", UnitFormat.MILLIBUCKETS.format(steamPerCraft))
+            );
+        }
+    }
 
     @SuppressWarnings("unused")
     public SteamAssemblyBench(@NotNull Block block, @NotNull BlockCreateContext context) {
         super(block, context);
         setFacing(context.getFacing());
         setMultiblockDirection(context.getFacing());
+        setTickInterval(tickInterval);
+        createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
+        createFluidBuffer(SteamworkFluids.SUPERHEATED_STEAM, steamBuffer, true, false);
     }
 
     @SuppressWarnings("unused")
     public SteamAssemblyBench(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
+        try {
+            getFacing();
+        } catch (IllegalStateException e) {
+            setFacing(BlockFace.SOUTH);
+        }
+        setTickInterval(tickInterval);
     }
 
     @Override
     public void postInitialise() {
-        // 输出槽只能被装配按钮写入；玩家不能塞东西进去。
         outputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
     }
 
     @Override
     public @NotNull Map<@NotNull Vector3i, @NotNull MultiblockComponent> getComponents() {
-        // 4 角青铜块支撑工作平台。
         MultiblockComponent corner = MultiblockComponent.of(PylonKeys.BRONZE_BLOCK);
         return Map.of(
                 new Vector3i(-1, 0, -1), corner,
@@ -103,6 +162,7 @@ public class SteamAssemblyBench extends RebarBlock implements
     @Override
     public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
         return Map.of(
+                "template", templateInventory,
                 "input", inputInventory,
                 "output", outputInventory
         );
@@ -110,23 +170,213 @@ public class SteamAssemblyBench extends RebarBlock implements
 
     @Override
     public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        RebarFluidBufferBlock.super.onBreak(drops, context);
         RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    }
+
+    @Override
+    public void tick() {
+        StopReason nextReason = tryCraftOneCycle();
+        setActive(nextReason == StopReason.PROCESSING);
+        currentReason = nextReason == StopReason.PROCESSING ? StopReason.READY : nextReason;
+        statusItem.notifyWindows();
+        steamGaugeItem.notifyWindows();
+    }
+
+    private @NotNull StopReason tryCraftOneCycle() {
+        if (!isFormedAndFullyLoaded()) return StopReason.STRUCTURE_MISSING;
+        if (isTemplateEmpty()) return StopReason.NO_TEMPLATE;
+        if (fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) < steamPerCraft) return StopReason.NO_STEAM;
+
+        RecipeMatch match = findMatchingRecipe();
+        if (match == null) return StopReason.NO_RECIPE;
+        if (!outputInventory.canHold(match.result())) return StopReason.OUTPUT_FULL;
+
+        Map<Integer, Integer> plan = planIngredientConsumption(match.choices());
+        if (plan == null) return StopReason.NO_INGREDIENTS;
+
+        consumePlannedIngredients(plan);
+        outputInventory.addItem(new MachineUpdateReason(), match.result().clone());
+        removeFluid(SteamworkFluids.SUPERHEATED_STEAM, steamPerCraft);
+        spawnAssembleFx();
+        return StopReason.PROCESSING;
+    }
+
+    private boolean isTemplateEmpty() {
+        for (ItemStack stack : templateInventory.getItems()) {
+            if (stack != null && !stack.getType().isAir()) return false;
+        }
+        return true;
+    }
+
+    private @Nullable RecipeMatch findMatchingRecipe() {
+        Iterator<Recipe> recipes = Bukkit.recipeIterator();
+        while (recipes.hasNext()) {
+            Recipe recipe = recipes.next();
+            RecipeMatch match = matchRecipe(recipe);
+            if (match != null) return match;
+        }
+        return null;
+    }
+
+    private @Nullable RecipeMatch matchRecipe(@NotNull Recipe recipe) {
+        if (recipe instanceof ShapedRecipe shaped) {
+            return matchShapedRecipe(shaped);
+        }
+        if (recipe instanceof ShapelessRecipe shapeless) {
+            return matchShapelessRecipe(shapeless);
+        }
+        return null;
+    }
+
+    private @Nullable RecipeMatch matchShapedRecipe(@NotNull ShapedRecipe recipe) {
+        String[] shape = recipe.getShape();
+        Map<Character, RecipeChoice> choiceMap = recipe.getChoiceMap();
+
+        for (int yOffset = 0; yOffset <= 3 - shape.length; yOffset++) {
+            int width = shapeWidth(shape);
+            for (int xOffset = 0; xOffset <= 3 - width; xOffset++) {
+                List<RecipeChoice> choices = new ArrayList<>();
+                boolean matches = true;
+                for (int y = 0; y < 3 && matches; y++) {
+                    for (int x = 0; x < 3; x++) {
+                        RecipeChoice choice = choiceAt(shape, choiceMap, x - xOffset, y - yOffset);
+                        ItemStack template = templateInventory.getItem(y * 3 + x);
+                        if (!templateMatchesChoice(template, choice)) {
+                            matches = false;
+                            break;
+                        }
+                        if (choice != null) choices.add(choice.clone());
+                    }
+                }
+                if (matches) return new RecipeMatch(recipe.getResult(), choices);
+            }
+        }
+        return null;
+    }
+
+    private int shapeWidth(@NotNull String[] shape) {
+        int width = 0;
+        for (String row : shape) {
+            width = Math.max(width, row.length());
+        }
+        return width;
+    }
+
+    private @Nullable RecipeChoice choiceAt(
+            @NotNull String[] shape,
+            @NotNull Map<Character, RecipeChoice> choiceMap,
+            int x,
+            int y) {
+        if (y < 0 || y >= shape.length) return null;
+        String row = shape[y];
+        if (x < 0 || x >= row.length()) return null;
+        char symbol = row.charAt(x);
+        if (symbol == ' ') return null;
+        return choiceMap.get(symbol);
+    }
+
+    private @Nullable RecipeMatch matchShapelessRecipe(@NotNull ShapelessRecipe recipe) {
+        List<RecipeChoice> remaining = new ArrayList<>();
+        for (RecipeChoice choice : recipe.getChoiceList()) {
+            remaining.add(choice.clone());
+        }
+
+        for (ItemStack template : templateInventory.getItems()) {
+            if (template == null || template.getType().isAir()) continue;
+            boolean matched = false;
+            for (int i = 0; i < remaining.size(); i++) {
+                if (remaining.get(i).test(template)) {
+                    remaining.remove(i);
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) return null;
+        }
+
+        if (!remaining.isEmpty()) return null;
+        List<RecipeChoice> choices = new ArrayList<>();
+        for (RecipeChoice choice : recipe.getChoiceList()) {
+            choices.add(choice.clone());
+        }
+        return new RecipeMatch(recipe.getResult(), choices);
+    }
+
+    private boolean templateMatchesChoice(@Nullable ItemStack template, @Nullable RecipeChoice choice) {
+        boolean empty = template == null || template.getType().isAir();
+        if (choice == null) return empty;
+        return !empty && choice.test(template);
+    }
+
+    private @Nullable Map<Integer, Integer> planIngredientConsumption(@NotNull List<RecipeChoice> choices) {
+        Map<Integer, Integer> reserved = new LinkedHashMap<>();
+        for (RecipeChoice choice : choices) {
+            boolean found = false;
+            for (int slot = 0; slot < inputInventory.getSize(); slot++) {
+                ItemStack stack = inputInventory.getItem(slot);
+                int alreadyReserved = reserved.getOrDefault(slot, 0);
+                if (stack == null || stack.getType().isAir() || stack.getAmount() <= alreadyReserved) continue;
+                if (!choice.test(stack)) continue;
+                reserved.merge(slot, 1, Integer::sum);
+                found = true;
+                break;
+            }
+            if (!found) return null;
+        }
+        return reserved;
+    }
+
+    private void consumePlannedIngredients(@NotNull Map<Integer, Integer> plan) {
+        MachineUpdateReason reason = new MachineUpdateReason();
+        for (Map.Entry<Integer, Integer> entry : plan.entrySet()) {
+            ItemStack stack = inputInventory.getItem(entry.getKey());
+            if (stack == null || stack.getType().isAir()) continue;
+            inputInventory.setItem(reason, entry.getKey(), stack.subtract(entry.getValue()));
+        }
+    }
+
+    private void spawnAssembleFx() {
+        Block block = getBlock();
+        block.getWorld().spawnParticle(
+                Particle.CRIT,
+                block.getLocation().add(0.5, 1.1, 0.5),
+                12, 0.3, 0.2, 0.3, 0.05);
+        if (Math.random() < 0.35) {
+            block.getWorld().playSound(block.getLocation(), Sound.BLOCK_ANVIL_USE, 0.45f, 1.6f);
+        }
+    }
+
+    private void setActive(boolean active) {
+        if (lastActive != active) {
+            lastActive = active;
+            scheduleBlockTextureItemRefresh();
+        }
+    }
+
+    @Override
+    public @NotNull Map<String, kotlin.Pair<String, Integer>> getBlockTextureProperties() {
+        var props = super.getBlockTextureProperties();
+        props.put("active", new kotlin.Pair<>(Boolean.toString(lastActive), 2));
+        return props;
     }
 
     @Override
     public @NotNull Gui createGui() {
         return Gui.builder()
                 .setStructure(
-                        "# # # # # # # # #",
-                        "# i i i i i # o #",
-                        "# # # # # # # # #",
-                        "# # # # a # # # #",
-                        "# # # # # # # # #"
+                        "# t t t # g # o #",
+                        "# t t t # s # o #",
+                        "# t t t # # # # #",
+                        "# i i i i i i i #",
+                        "# # i i i i # # #"
                 )
                 .addIngredient('#', GuiItems.background())
+                .addIngredient('t', templateInventory)
                 .addIngredient('i', inputInventory)
                 .addIngredient('o', outputInventory)
-                .addIngredient('a', assembleButton)
+                .addIngredient('g', steamGaugeItem)
+                .addIngredient('s', statusItem)
                 .build();
     }
 
@@ -139,118 +389,66 @@ public class SteamAssemblyBench extends RebarBlock implements
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("structure", Component.translatable("steamwork.structure."
-                        + (isFormedAndFullyLoaded() ? "formed" : "missing")))
+                        + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
+                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                        fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
+                        fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
+                        12,
+                        TextColor.fromHexString("#ff8c00")
+                )),
+                RebarArgument.of("state", Component.translatable("steamwork.state." + currentReason.key()))
         ));
     }
 
-    // ===== 配方解析 =====
-
-    /**
-     * 检查输入槽是否匹配某个配方。返回匹配到的配方；找不到返回 null。
-     * 注意：本方法不消耗输入，仅查询。
-     */
-    private @Nullable SteamAssemblyRecipe findMatchingRecipe() {
-        for (SteamAssemblyRecipe recipe : SteamAssemblyRecipe.RECIPE_TYPE) {
-            if (canFulfill(recipe)) {
-                return recipe;
-            }
-        }
-        return null;
-    }
-
-    /** 不修改库存的"能否凑齐"检查。 */
-    private boolean canFulfill(@NotNull SteamAssemblyRecipe recipe) {
-        Map<Integer, Integer> reserved = new LinkedHashMap<>();
-        for (RecipeInput.Item need : recipe.ingredients()) {
-            int stillNeeded = need.getAmount();
-            for (int slot = 0; slot < inputInventory.getSize(); slot++) {
-                ItemStack stack = inputInventory.getItem(slot);
-                int already = reserved.getOrDefault(slot, 0);
-                if (stack == null || stack.isEmpty() || stack.getAmount() <= already) continue;
-                if (!need.matchesIgnoringAmount(stack)) continue;
-                int available = stack.getAmount() - already;
-                int take = Math.min(stillNeeded, available);
-                reserved.merge(slot, take, Integer::sum);
-                stillNeeded -= take;
-                if (stillNeeded <= 0) break;
-            }
-            if (stillNeeded > 0) return false;
-        }
-        return true;
-    }
-
-    /** 实际消耗输入槽的配方原料。前提：canFulfill 已返回 true。 */
-    private void consumeIngredients(@NotNull SteamAssemblyRecipe recipe) {
-        Map<Integer, Integer> reserved = new LinkedHashMap<>();
-        for (RecipeInput.Item need : recipe.ingredients()) {
-            int stillNeeded = need.getAmount();
-            for (int slot = 0; slot < inputInventory.getSize(); slot++) {
-                ItemStack stack = inputInventory.getItem(slot);
-                int already = reserved.getOrDefault(slot, 0);
-                if (stack == null || stack.isEmpty() || stack.getAmount() <= already) continue;
-                if (!need.matchesIgnoringAmount(stack)) continue;
-                int available = stack.getAmount() - already;
-                int take = Math.min(stillNeeded, available);
-                reserved.merge(slot, take, Integer::sum);
-                stillNeeded -= take;
-                if (stillNeeded <= 0) break;
-            }
-        }
-        for (Map.Entry<Integer, Integer> entry : reserved.entrySet()) {
-            ItemStack stack = inputInventory.getItem(entry.getKey());
-            if (stack != null) {
-                inputInventory.setItem(new MachineUpdateReason(), entry.getKey(), stack.subtract(entry.getValue()));
-            }
-        }
-    }
-
-    private void spawnAssembleFx() {
-        Block b = getBlock();
-        b.getWorld().spawnParticle(
-                Particle.CRIT,
-                b.getLocation().add(0.5, 1.1, 0.5),
-                16, 0.3, 0.2, 0.3, 0.05);
-        b.getWorld().playSound(b.getLocation(), Sound.BLOCK_ANVIL_USE, 0.6f, 1.5f);
-    }
-
-    // ===== GUI button =====
-
-    private final class AssembleButton extends AbstractItem {
-
+    private final class StatusItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            boolean formed = isFormedAndFullyLoaded();
-            SteamAssemblyRecipe match = formed ? findMatchingRecipe() : null;
-            boolean ready = match != null && outputInventory.canHold(match.producedStack());
+            Material material = switch (currentReason) {
+                case READY, PROCESSING -> Material.GREEN_STAINED_GLASS_PANE;
+                case NO_STEAM, STRUCTURE_MISSING -> Material.RED_STAINED_GLASS_PANE;
+                case OUTPUT_FULL -> Material.YELLOW_STAINED_GLASS_PANE;
+                case NO_TEMPLATE, NO_RECIPE, NO_INGREDIENTS -> Material.GRAY_STAINED_GLASS_PANE;
+            };
 
-            Material mat = ready ? Material.LIME_STAINED_GLASS_PANE
-                    : formed ? Material.GRAY_STAINED_GLASS_PANE
-                    : Material.RED_STAINED_GLASS_PANE;
-            String statusKey = ready ? "ready" : formed ? "no_recipe" : "structure_missing";
-
-            return ItemStackBuilder.of(mat)
-                    .name(noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.button")))
+            return ItemStackBuilder.of(material)
+                    .name(noItalic(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle"))))
                     .lore(List.of(
-                            noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.status." + statusKey))
+                            noItalic(reasonComponent(currentReason)),
+                            noItalic(Component.text(String.format("%.0f mB/craft", steamPerCraft)))
                     ));
         }
 
         @Override
-        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
-            if (!isFormedAndFullyLoaded()) return;
-
-            SteamAssemblyRecipe match = findMatchingRecipe();
-            if (match == null) return;
-
-            ItemStack out = match.producedStack();
-            if (!outputInventory.canHold(out)) return;
-
-            consumeIngredients(match);
-            outputInventory.addItem(new MachineUpdateReason(), out);
-            spawnAssembleFx();
-            notifyWindows();
-        }
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
     }
+
+    private @NotNull Component reasonComponent(@NotNull StopReason reason) {
+        return switch (reason) {
+            case NO_TEMPLATE -> Component.translatable("steamwork.state.ready");
+            case NO_RECIPE, NO_INGREDIENTS -> Component.translatable("steamwork.state.no_ingredients");
+            default -> Component.translatable("steamwork.state." + reason.key());
+        };
+    }
+
+    private final class SteamGaugeItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            double steam = fluidAmount(SteamworkFluids.SUPERHEATED_STEAM);
+            double capacity = fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM);
+            return ItemStackBuilder.of(Material.ORANGE_STAINED_GLASS)
+                    .name(noItalic(Component.translatable("steamwork.fluid.superheated_steam")))
+                    .lore(List.of(noItalic(Component.text(
+                            UnitFormat.MILLIBUCKETS.format(steam).decimalPlaces(0)
+                                    + " / "
+                                    + UnitFormat.MILLIBUCKETS.format(capacity).decimalPlaces(0)
+                    ))));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
+    }
+
+    private record RecipeMatch(@NotNull ItemStack result, @NotNull List<RecipeChoice> choices) {}
 
     private static @NotNull Component noItalic(@NotNull Component component) {
         return component.decoration(TextDecoration.ITALIC, false);

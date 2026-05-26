@@ -588,6 +588,116 @@ item:
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
     waila: "精密催化反应釜 | 过热蒸汽 %steam-bar% | %state%"
 
+  heavy_impact_crusher:
+    name: "重型冲击破碎机"
+    lore: |-
+      <arrow> 锰钢锻造的高耐磨破碎机，专门处理硬质方块与矿物
+      <arrow> 与蒸汽研磨机互补：研磨机出细粉，破碎机出粗碎与双倍矿
+      <arrow> 装入 Pylon 联动模组后还可执行磨石配方（更慢更耗汽，体现重型定位）
+      <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
+    waila: "重型冲击破碎机 | 过热蒸汽 %steam-bar% | %state%"
+
+  hydraulic_forge:
+    name: "液压锻造机"
+    lore: |-
+      <arrow> 锰青铜骨架的高压锻造平台，专门产出液压系统中间件
+      <arrow> 高压管件、法兰、活塞、密封件、锻造钢板的核心来源
+      <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
+    waila: "液压锻造机 | 过热蒸汽 %steam-bar% | %state%"
+
+  precision_crystallizer:
+    name: "精密结晶炉"
+    lore: |-
+      <arrow> 因瓦合金恒温壳体维持长时间稳定温度
+      <arrow> 慢速将低品矿/粉末/碎片结晶成高纯锭与原版宝石
+      <arrow> 不复制材料，按提纯比转化（4 粉 → 1 锭、4 粗矿 → 1 钢锭）
+      <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
+    waila: "精密结晶炉 | 过热蒸汽 %steam-bar% | %state%"
+
+  precision_centrifuge:
+    name: "精密离心机"
+    lore: |-
+      <arrow> 硬铝合金转子高速旋转，按密度加权随机分离混合物
+      <arrow> 处理样品/废料/复合粉末，每次产出加权随机的多种产物之一
+      <arrow> 给样品系列、机器废屑等"模糊输入"提供高级回收路线
+      <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
+    waila: "精密离心机 | 过热蒸汽 %steam-bar% | %state%"
+
+  high_pressure_pipe:
+    name: "高压管件"
+    lore: <arrow> 锻造而成的耐压管段，液压管路与高压锅炉支线的标准件
+
+  high_pressure_flange:
+    name: "高压法兰"
+    lore: |-
+      <arrow> 因瓦合金锻造的低膨胀连接件
+      <arrow> 在温差大的工况下仍能保持密封
+
+  hydraulic_piston:
+    name: "液压活塞"
+    lore: |-
+      <arrow> 锰青铜锻造的耐磨往复运动件
+      <arrow> 液压执行器的核心组件
+
+  hydraulic_seal:
+    name: "液压密封件"
+    lore: |-
+      <arrow> 硫化橡胶高压锻入金属壳体形成的复合密封
+      <arrow> 用于活塞与缸体之间的高压密封
+
+  forged_plate:
+    name: "锻造钢板"
+    lore: |-
+      <arrow> 高压锻造均化的高密度结构板
+      <arrow> 大型机械的承力外壳与基础结构件
+
+  machine_calibrator:
+    name: "<gray>精密调校仪"
+    lore: |-
+      <arrow> 右键单击机器以打开升级槽
+
+  upgrade_module_energy_save:
+    name: "<aqua>节能模组"
+    lore: |-
+      <arrow> 蒸汽消耗降低 20%
+      <arrow> 最多可叠加降低 80%
+
+  upgrade_module_range:
+    name: "<light_purple>范围模组"
+    lore: |-
+      <arrow> 涡轮专用：每个模组扫描半径 +1 格
+      <arrow> 让涡轮能加速更远处的机器
+
+  upgrade_module_boost:
+    name: "<gold>增幅模组"
+    lore: |-
+      <arrow> 涡轮专用：每个模组每次操作 +1 加速 tick
+      <arrow> 叠加后大幅强化对邻近机器的加速
+
+  upgrade_module_pylon_compat:
+    name: "<aqua>Pylon 联动模组"
+    lore: |-
+      <arrow> 解锁该机器对 Pylon 配方的支持
+      <arrow> 研磨机：磨石配方
+      <arrow> 重型冲击破碎机：磨石配方（更高蒸汽消耗）
+      <arrow> 浸煮槽：粗合金熔炉配方
+      <arrow> 精密铸造炉：成型 / 弯管 / 台锯配方
+      <arrow> 精密催化反应釜：窑炉配方（仅物品输出）
+
+  upgrade_module_auto_input:
+    name: "<green>自动进料模组"
+    lore: <arrow> 自动从所有相邻容器中拉取物品到输入槽
+
+  upgrade_module_auto_output:
+    name: "<red>自动出料模组"
+    lore: <arrow> 自动将输出槽物品推送到所有相邻容器
+
+  upgrade_module_bulk:
+    name: "<gold>批量加工模组"
+    lore: |-
+      <arrow> 配方完成时若原料充足，额外产出一份
+      <arrow> 每个模组增加一次额外产出尝试
+
   precision_gear:
     name: "精密齿轮"
     lore: |-
@@ -647,6 +757,27 @@ item:
     lore: |-
       <arrow> 由纤维、硫化橡胶和催化芯合成的致密聚合物
       <arrow> 可用于密封、绝缘和高级反应组件
+
+  sequenced_workpiece:
+    name: "序列工件"
+    lore: |-
+      <arrow> 用于多步骤产线的带数据半成品
+      <arrow> 耐久条显示当前工序进度
+      <arrow> 可由气动自动化在匹配机器之间转运
+    tooltip:
+      header: "<gray>蒸汽工坊 · 工序中间品"
+      line: "<dark_gray>工序：<gold>%line%"
+      step: "<dark_gray>步骤：<aqua>%step% / %steps%"
+    palladium_alloy:
+      line_name: "钯合金"
+      step_1:
+        name: "<aqua>活化钯合金基体"
+      step_2:
+        name: "<gold>粗炼钯合金锭"
+      step_3:
+        name: "<yellow>校准钯合金毛坯"
+      step_4:
+        name: "<white>钯合金序列工件"
 
   steam_distillation_tower:
     name: "蒸汽精馏塔"
@@ -852,6 +983,13 @@ gui:
       hint_click: "<dark_gray>左键选择产物"
       hint_next: "<dark_gray>左键切换到下一个产物"
       hint_unlock: "<dark_gray>右键清除选择"
+    pylon_compat:
+      title_inactive: "<gold>Pylon 联动配方"
+      title_active: "<aqua>Pylon 联动配方（已激活）"
+      status_inactive: "<gray>安装「<aqua>Pylon 联动模组</aqua>」以解锁以下配方"
+      status_active: "<green>联动模组已安装，以下配方已解锁"
+      recipes_header: "<gray>可制作的配方（共 <yellow>%count%</yellow> 条）："
+      more: "<dark_gray>……以及 <yellow>%count%</yellow> 条更多"
 
   steam_sterilizer:
     title: "<dark_gray>蒸汽灭菌箱"
@@ -937,6 +1075,50 @@ gui:
     status:
       active: "<green>反应中"
       idle: "<gray>待机"
+
+  heavy_impact_crusher:
+    title: "<dark_gray>重型冲击破碎机"
+    steam_gauge: "<gold>过热蒸汽"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>破碎进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>破碎中"
+      idle: "<gray>待机"
+
+  hydraulic_forge:
+    title: "<dark_gray>液压锻造机"
+    steam_gauge: "<gold>过热蒸汽"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>锻造进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>锻造中"
+      idle: "<gray>待机"
+
+  precision_crystallizer:
+    title: "<dark_gray>精密结晶炉"
+    steam_gauge: "<gold>过热蒸汽"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>结晶进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>结晶中"
+      idle: "<gray>待机"
+
+  precision_centrifuge:
+    title: "<dark_gray>精密离心机"
+    steam_gauge: "<gold>过热蒸汽"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
+    progress: "<green>离心进度"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    status:
+      active: "<green>离心中"
+      idle: "<gray>待机"
+
+  upgrade:
+    title: "<dark_gray>机器升级"
+    close: "<gray>关闭"
 
   pressurized_furnace:
     title: "<dark_gray>蒸汽加压炉"
@@ -1177,6 +1359,8 @@ gui:
       processing: "<green>正在精馏当前原料"
 
 guide:
+  button:
+    chain_recipes: "查看生产工序链"
   recipe:
     steam_pressurizing: "<gray>蒸汽加压 | 消耗 %steam% 蒸汽 | %time%"
     steam_sterilizing: "<gray>蒸汽灭菌 | 消耗 %steam% 蒸汽 | %time%"
@@ -1184,6 +1368,10 @@ guide:
     steam_washing: "<gray>蒸汽洗选 | 消耗 %steam% 蒸汽 | %time%"
     steam_pressing: "<gray>蒸汽冲压 | 消耗 %steam% 蒸汽 | %time%"
     steam_grinding: "<gray>蒸汽研磨 | 消耗 %steam% 蒸汽 | %time%"
+    steam_crushing: "<gray>重型冲击破碎 | 消耗 %steam% 蒸汽 | %time%"
+    steam_forging: "<gray>液压锻造 | 消耗 %steam% 蒸汽 | %time%"
+    steam_crystallizing: "<gray>精密结晶 | 消耗 %steam% 蒸汽 | %time%"
+    steam_centrifugation: "<gray>精密离心 | 消耗 %steam% 蒸汽 | %time%"
     steam_milling: "<gray>蒸汽铣削 | 消耗 %steam% 蒸汽 | %time%"
     steam_research: "<gray>蒸汽科研 | %discipline% | %points% 点 | %steam% 蒸汽 | %time%"
     steam_distillation: "<gray>蒸汽精馏 | %sections% 段塔 | %steam% 过热蒸汽 | %time%"
@@ -1211,6 +1399,8 @@ guide:
       name: "蒸汽货运"
     steam_automation:
       name: "蒸汽自动化"
+    steam_calibration:
+      name: "蒸汽调校"
     steam_distillation:
       name: "蒸汽蒸馏"
   page:
@@ -1224,6 +1414,7 @@ guide:
     steam_machines: "蒸汽机械"
     steam_logistics: "蒸汽货运"
     steam_automation: "蒸汽自动化"
+    steam_calibration: "蒸汽调校"
     steam_distillation: "蒸汽蒸馏"
 
 fluid:
@@ -1283,7 +1474,6 @@ research:
   # Tier 2 - 中期加工
   precision_steam_automation: "蒸汽自动化"
   chemistry_basic_research: "基础蒸汽科研"
-  material_pressurized_furnace: "蒸汽加压炉"
   # Tier 3 - 高级合金与流体
   material_advanced_ingots: "高级合金锭"
   material_advanced_boilers: "高级锅炉"
@@ -1335,3 +1525,4 @@ message:
     no_steam_arm_nearby: "<red>附近没有蒸汽动力臂在范围内"
   steam_science_interface:
     claimed: "<green>已领取 <aqua>%points%</aqua> 研究点数（累计 <aqua>%total%</aqua>）"
+

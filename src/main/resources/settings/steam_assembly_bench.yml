@@ -1,2 +1,3 @@
-# 蒸汽装配台：纯组装机器，无 tick / 无耗汽，按钮触发即时合成。
-# 暂无可调参数，保留 yml 让 Rebar 能加载 settings 句柄。
+tick-interval: 20
+steam-buffer: 1000.0
+steam-per-craft: 40.0

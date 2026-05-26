@@ -1,0 +1,4 @@
+tick-interval: 5
+steam-buffer: 1500.0
+scrap-chance: 0.08
+interruption-grace-ticks: 80
