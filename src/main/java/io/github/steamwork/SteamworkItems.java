@@ -35,6 +35,7 @@ import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.SteamWashingTrough;
 import io.github.steamwork.content.machines.TungstenBoiler;
 import io.github.steamwork.content.line.ProductionLineBlueprint;
+import io.github.steamwork.content.line.ProductionLineBufferChest;
 import io.github.steamwork.content.line.ProductionLineInlet;
 import io.github.steamwork.content.line.ProductionLineOutlet;
 import io.github.steamwork.recipes.SteamDistillationRecipe;
@@ -186,8 +187,10 @@ public final class SteamworkItems {
 
     // Production line
     public static final ItemStack PRODUCTION_LINE_INLET = ItemStackBuilder.rebar(Material.DISPENSER, SteamworkKeys.PRODUCTION_LINE_INLET).build();
+    public static final ItemStack PRODUCTION_LINE_BUFFER_CHEST = ItemStackBuilder.rebar(Material.CHEST, SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST).build();
     public static final ItemStack PRODUCTION_LINE_OUTLET = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.PRODUCTION_LINE_OUTLET).build();
     public static final ItemStack PRODUCTION_LINE_BLUEPRINT = ItemStackBuilder.rebar(Material.PAPER, SteamworkKeys.PRODUCTION_LINE_BLUEPRINT).build();
+    public static final ItemStack AUTO_PRODUCTION_MODULE = ItemStackBuilder.rebar(Material.OBSERVER, SteamworkKeys.AUTO_PRODUCTION_MODULE).build();
 
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
@@ -509,8 +512,10 @@ public final class SteamworkItems {
         RebarItem.register(PneumaticOutput.Item.class, PNEUMATIC_OUTPUT, SteamworkKeys.PNEUMATIC_OUTPUT);
         RebarItem.register(PneumaticDistributor.Item.class, PNEUMATIC_DISTRIBUTOR, SteamworkKeys.PNEUMATIC_DISTRIBUTOR);
         RebarItem.register(ProductionLineInlet.Item.class, PRODUCTION_LINE_INLET, SteamworkKeys.PRODUCTION_LINE_INLET);
+        RebarItem.register(ProductionLineBufferChest.Item.class, PRODUCTION_LINE_BUFFER_CHEST, SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST);
         RebarItem.register(ProductionLineOutlet.Item.class, PRODUCTION_LINE_OUTLET, SteamworkKeys.PRODUCTION_LINE_OUTLET);
         RebarItem.register(ProductionLineBlueprint.class, PRODUCTION_LINE_BLUEPRINT, SteamworkKeys.PRODUCTION_LINE_BLUEPRINT);
+        RebarItem.register(io.github.steamwork.content.line.AutoProductionModule.class, AUTO_PRODUCTION_MODULE, SteamworkKeys.AUTO_PRODUCTION_MODULE);
 
         // Precision mill products
         RebarItem.register(RebarItem.class, PRECISION_GEAR);

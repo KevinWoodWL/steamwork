@@ -100,8 +100,72 @@ public interface ProductionLineMember {
     static ProductionLineMember of(@NotNull Block block) {
         RebarBlock rb = RebarBlock.getRebarBlock(block);
         if (rb instanceof ProductionLineMember m) return m;
-        if (rb != null) return null; // 是 Rebar 方块但不是产线成员
+        if (rb != null) {
+            // 尝试将 Pylon 机器包装为产线成员（pylon 命名空间 + 有输入逻辑组或虚拟库存）
+            if (PylonMachineMember.isPylonMachine(rb)) return new PylonMachineMember(block, rb);
+            return null;
+        }
         if (VanillaFurnaceMember.isVanillaFurnace(block)) return new VanillaFurnaceMember(block);
         return null;
+    }
+
+    // ===== 解散扫描工具 =====
+
+    /**
+     * 相邻产线成员之间允许的最大间隔格数（对应 {@code ProductionLineListener.MAX_COMPONENT_GAP}）。
+     * 多方块机器的附属方块（如梁）占用的空隙不超过此值。
+     */
+    int DISBAND_MAX_GAP = 3;
+
+    /**
+     * 从 {@code start} 沿 {@code dir} 方向扫描，对所有属于 {@code lineId} 的
+     * 产线成员依次调用 {@link #leaveLine()}。
+     *
+     * <p>能够跳过多方块机器的附属方块（最多连续 {@value #DISBAND_MAX_GAP} 格），
+     * 与 {@code ProductionLineListener.disbandScan} 逻辑完全一致。
+     * 两处均应调用本方法，而非各自维护独立实现。</p>
+     *
+     * @param start          扫描起点（触发解散的机器的相邻格）
+     * @param dir            扫描方向
+     * @param lineId         目标产线 UUID
+     * @param firstDissolved 调用方自身（已知属于该产线，用于附属方块的跳过判定）
+     */
+    static void disbandScan(@NotNull Block start, @NotNull BlockFace dir,
+                            @NotNull UUID lineId, @NotNull ProductionLineMember firstDissolved) {
+        Block cursor = start;
+        ProductionLineMember lastDissolved = firstDissolved;
+
+        while (true) {
+            ProductionLineMember m = of(cursor);
+            if (m != null) {
+                if (!lineId.equals(m.getLineId())) break;
+                lastDissolved = m;
+                m.leaveLine();
+                cursor = cursor.getRelative(dir);
+                continue;
+            }
+
+            // 当前格是上一个已解散成员的附属方块（如多方块机器的钢梁）→ 跳过
+            if (lastDissolved.getOwnedMultiblockComponentBlocks().contains(cursor)) {
+                cursor = cursor.getRelative(dir);
+                continue;
+            }
+
+            // 前瞻：当前格是否是前方成员的前置附属方块
+            boolean skipped = false;
+            Block peek = cursor.getRelative(dir);
+            for (int i = 0; i < DISBAND_MAX_GAP; i++) {
+                ProductionLineMember mPeek = of(peek);
+                if (mPeek != null && lineId.equals(mPeek.getLineId())) {
+                    if (mPeek.getOwnedMultiblockComponentBlocks().contains(cursor)) {
+                        cursor = cursor.getRelative(dir);
+                        skipped = true;
+                    }
+                    break;
+                }
+                peek = peek.getRelative(dir);
+            }
+            if (!skipped) break;
+        }
     }
 }

@@ -184,6 +184,7 @@ public final class SteamworkPages {
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_CENTRIFUGE);
         STEAM_AUTOMATION.addItem(SteamworkItems.MACHINE_CALIBRATOR);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_INLET);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_BUFFER_CHEST);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_OUTLET);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_BLUEPRINT);
 
@@ -196,6 +197,7 @@ public final class SteamworkPages {
         STEAM_CALIBRATION.addItem(SteamworkItems.UPGRADE_MODULE_RANGE);
         STEAM_CALIBRATION.addItem(SteamworkItems.UPGRADE_MODULE_BOOST);
         STEAM_CALIBRATION.addItem(SteamworkItems.UPGRADE_MODULE_PYLON_COMPAT);
+        STEAM_CALIBRATION.addItem(SteamworkItems.AUTO_PRODUCTION_MODULE);
 
         ROOT.addPage(SteamworkItems.STEAM_DISTILLATION_TOWER, STEAM_DISTILLATION);
         STEAM_DISTILLATION.addItem(SteamworkItems.STEAM_DISTILLATION_TOWER);

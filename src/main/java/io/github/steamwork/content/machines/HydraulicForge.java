@@ -1,10 +1,13 @@
 package io.github.steamwork.content.machines;
 
+import io.github.pylonmc.pylon.recipes.HammerRecipe;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.recipes.SteamForgingRecipe;
+import io.github.steamwork.recipes.SteamProcessRecipe;
+import io.github.steamwork.recipes.pylon.HammerRecipeWrapper;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -13,6 +16,9 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 液压锻造机 —— 锰青铜级高压锻造机器。
@@ -86,6 +92,25 @@ public class HydraulicForge extends AbstractSteamProcessor<SteamForgingRecipe> {
                 Particle.CLOUD, loc.clone().add(0, 0.4, 0),
                 count, 0.2, 0.05, 0.2, 0.02);
         playProcessingSound(Sound.BLOCK_ANVIL_USE, 0.3f, 1.2f, 0.15);
+    }
+
+    // ===== Pylon 联动 =====
+
+    /**
+     * 静态版联动配方列表，供 {@link Item} 构造器和 {@link #buildPylonRecipes()} 共用。
+     *
+     * <p>液压锻造机以蒸汽液压替代 Pylon 手持锤，可执行所有 {@link HammerRecipe}；
+     * 工具等级要求由液压系统保证，不再限制。</p>
+     */
+    public static @NotNull List<SteamProcessRecipe> pylonRecipesForItem() {
+        return HammerRecipe.RECIPE_TYPE.getRecipes().stream()
+                .map(r -> (SteamProcessRecipe) new HammerRecipeWrapper(r, 60.0, 160))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    protected @NotNull List<SteamProcessRecipe> buildPylonRecipes() {
+        return pylonRecipesForItem();
     }
 
     public static void refreshRecipeCache() {}

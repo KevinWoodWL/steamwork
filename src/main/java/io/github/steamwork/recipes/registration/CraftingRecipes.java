@@ -515,6 +515,16 @@ public final class CraftingRecipes {
         pneumaticDistributor.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticDistributor);
 
+        ShapedRecipe productionLineBufferChest = new ShapedRecipe(
+                SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST, SteamworkItems.PRODUCTION_LINE_BUFFER_CHEST);
+        productionLineBufferChest.shape("RIR", "HCH", "RIR");
+        productionLineBufferChest.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        productionLineBufferChest.setIngredient('I', rebarChoice(SteamworkItems.DURALUMIN_INGOT));
+        productionLineBufferChest.setIngredient('H', Material.HOPPER);
+        productionLineBufferChest.setIngredient('C', Material.CHEST);
+        productionLineBufferChest.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(productionLineBufferChest);
+
         // 气动输入端（插入器）：无动力中继，接收网络推送后插入目标容器。
         // 因瓦合金（低膨胀管壁）+ 分流阀（单向止回）+ 原版漏斗（插入头）+ 黄铜密封环
         // 形状：RIR / FHF / RIR  （R=密封环 x4，I=因瓦锭 x2，F=分流阀 x2，H=漏斗）

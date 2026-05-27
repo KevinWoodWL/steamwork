@@ -137,6 +137,32 @@ class VanillaFurnaceMember implements ProductionLineMember {
         return pushToFurnaceSlot(item, true);
     }
 
+    /** 将产物槽（slot 2）中的一个物品推送给产线下游成员。由 FurnaceSmeltEvent 延迟调用。 */
+    void tryPushResultDownstream() {
+        if (!isInLine()) return;
+        BlockFace dir = getLineDirection();
+        if (dir == BlockFace.SELF) return;
+        UUID myLineId = getLineId();
+        if (myLineId == null) return;
+        if (!(block.getState() instanceof Furnace furnace)) return;
+        FurnaceInventory inv = furnace.getInventory();
+        ItemStack result = inv.getResult();
+        if (result == null || result.getType() == Material.AIR) return;
+        for (int i = 1; i <= DISBAND_MAX_GAP + 1; i++) {
+            Block cursor = block.getRelative(dir, i);
+            ProductionLineMember downstream = ProductionLineMember.of(cursor);
+            if (downstream == null) continue;
+            if (!myLineId.equals(downstream.getLineId())) return;
+            ItemStack single = result.clone();
+            single.setAmount(1);
+            if (downstream.acceptFromLine(single)) {
+                if (result.getAmount() <= 1) inv.setResult(null);
+                else { result.setAmount(result.getAmount() - 1); inv.setResult(result); }
+            }
+            return;
+        }
+    }
+
     private boolean pushToFurnaceSlot(@NotNull ItemStack item, boolean fuelSlot) {
         if (!(block.getState() instanceof Furnace furnace)) return false;
         FurnaceInventory inv = furnace.getInventory();

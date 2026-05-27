@@ -14,6 +14,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
+import io.github.steamwork.util.PneumaticUtils;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -139,10 +140,13 @@ public class ProductionLineOutlet extends RebarBlock implements
 
     @Override
     public void tick() {
+        PneumaticUtils.pushToAdjacentHoppers(getBlock(), buffer);
         lineInfoItem.notifyWindows();
     }
 
     // ===== ProductionLineMember =====
+
+    public @NotNull VirtualInventory getBuffer() { return buffer; }
 
     @Override public @Nullable UUID getLineId() { return lineId; }
     @Override public int getLinePosition() { return linePosition; }

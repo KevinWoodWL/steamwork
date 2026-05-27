@@ -7,8 +7,11 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.pylonmc.pylon.recipes.MoldingRecipe;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.recipes.SteamMillingRecipe;
+import io.github.steamwork.recipes.SteamProcessRecipe;
+import io.github.steamwork.recipes.pylon.MoldingRecipeWrapper;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -22,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 蒸汽精密铣床 —— 多方块结构：
@@ -183,6 +187,25 @@ public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecip
                 0.1, 0.05, 0.1, 0.01,
                 new Particle.DustOptions(org.bukkit.Color.fromRGB(0xC0C0C0), 0.6f));
         playProcessingSound(Sound.BLOCK_ANVIL_USE, 0.25f, 1.4f, 0.12);
+    }
+
+    // ===== Pylon 联动 =====
+
+    /**
+     * 静态版联动配方列表，供 {@link Item} 构造器和 {@link #buildPylonRecipes()} 共用。
+     *
+     * <p>精密铣床以蒸汽精密主轴替代 Pylon 手持模具，可执行所有 {@link MoldingRecipe}；
+     * 压制周期由过热蒸汽提供恒压，工具需求由蒸汽系统保证。</p>
+     */
+    public static @NotNull List<SteamProcessRecipe> pylonRecipesForItem() {
+        return MoldingRecipe.RECIPE_TYPE.getRecipes().stream()
+                .map(r -> (SteamProcessRecipe) new MoldingRecipeWrapper(r, 40.0, 180))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    protected @NotNull List<SteamProcessRecipe> buildPylonRecipes() {
+        return pylonRecipesForItem();
     }
 
     public static void refreshRecipeCache() {}

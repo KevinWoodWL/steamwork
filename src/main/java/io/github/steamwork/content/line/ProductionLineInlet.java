@@ -8,9 +8,10 @@ import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
-import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
+import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
+import io.github.steamwork.content.machines.upgrade.UpgradeableMachine;
 import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
@@ -33,6 +34,7 @@ import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.inventory.VirtualInventory;
 import xyz.xenondevs.invui.item.AbstractItem;
 import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.window.Window;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import io.github.steamwork.util.PneumaticUtils;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
@@ -53,16 +57,15 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 public class ProductionLineInlet extends RebarBlock implements
         RebarDirectionalBlock, RebarTickingBlock,
         RebarVirtualInventoryBlock, RebarInventoryBlock,
-        RebarLogisticBlock, ProductionLineMember {
+        RebarLogisticBlock, ProductionLineMember, UpgradeableMachine {
 
     enum FuelMode { ROUND_ROBIN, SINGLE_TARGET }
 
     // ===== PDC 键 =====
 
-    private static final NamespacedKey KEY_FUEL_MODE     = steamworkKey("inlet_fuel_mode");
-    private static final NamespacedKey KEY_FUEL_TARGETS  = steamworkKey("inlet_fuel_targets");
-    private static final NamespacedKey KEY_FUEL_BINDINGS = steamworkKey("inlet_fuel_bindings");
-
+    private static final NamespacedKey KEY_FUEL_MODE       = steamworkKey("inlet_fuel_mode");
+    private static final NamespacedKey KEY_FUEL_TARGETS    = steamworkKey("inlet_fuel_targets");
+    private static final NamespacedKey KEY_FUEL_BINDINGS   = steamworkKey("inlet_fuel_bindings");
     /** 扫描时跳过梁的最大查找距离，与 ProductionLineListener.MAX_COMPONENT_GAP 对应。 */
     private static final int MAX_GAP = 4;
 
@@ -100,6 +103,7 @@ public class ProductionLineInlet extends RebarBlock implements
     private final ScanButton           scanButton          = new ScanButton();
     private final ModeToggleItem       modeToggleItem      = new ModeToggleItem();
     private final MachineDisplayItem[] machineDisplayItems = new MachineDisplayItem[7];
+    private final VirtualInventory     upgradeInventory    = new VirtualInventory(1);
 
     // ===== 构造 =====
 
@@ -166,6 +170,7 @@ public class ProductionLineInlet extends RebarBlock implements
                 catch (NumberFormatException ignored) {}
             }
         }
+
     }
 
     // ===== 生命周期 =====
@@ -174,6 +179,13 @@ public class ProductionLineInlet extends RebarBlock implements
     public void postInitialise() {
         createLogisticGroup("ingredient", LogisticGroupType.INPUT, ingredientBuffer);
         createLogisticGroup("fuel",       LogisticGroupType.INPUT, fuelBuffer);
+        upgradeInventory.addPreUpdateHandler(event -> {
+            ItemStack newItem = event.getNewItem();
+            if (newItem == null || newItem.isEmpty()) return;
+            if (!(RebarItem.fromStack(newItem) instanceof AutoProductionModule)) {
+                event.setCancelled(true);
+            }
+        });
     }
 
     @Override
@@ -215,6 +227,9 @@ public class ProductionLineInlet extends RebarBlock implements
 
     @Override
     public void tick() {
+        // 从相邻漏斗拉取物品到原料槽
+        PneumaticUtils.pullFromAdjacentHoppers(getBlock(), ingredientBuffer);
+
         if (!isInLine() || lineDirection == BlockFace.SELF) {
             lineInfoItem.notifyWindows();
             return;
@@ -251,7 +266,32 @@ public class ProductionLineInlet extends RebarBlock implements
             break;
         }
 
+        // 自动生产模组：对产线内需要手动触发的机器执行自动交互
+        if (hasAutoProductionModule()) tickAutoInteract();
+
         lineInfoItem.notifyWindows();
+    }
+
+    private boolean hasAutoProductionModule() {
+        ItemStack m = upgradeInventory.getItem(0);
+        return m != null && !m.isEmpty() && RebarItem.isRebarItem(m, AutoProductionModule.class);
+    }
+
+    /**
+     * 遍历产线内所有成员，对实现了 {@link ManualInteractMember} 的机器执行一次自动交互。
+     */
+    private void tickAutoInteract() {
+        if (!isInLine() || lineDirection == BlockFace.SELF || lineId == null) return;
+        Block cursor = getBlock();
+        for (int step = 0; step < 64; step++) {
+            Block nextBlock = findNextMemberBlockFrom(cursor);
+            if (nextBlock == null) break;
+            ProductionLineMember m = ProductionLineMember.of(nextBlock);
+            if (m == null || !lineId.equals(m.getLineId())) break;
+            if (m instanceof ProductionLineOutlet) break;
+            if (m instanceof ManualInteractMember mim) mim.performAutoInteract();
+            cursor = nextBlock;
+        }
     }
 
     private void decrementBuffer(@NotNull VirtualInventory inv, int slot, @NotNull ItemStack current) {
@@ -328,6 +368,9 @@ public class ProductionLineInlet extends RebarBlock implements
     }
 
     // ===== ProductionLineMember =====
+
+    public @NotNull VirtualInventory getIngredientBuffer() { return ingredientBuffer; }
+    public @NotNull VirtualInventory getFuelBuffer()       { return fuelBuffer; }
 
     @Override public @Nullable UUID getLineId()            { return lineId; }
     @Override public int getLinePosition()                 { return linePosition; }
@@ -422,7 +465,7 @@ public class ProductionLineInlet extends RebarBlock implements
 
     @Override
     public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
-        return Map.of("ingredient", ingredientBuffer, "fuel", fuelBuffer);
+        return Map.of("ingredient", ingredientBuffer, "fuel", fuelBuffer, "upgrades", upgradeInventory);
     }
 
     // ===== 内部 GUI 元素 =====
@@ -499,6 +542,47 @@ public class ProductionLineInlet extends RebarBlock implements
             fuelRrIndex = 0;
             notifyWindows();
             for (MachineDisplayItem mdi : machineDisplayItems) mdi.notifyWindows();
+        }
+    }
+
+    // ===== UpgradeableMachine =====
+
+    @Override
+    public int upgradeSlotCount() { return 1; }
+
+    @Override
+    public void openUpgradeGui(@NotNull Player player) {
+        Window.builder()
+                .setUpperGui(buildUpgradeGui())
+                .setTitle(ni(Component.translatable("steamwork.gui.upgrade.title")))
+                .setViewer(player)
+                .build()
+                .open();
+    }
+
+    private @NotNull Gui buildUpgradeGui() {
+        return Gui.builder()
+                .setStructure(
+                        "# # # # # # # # #",
+                        "# # # # u # # # #",
+                        "# # # # c # # # #"
+                )
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('u', upgradeInventory)
+                .addIngredient('c', new CloseItem())
+                .build();
+    }
+
+    private final class CloseItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            return ItemStackBuilder.of(Material.BARRIER)
+                    .name(ni(Component.translatable("steamwork.gui.upgrade.close")));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
+            player.closeInventory();
         }
     }
 

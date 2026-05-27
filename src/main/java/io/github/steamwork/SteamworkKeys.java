@@ -168,8 +168,10 @@ public final class SteamworkKeys {
 
     // Production line
     public static final NamespacedKey PRODUCTION_LINE_INLET = steamworkKey("production_line_inlet");
+    public static final NamespacedKey PRODUCTION_LINE_BUFFER_CHEST = steamworkKey("production_line_buffer_chest");
     public static final NamespacedKey PRODUCTION_LINE_OUTLET = steamworkKey("production_line_outlet");
     public static final NamespacedKey PRODUCTION_LINE_BLUEPRINT = steamworkKey("production_line_blueprint");
+    public static final NamespacedKey AUTO_PRODUCTION_MODULE = steamworkKey("auto_production_module");
 
     // Steam logistics
     public static final NamespacedKey STEAM_COMPRESSOR = steamworkKey("steam_compressor");

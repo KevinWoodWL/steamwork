@@ -4,6 +4,8 @@ import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
+import io.github.steamwork.content.line.ProductionLineInlet;
+import io.github.steamwork.content.line.ProductionLineOutlet;
 import io.github.steamwork.content.machines.PneumaticCargoHub;
 import io.github.steamwork.content.machines.PneumaticInput;
 import org.bukkit.block.Block;
@@ -289,6 +291,45 @@ public final class PneumaticUtils {
         return 0;
     }
 
+    /**
+     * 将 VI 中的物品主动推入相邻漏斗（模拟原版容器向漏斗输出的行为）。
+     *
+     * <p>规则：正下方漏斗始终接收；其他面的漏斗只在朝向本方块时接收。每次最多推 1 个物品。</p>
+     *
+     * @return 实际推入数量（0 或 1）
+     */
+    public static int pushToAdjacentHoppers(@NotNull Block self, @NotNull VirtualInventory source) {
+        for (BlockFace face : new BlockFace[] {
+                BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP
+        }) {
+            Block neighbor = self.getRelative(face);
+            if (!(neighbor.getState() instanceof Hopper hopperState)) continue;
+            if (!(neighbor.getBlockData() instanceof org.bukkit.block.data.type.Hopper hopperData)) continue;
+            // 下方漏斗 face==DOWN，opposite==UP；漏斗朝向 UP 表示它朝向 self
+            if (face != BlockFace.DOWN && hopperData.getFacing() != face.getOppositeFace()) continue;
+
+            Inventory hopperInv = hopperState.getInventory();
+            ItemStack[] items = source.getItems();
+            for (int i = 0; i < items.length; i++) {
+                ItemStack stack = items[i];
+                if (stack == null || stack.getType().isAir()) continue;
+                ItemStack single = stack.clone().asQuantity(1);
+                if (hopperInv.addItem(single).isEmpty()) {
+                    MachineUpdateReason reason = new MachineUpdateReason();
+                    if (stack.getAmount() <= 1) {
+                        source.setItem(reason, i, null);
+                    } else {
+                        ItemStack reduced = stack.clone();
+                        reduced.setAmount(stack.getAmount() - 1);
+                        source.setItem(reason, i, reduced);
+                    }
+                    return 1;
+                }
+            }
+        }
+        return 0;
+    }
+
     // ── 内部工具 ──────────────────────────────────────────────────────────────
 
     /**
@@ -299,6 +340,7 @@ public final class PneumaticUtils {
     private static @Nullable VirtualInventory resolveInputInventory(@NotNull Block block) {
         RebarBlock rb = BlockStorage.get(block);
         if (rb instanceof PneumaticCargoHub hub) return hub.getSendInventory();
+        if (rb instanceof ProductionLineInlet inlet) return inlet.getIngredientBuffer();
         if (!(rb instanceof RebarVirtualInventoryBlock vib)) return null;
         return vib.getVirtualInventories().get("input");
     }
@@ -311,6 +353,7 @@ public final class PneumaticUtils {
     private static @Nullable VirtualInventory resolveExtractInventory(@NotNull Block block) {
         RebarBlock rb = BlockStorage.get(block);
         if (rb instanceof PneumaticCargoHub hub) return hub.getSendInventory();
+        if (rb instanceof ProductionLineOutlet outlet) return outlet.getBuffer();
         if (!(rb instanceof RebarVirtualInventoryBlock vib)) return null;
         return vib.getVirtualInventories().get("output");
     }

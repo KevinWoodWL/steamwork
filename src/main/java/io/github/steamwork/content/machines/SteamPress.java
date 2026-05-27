@@ -21,9 +21,16 @@ import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
+import io.github.pylonmc.pylon.recipes.FormingRecipe;
+import io.github.pylonmc.pylon.recipes.PipeBendingRecipe;
+import io.github.pylonmc.pylon.recipes.TableSawRecipe;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
 import io.github.steamwork.recipes.SteamPressingRecipe;
+import io.github.steamwork.recipes.SteamProcessRecipe;
+import io.github.steamwork.recipes.pylon.FormingRecipeWrapper;
+import io.github.steamwork.recipes.pylon.PipeBendingRecipeWrapper;
+import io.github.steamwork.recipes.pylon.TableSawRecipeWrapper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -467,7 +474,7 @@ public class SteamPress extends RebarBlock implements
     }
 
     private void tickProcessing() {
-        SteamPressingRecipe recipe = getCurrentRecipe();
+        SteamProcessRecipe recipe = getCurrentRecipe();
         if (recipe == null) {
             resetRecipe();
             currentState = State.READY;
@@ -497,6 +504,7 @@ public class SteamPress extends RebarBlock implements
         }
     }
 
+    // tryStartRecipe 从原生配方列表和 Pylon 联动缓存中匹配输入，原生优先。
     private @NotNull State tryStartRecipe() {
         ItemStack input = getDisplayItem();
         if (input == null) return State.READY;
@@ -508,6 +516,21 @@ public class SteamPress extends RebarBlock implements
             if (fluidAmount(SteamworkFluids.STEAM) < recipe.steamCost()) return State.NO_STEAM;
 
             // Consume one recipe's worth from the display stack, but keep entity visible
+            consumeOneFromDisplay(need.getAmount());
+            currentRecipeKey     = recipe.getKey();
+            recipeTicksRemaining = recipe.timeTicks();
+            setActive(true);
+            spawnFx(8);
+            return State.PROCESSING;
+        }
+
+        // Pylon 联动：成形 / 弯管 / 锯切配方
+        for (SteamProcessRecipe recipe : getPylonRecipeCache()) {
+            RecipeInput.Item need = recipe.ingredient();
+            if (!need.matchesIgnoringAmount(input)) continue;
+            if (input.getAmount() < need.getAmount()) continue;
+            if (fluidAmount(SteamworkFluids.STEAM) < recipe.steamCost()) return State.NO_STEAM;
+            recipe.onRecipeStart();
             consumeOneFromDisplay(need.getAmount());
             currentRecipeKey     = recipe.getKey();
             recipeTicksRemaining = recipe.timeTicks();
@@ -535,7 +558,7 @@ public class SteamPress extends RebarBlock implements
         }
     }
 
-    private void completeRecipe(@NotNull SteamPressingRecipe recipe) {
+    private void completeRecipe(@NotNull SteamProcessRecipe recipe) {
         Block ironBlock = getIronBlockPos();
         ironBlock.getWorld().dropItemNaturally(
                 ironBlock.getLocation().add(0.5, 0.5, 0.5),
@@ -555,7 +578,7 @@ public class SteamPress extends RebarBlock implements
         resetRecipe();
     }
 
-    private void handleInterruption(@NotNull SteamPressingRecipe recipe) {
+    private void handleInterruption(@NotNull SteamProcessRecipe recipe) {
         if (graceTicks <= 0) return;
         interruptionTicks += tickInterval;
         if (interruptionTicks <= graceTicks) return;
@@ -592,7 +615,7 @@ public class SteamPress extends RebarBlock implements
         if (!isProcessing()) return;
         recipeTicksRemaining = Math.max(0, recipeTicksRemaining - ticks);
         if (recipeTicksRemaining <= 0) {
-            SteamPressingRecipe recipe = getCurrentRecipe();
+            SteamProcessRecipe recipe = getCurrentRecipe();
             if (recipe != null) {
                 completeRecipe(recipe);
             }
@@ -605,13 +628,43 @@ public class SteamPress extends RebarBlock implements
         setActive(false);
     }
 
+    // ===== Pylon 联动配方 =====
+
+    @Nullable private List<SteamProcessRecipe> pylonRecipeCache = null;
+
+    /**
+     * 懒加载 Pylon 联动配方缓存。
+     * 包含 FormingRecipe、PipeBendingRecipe、TableSawRecipe，
+     * 分别对应蒸汽冲压机的三种 Pylon 工序：成形、弯管、锯切。
+     */
+    private @NotNull List<SteamProcessRecipe> getPylonRecipeCache() {
+        if (pylonRecipeCache == null) {
+            List<SteamProcessRecipe> list = new ArrayList<>();
+            FormingRecipe.RECIPE_TYPE.getRecipes()
+                    .forEach(r -> list.add(new FormingRecipeWrapper(r, 50.0, 160)));
+            PipeBendingRecipe.RECIPE_TYPE.getRecipes()
+                    .forEach(r -> list.add(new PipeBendingRecipeWrapper(r, 40.0, 140)));
+            TableSawRecipe.RECIPE_TYPE.getRecipes()
+                    .forEach(r -> list.add(new TableSawRecipeWrapper(r, 35.0, 120)));
+            pylonRecipeCache = list;
+        }
+        return pylonRecipeCache;
+    }
+
     private boolean isProcessing() {
         return currentRecipeKey != null && recipeTicksRemaining > 0;
     }
 
     @Nullable
-    private SteamPressingRecipe getCurrentRecipe() {
-        return currentRecipeKey == null ? null : SteamPressingRecipe.RECIPE_TYPE.getRecipe(currentRecipeKey);
+    private SteamProcessRecipe getCurrentRecipe() {
+        if (currentRecipeKey == null) return null;
+        // 先查原生冲压配方
+        SteamPressingRecipe native_ = SteamPressingRecipe.RECIPE_TYPE.getRecipe(currentRecipeKey);
+        if (native_ != null) return native_;
+        // 再查 Pylon 联动缓存（key 由 Pylon 方配方注册，命名空间不同，不会与原生配方冲突）
+        return getPylonRecipeCache().stream()
+                .filter(r -> currentRecipeKey.equals(r.getKey()))
+                .findFirst().orElse(null);
     }
 
     private void setActive(boolean active) {
@@ -720,7 +773,7 @@ public class SteamPress extends RebarBlock implements
     private final class ProgressItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            SteamPressingRecipe recipe = getCurrentRecipe();
+            SteamProcessRecipe recipe = getCurrentRecipe();
             boolean processing = recipe != null && recipeTicksRemaining > 0;
 
             if (!processing) {

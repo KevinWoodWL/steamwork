@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -237,6 +238,19 @@ public class ProductionLineListener implements Listener {
         disbandScan(block.getRelative(reverse), reverse, lineId, member);
     }
 
+    // ==================== 熔炉烧炼完成 → 推送产物至下游 ====================
+
+    @EventHandler(ignoreCancelled = true)
+    public void onFurnaceSmelt(@NotNull FurnaceSmeltEvent event) {
+        Block block = event.getBlock();
+        if (!VanillaFurnaceMember.isVanillaFurnace(block)) return;
+        VanillaFurnaceMember member = new VanillaFurnaceMember(block);
+        if (!member.isInLine()) return;
+        // 延迟 1 tick，等 Bukkit 把产物写入结果槽后再推送
+        Bukkit.getScheduler().runTask(io.github.steamwork.Steamwork.getInstance(),
+                () -> new VanillaFurnaceMember(block).tryPushResultDownstream());
+    }
+
     // ==================== 玩家离线 / 切换手持 ====================
 
     @EventHandler
@@ -285,42 +299,8 @@ public class ProductionLineListener implements Listener {
      */
     private static void disbandScan(@NotNull Block start, @NotNull BlockFace dir,
                                     @NotNull UUID lineId, @NotNull ProductionLineMember firstDissolved) {
-        Block cursor = start;
-        ProductionLineMember lastDissolved = firstDissolved;
-
-        while (true) {
-            ProductionLineMember m = ProductionLineMember.of(cursor);
-            if (m != null) {
-                if (!lineId.equals(m.getLineId())) break;
-                lastDissolved = m;
-                m.leaveLine();
-                cursor = cursor.getRelative(dir);
-                continue;
-            }
-
-            // 检查是否是上一个成员的后置附属方块
-            Set<Block> ownedByLast = lastDissolved.getOwnedMultiblockComponentBlocks();
-            if (ownedByLast.contains(cursor)) {
-                cursor = cursor.getRelative(dir);
-                continue;
-            }
-
-            // 检查是否是前方成员的前置附属方块
-            boolean skipped = false;
-            Block peek = cursor.getRelative(dir);
-            for (int i = 0; i < MAX_COMPONENT_GAP; i++) {
-                ProductionLineMember mPeek = ProductionLineMember.of(peek);
-                if (mPeek != null && lineId.equals(mPeek.getLineId())) {
-                    if (mPeek.getOwnedMultiblockComponentBlocks().contains(cursor)) {
-                        cursor = cursor.getRelative(dir);
-                        skipped = true;
-                    }
-                    break;
-                }
-                peek = peek.getRelative(dir);
-            }
-            if (!skipped) break;
-        }
+        // 委托给共享的 gap-aware 扫描工具，与 AbstractSteamProcessor.disbandLine() 保持一致
+        ProductionLineMember.disbandScan(start, dir, lineId, firstDissolved);
     }
 
     /**

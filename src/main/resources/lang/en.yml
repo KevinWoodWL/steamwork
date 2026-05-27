@@ -553,6 +553,24 @@ item:
     waila_idle: "Production Line Inlet | Not configured"
     waila: "Production Line Inlet #%number% | %state% | Creator: %creator%"
 
+  production_line_buffer_chest:
+    name: "Production Line Buffer Chest"
+    lore: |-
+      <arrow> Inline buffer for steam production lines with a <white>27-slot cache</white>
+      <arrow> Receives products from the previous step, then tries any accepted item against the next step
+      <arrow> Push mode (ingredient / fuel / off) is configurable via the GUI
+      <arrow> Useful after machines with mixed outputs, such as the Pylon grindstone
+    waila_idle: "Production Line Buffer Chest | Not configured"
+    waila: "Production Line Buffer Chest #%number% | %state% | Creator: %creator%"
+
+  auto_production_module:
+    name: "Auto-Production Module"
+    lore: |-
+      <arrow> Calibration upgrade for the Production Line Inlet
+      <arrow> When installed, the inlet automatically right-clicks <white>manual-trigger</white> machines each tick
+      <arrow> Supports any Rebar machine implementing the ManualInteractMember interface
+      <arrow> Right-click the inlet with a Precision Calibrator to install via the upgrade page
+
   production_line_outlet:
     name: "Production Line Outlet"
     lore: |-
@@ -1294,6 +1312,7 @@ gui:
     container_furnace: "<gray>Connected: <white>Furnace / Smelter"
     container_brewer: "<gray>Connected: <white>Brewing Stand"
     container_generic: "<gray>Connected: <white>Container"
+    container_line_inlet: "<gray>Connected: <white>Production Line Inlet"
     slot_mode_auto: "<#88ddff>Slot: Auto"
     slot_mode_ingredient: "<#a0e6a0>Slot: Ingredient"
     slot_mode_fuel: "<#ffb060>Slot: Fuel"
@@ -1345,6 +1364,29 @@ gui:
       not_configured: "<gray>This outlet is not part of any production line"
       waiting: "<gray>Status: <yellow>Waiting for products from upstream"
       receiving: "<gray>Status: <green>Products ready to collect"
+
+  production_line_buffer_chest:
+    title: "<dark_gray>Production Line Buffer Chest"
+    line_status:
+      title: "<aqua>Line Status"
+      not_configured: "<gray>This buffer chest is not part of any production line"
+      waiting: "<gray>Status: <yellow>Cache empty, waiting for upstream products"
+      pushing: "<gray>Status: <green>Sending accepted items downstream"
+      buffering: "<gray>Status: <gold>Caching items the next step cannot accept yet"
+    fuel_filter:
+      title: "<aqua>Fuel Template"
+      empty: "<gray>Not set"
+      active: "<gray>Items matching this type will be sent to the fuel slot"
+      set_hint: "<dark_gray>Left-click (holding item) to set template"
+      clear_hint: "<dark_gray>Right-click to clear template"
+    mode:
+      title: "<aqua>Push Mode"
+      ingredient: "<gray>Current: <green>Push to ingredient slot"
+      auto: "<gray>Current: <aqua>Auto-route (template match → fuel slot, others → ingredient)"
+      auto_hint: "<dark_gray>Set the fuel type in the fuel template slot to the right"
+      fuel: "<gray>Current: <gold>Push all to fuel slot"
+      off: "<gray>Current: <red>Disabled (buffer only)"
+      hint: "<dark_gray>Click to cycle modes"
 
   pneumatic_distributor:
     title: "<dark_gray>Pneumatic Distributor"
@@ -1597,6 +1639,7 @@ line:
     pushing: "<green>Pushing"
     blocked: "<gold>Downstream Blocked"
     receiving: "<green>Receiving"
+    buffering: "<gold>Buffering"
   blueprint:
     start_with_inlet: "Right-click a <white>Production Line Inlet</white> to begin configuration"
     already_in_line: "This block already belongs to a production line"

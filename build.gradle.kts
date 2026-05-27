@@ -37,9 +37,9 @@ val minecraftVersion = project.properties["minecraft.version"] as String
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT")
-    // rebar 0.40.0-26.1 / pylon 0.38.0-26.1 尚未推到公开 Maven，直接引用本地构建 jar。
-    compileOnly(files("../rebar/rebar-0.40.0-26.1/rebar/build/libs/rebar-1.0.0-SNAPSHOT.jar"))
-    compileOnly(files("../pylon/pylon-0.38.0-26.1/build/libs/pylon-1.0.0-SNAPSHOT.jar"))
+    // rebar / pylon 尚未推到公开 Maven，直接引用本地构建 jar。
+    compileOnly(files("../rebar/rebar/build/libs/rebar-1.0.0-SNAPSHOT.jar"))
+    compileOnly(files("../pylon/build/libs/pylon-1.0.0-SNAPSHOT.jar"))
     // 本地 jar 不带 transitive，所以这里要手动给 steamwork 暴露 Kotlin stdlib。
     // 运行时 Paper 通过 rebar 的 paperLibraryApi 加载，所以仍是 compileOnly。
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
@@ -61,11 +61,11 @@ tasks.shadowJar {
     mergeServiceFiles()
     archiveBaseName = project.name
     archiveClassifier = null
-    archiveFileName.set("${project.name}-${project.version}-${buildTimestamp}.jar")
+    archiveFileName.set("${project.name}-${project.version}.jar")
 }
 
 tasks.named<Jar>("sourcesJar") {
-    archiveFileName.set("${project.name}-${project.version}-${buildTimestamp}-sources.jar")
+    archiveFileName.set("${project.name}-${project.version}-sources.jar")
 }
 
 // 原始 jar（无 shadow 依赖）对玩家无用，禁用以免和 shadowJar 混淆。

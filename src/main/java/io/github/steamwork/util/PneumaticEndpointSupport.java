@@ -3,7 +3,6 @@ package io.github.steamwork.util;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder;
-import io.github.pylonmc.rebar.entity.display.transform.LineBuilder;
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.steamwork.content.machines.PneumaticDuct;
@@ -16,7 +15,6 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +28,6 @@ import java.util.List;
 public final class PneumaticEndpointSupport {
 
     public  static final double DISPLAY_SCAN_RADIUS     = 1.25D;
-    private static final double PIPE_THICKNESS          = 0.3505D;
-    private static final double PIPE_EXTRA_LENGTH       = 0.3505D;
-    private static final double DISCONNECTED_PIPE_LENGTH = 0.45D;
-
     private PneumaticEndpointSupport() {}
 
     /** 优先使用玩家视线的竖直方向（俯视 → DOWN，仰视 → UP），否则回退到水平面。 */
@@ -51,16 +45,33 @@ public final class PneumaticEndpointSupport {
                 ? facing : facing.getOppositeFace();
     }
 
-    /** 朝指定面延伸的一段管道 Transform：连通时整格、未连通时缩短为 0.45。 */
+    /**
+     * 朝指定面延伸的一段管道 Transform。
+     *
+     * <ul>
+     *   <li><b>已连接</b>（face 侧紧邻导管）：管道从方块中心延伸到方块面（0.5），
+     *       与 {@link PneumaticDuct} 的 line display（HALF_SEGMENT=0.5）无缝对接。</li>
+     *   <li><b>未连接</b>：管道向内收，内侧端与主体背面（0.3 格）齐平，外侧端不超出方块面，
+     *       视觉上贴合主体、不外露。</li>
+     * </ul>
+     */
     public static @NotNull TransformBuilder ductTransform(@NotNull Block block, @NotNull BlockFace face) {
         boolean connected = PneumaticDuct.isNetworkConnector(block.getRelative(face));
-        double length = connected ? 1.0D : DISCONNECTED_PIPE_LENGTH;
-        return new LineBuilder()
-                .from(new Vector3d())
-                .to(new Vector3d(face.getModX() * length, face.getModY() * length, face.getModZ() * length))
-                .thickness(PIPE_THICKNESS)
-                .extraLength(connected ? PIPE_EXTRA_LENGTH : 0.0D)
-                .build();
+        if (connected) {
+            // 管道从主体背面（-0.3）延伸到方块面（+0.5），总长 0.8，center 在 +0.1。
+            // translate(+0.1) 在 world Z 上偏移；lookAlong 旋转把 +Z 对齐 ductFace 方向，
+            // 因此 ±0.4 的延伸自然落在正确的侧面。
+            return new TransformBuilder()
+                    .lookAlong(face)
+                    .translate(0, 0, 0.1)
+                    .scale(0.35, 0.35, 0.80);
+        } else {
+            // 内侧端贴合主体背面（0.3），外侧端收在方块内（0.175 处），不外露
+            return new TransformBuilder()
+                    .lookAlong(face)
+                    .translate(0, 0, 0.0625)
+                    .scale(0.35, 0.35, 0.475);
+        }
     }
 
     /**

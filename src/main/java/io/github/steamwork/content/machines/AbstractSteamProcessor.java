@@ -331,9 +331,9 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                     event.setCancelled(true);
                     return;
                 }
-                // 涡轮专用模组（扫描半径、加速力度）不能装入加工机
+                // 涡轮专用模组（扫描半径、加速力度）和产线入口专用模组（自动生产）不能装入加工机
                 UpgradeType type = module.getUpgradeType();
-                if (type == UpgradeType.RANGE || type == UpgradeType.BOOST) {
+                if (type == UpgradeType.RANGE || type == UpgradeType.BOOST || type == UpgradeType.AUTO_PRODUCTION) {
                     event.setCancelled(true);
                 }
             });
@@ -932,9 +932,12 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
      */
     private void pushToNextInLine() {
         if (lineDirection == BlockFace.SELF) return;
-        Block nextBlock = getBlock().getRelative(lineDirection);
-        RebarBlock nextRebar = RebarBlock.getRebarBlock(nextBlock);
-        if (!(nextRebar instanceof ProductionLineMember next)) return;
+        ProductionLineMember next = null;
+        for (int i = 1; i <= ProductionLineMember.DISBAND_MAX_GAP + 1; i++) {
+            ProductionLineMember candidate = ProductionLineMember.of(getBlock().getRelative(lineDirection, i));
+            if (candidate != null) { next = candidate; break; }
+        }
+        if (next == null) return;
 
         for (int i = 0; i < outputInventory.getSize(); i++) {
             ItemStack stack = outputInventory.getItem(i);
@@ -1013,25 +1016,11 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         }
 
         Block self = getBlock();
-        // 向下游清除
-        Block cursor = self.getRelative(dir);
-        while (true) {
-            RebarBlock rb = RebarBlock.getRebarBlock(cursor);
-            if (!(rb instanceof ProductionLineMember m)) break;
-            if (!id.equals(m.getLineId())) break;
-            m.leaveLine();
-            cursor = cursor.getRelative(dir);
-        }
-        // 向上游清除
         BlockFace reverse = dir.getOppositeFace();
-        cursor = self.getRelative(reverse);
-        while (true) {
-            RebarBlock rb = RebarBlock.getRebarBlock(cursor);
-            if (!(rb instanceof ProductionLineMember m)) break;
-            if (!id.equals(m.getLineId())) break;
-            m.leaveLine();
-            cursor = cursor.getRelative(reverse);
-        }
+        // 向下游清除：使用 gap-aware 扫描，能跳过多方块附属方块间隙
+        ProductionLineMember.disbandScan(self.getRelative(dir), dir, id, this);
+        // 向上游清除：使用 gap-aware 扫描，能跳过多方块附属方块间隙
+        ProductionLineMember.disbandScan(self.getRelative(reverse), reverse, id, this);
         // 清除自身
         leaveLine();
     }

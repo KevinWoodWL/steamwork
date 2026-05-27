@@ -20,6 +20,7 @@ import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkKeys;
+import io.github.steamwork.content.line.ProductionLineInlet;
 import io.github.steamwork.util.PneumaticEndpointSupport;
 import io.github.steamwork.util.PneumaticUtils;
 import net.kyori.adventure.text.Component;
@@ -276,6 +277,9 @@ public class PneumaticInput extends RebarBlock implements
      */
     private @NotNull List<SlotMode> getAvailableModes() {
         Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
+        if (BlockStorage.get(target) instanceof ProductionLineInlet) {
+            return List.of(SlotMode.AUTO, SlotMode.INGREDIENT, SlotMode.FUEL);
+        }
         if (target.getState() instanceof org.bukkit.block.Container c) {
             org.bukkit.inventory.Inventory inv = c.getInventory();
             if (inv instanceof org.bukkit.inventory.FurnaceInventory
@@ -291,6 +295,9 @@ public class PneumaticInput extends RebarBlock implements
      */
     private @NotNull String getConnectedContainerKey() {
         Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
+        if (BlockStorage.get(target) instanceof ProductionLineInlet) {
+            return "steamwork.gui.pneumatic_input.container_line_inlet";
+        }
         if (!(target.getState() instanceof org.bukkit.block.Container c)) {
             return "steamwork.gui.pneumatic_input.container_none";
         }
@@ -309,6 +316,35 @@ public class PneumaticInput extends RebarBlock implements
     @Override
     public void tick() {
         Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
+
+        // 产线入口特殊处理：FUEL 模式推燃料槽，其他模式推原料槽
+        if (BlockStorage.get(target) instanceof ProductionLineInlet inlet) {
+            VirtualInventory dest = (slotMode == SlotMode.FUEL)
+                    ? inlet.getFuelBuffer()
+                    : inlet.getIngredientBuffer();
+            MachineUpdateReason reason = new MachineUpdateReason();
+            for (int i = 0; i < bufferInventory.getSize(); i++) {
+                ItemStack s = bufferInventory.getItem(i);
+                if (s == null || s.getType().isAir()) continue;
+                int space = 0;
+                for (ItemStack vs : dest.getItems()) {
+                    if (vs == null || vs.getType().isAir()) space += s.getMaxStackSize();
+                    else if (vs.isSimilar(s)) space += Math.max(0, s.getMaxStackSize() - vs.getAmount());
+                }
+                int toAdd = Math.min(s.getAmount(), space);
+                if (toAdd <= 0) continue;
+                dest.addItem(reason, s.clone().asQuantity(toAdd));
+                if (toAdd >= s.getAmount()) {
+                    bufferInventory.setItem(reason, i, null);
+                } else {
+                    ItemStack copy = s.clone();
+                    copy.setAmount(s.getAmount() - toAdd);
+                    bufferInventory.setItem(reason, i, copy);
+                }
+            }
+            return;
+        }
+
         if (!PneumaticUtils.isItemTarget(target)) return;
 
         // 非 AUTO 模式：解析目标槽位；解析失败（容器不支持）就跳过本 tick

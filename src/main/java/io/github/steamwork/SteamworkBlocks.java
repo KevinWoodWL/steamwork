@@ -33,6 +33,7 @@ import io.github.steamwork.content.machines.AdvancedSteamTurbine;
 import io.github.steamwork.content.machines.SteamWashingTrough;
 import io.github.steamwork.content.machines.TungstenBoiler;
 import io.github.steamwork.content.line.ProductionLineInlet;
+import io.github.steamwork.content.line.ProductionLineBufferChest;
 import io.github.steamwork.content.line.ProductionLineOutlet;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import org.bukkit.Material;
@@ -76,6 +77,7 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.PNEUMATIC_OUTPUT, Material.STRUCTURE_VOID, PneumaticOutput.class);
         RebarBlock.register(SteamworkKeys.PNEUMATIC_DISTRIBUTOR, Material.DISPENSER, PneumaticDistributor.class);
         RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_INLET, Material.DISPENSER, ProductionLineInlet.class);
+        RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST, Material.CHEST, ProductionLineBufferChest.class);
         RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_OUTLET, Material.DROPPER, ProductionLineOutlet.class);
         RebarBlock.register(SteamworkKeys.STEAM_DISTILLATION_TOWER, Material.CAULDRON, SteamDistillationTower.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_TOWER_SECTION, Material.LIGHT_GRAY_STAINED_GLASS, RebarBlock.class);

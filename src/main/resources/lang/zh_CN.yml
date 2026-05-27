@@ -558,6 +558,24 @@ item:
     waila_idle: "产线入口 | 未激活"
     waila: "产线入口 #%number% | %state% | 制作人：%creator%"
 
+  production_line_buffer_chest:
+    name: "产线缓存箱"
+    lore: |-
+      <arrow> 蒸汽产线的中间缓存节点，内置 <white>27 格缓存</white>
+      <arrow> 接收上一步工序产物，再尝试把下游能接收的物品送入下一步
+      <arrow> 可在 GUI 切换推送模式：原料槽 / 燃料槽 / 不推送
+      <arrow> 适合放在 Pylon 磨石等多产物机器后，避免副产物堵塞主线
+    waila_idle: "产线缓存箱 | 未激活"
+    waila: "产线缓存箱 #%number% | %state% | 制作人：%creator%"
+
+  auto_production_module:
+    name: "自动生产模组"
+    lore: |-
+      <arrow> 产线入口专用调校升级
+      <arrow> 安装后，入口每 tick 自动对产线内<white>需要手动触发</white>的机器执行右键操作
+      <arrow> 支持实现了 ManualInteractMember 接口的 Rebar 机器
+      <arrow> 通过精密调校仪右键产线入口，在升级页面安装到升级槽
+
   production_line_outlet:
     name: "产线出口"
     lore: |-
@@ -1300,6 +1318,7 @@ gui:
     container_furnace: "<gray>连接：<white>熔炉 / 冶炼炉"
     container_brewer: "<gray>连接：<white>酿造台"
     container_generic: "<gray>连接：<white>普通容器"
+    container_line_inlet: "<gray>连接：<white>产线入口"
     slot_mode_auto: "<#88ddff>栏位：自动"
     slot_mode_ingredient: "<#a0e6a0>栏位：原料栏"
     slot_mode_fuel: "<#ffb060>栏位：燃料栏"
@@ -1351,6 +1370,29 @@ gui:
       not_configured: "<gray>该出口尚未加入任何产线"
       waiting: "<gray>状态：<yellow>等待上游推送产物"
       receiving: "<gray>状态：<green>缓冲仓有产物，等待取走"
+
+  production_line_buffer_chest:
+    title: "<dark_gray>产线缓存箱"
+    line_status:
+      title: "<aqua>产线状态"
+      not_configured: "<gray>该缓存箱尚未加入任何产线"
+      waiting: "<gray>状态：<yellow>缓存为空，等待上游产物"
+      pushing: "<gray>状态：<green>正在向下游发送可接收物品"
+      buffering: "<gray>状态：<gold>正在缓存下游暂时无法接收的物品"
+    fuel_filter:
+      title: "<aqua>燃料模板"
+      empty: "<gray>未设置"
+      active: "<gray>匹配此类型的物品将送入燃料槽"
+      set_hint: "<dark_gray>左键（手持物品）设置模板"
+      clear_hint: "<dark_gray>右键清除模板"
+    mode:
+      title: "<aqua>推送模式"
+      ingredient: "<gray>当前：<green>推送到原料槽"
+      auto: "<gray>当前：<aqua>自动分流（模板物品 → 燃料槽，其余 → 原料槽）"
+      auto_hint: "<dark_gray>在右侧燃料模板格设置燃料类型"
+      fuel: "<gray>当前：<gold>全部推送到燃料槽"
+      off: "<gray>当前：<red>不推送（仅缓存）"
+      hint: "<dark_gray>点击切换模式"
 
   pneumatic_distributor:
     title: "<dark_gray>汽动分发器"
@@ -1603,6 +1645,7 @@ line:
     pushing: "<green>推送中"
     blocked: "<gold>下游阻塞"
     receiving: "<green>接收中"
+    buffering: "<gold>缓存中"
   blueprint:
     start_with_inlet: "请先右键<white>产线入口</white>开始配置"
     already_in_line: "该方块已属于某条产线，无法重复加入"
