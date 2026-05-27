@@ -543,6 +543,34 @@ item:
       <arrow> Compatible with vanilla containers, Rebar machines, and <white>Pneumatic Input</white> via ducts
     waila: "Pneumatic Output | %extract% items every %interval% ticks | %state%"
 
+  production_line_inlet:
+    name: "Production Line Inlet"
+    lore: |-
+      <arrow> Entry point of a steam production line — <white>7 ingredient slots</white> + <white>7 fuel slots</white>
+      <arrow> Fill via pneumatic network (ingredient/fuel INPUT groups) or manually
+      <arrow> Pushes ingredients each tick; fuel supports round-robin or single-target mode
+      <arrow> Compatible with vanilla furnaces, blast furnaces, and smokers as line machines
+    waila_idle: "Production Line Inlet | Not configured"
+    waila: "Production Line Inlet #%number% | %state% | Creator: %creator%"
+
+  production_line_outlet:
+    name: "Production Line Outlet"
+    lore: |-
+      <arrow> Exit point of a steam production line — holds a 9-slot buffer
+      <arrow> Receives finished products pushed by the last machine in the line
+      <arrow> The pneumatic network (OUTPUT group) or players can retrieve products
+    waila_idle: "Production Line Outlet | Not configured"
+    waila: "Production Line Outlet #%number% | %state% | Creator: %creator%"
+
+  production_line_blueprint:
+    name: "Production Line Blueprint"
+    lore: |-
+      <arrow> Hold this item to configure a steam production line
+      <arrow> Right-click a <white>Production Line Inlet</white> to begin
+      <arrow> Left-click each steam processor in order (must be collinear and adjacent)
+      <arrow> Left-click a <white>Production Line Outlet</white> to complete and activate the line
+      <arrow> Shift + right-click any block to cancel configuration
+
   pneumatic_distributor:
     name: "Pneumatic Distributor"
     lore: |-
@@ -615,6 +643,7 @@ item:
       <arrow> A duralumin rotor spins fast enough to separate mixtures by density into weighted random outputs
       <arrow> Processes samples, scrap, and composite dusts: every cycle yields one randomly weighted product
       <arrow> The premium recovery route for analysis samples, machine scrap, and other "fuzzy" inputs
+      <arrow> Multiblock: 2 Pylon steel support beams on each side + 2 at each corner above/below (8 total)
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
     waila: "Precision Centrifuge | Superheated Steam %steam-bar% | %state%"
 
@@ -986,6 +1015,12 @@ gui:
       status_active: "<green>Compat module installed — recipes below are now active"
       recipes_header: "<gray>Available recipes (<yellow>%count%</yellow> total):"
       more: "<dark_gray>…and <yellow>%count%</yellow> more"
+    line_status:
+      title: "<aqua>Line Status"
+      running: "<gray>Status: <green>Running"
+      waiting: "<gray>Status: <yellow>Waiting for input"
+      jammed: "<gray>Status: <gold>Downstream blocked"
+      position: "<gray>Line position: <reset><white>#%position%"
 
   steam_sterilizer:
     title: "<dark_gray>Steam Sterilizer"
@@ -1278,6 +1313,39 @@ gui:
     tick_interval_increase: "<gray>LMB <white>+1<gray>, Shift+LMB <white>+10"
     tick_interval_decrease: "<gray>RMB <white>-1<gray>, Shift+RMB <white>-10"
 
+  production_line_inlet:
+    title: "<dark_gray>Production Line Inlet"
+    line_status:
+      title: "<aqua>Line Status"
+      not_configured: "<gray>This inlet is not part of any production line"
+      waiting: "<gray>Status: <yellow>Ingredient buffer empty, waiting for items"
+      pushing: "<gray>Status: <green>Pushing items downstream"
+      blocked: "<gray>Status: <gold>Downstream blocked"
+    scan_button:
+      title: "<aqua>Scan Fuel Targets"
+      not_in_line: "<gray>This inlet is not in a production line"
+      hint: "<gray>Click to scan line for fuel machines <white>(%count% found)"
+    mode_toggle:
+      title: "<aqua>Fuel Mode"
+      round_robin: "<green>Mode: Round-Robin"
+      single_target: "<yellow>Mode: Single Target"
+      hint: "<gray>Click to toggle mode"
+    machine_slot:
+      no_scan: "<gray>Not scanned — click the scan button"
+      empty: "<gray>(no machine)"
+      machine: "<white>Fuel Machine #%n% <gray>%pos%"
+      unbound: "<gold>Unbound"
+      bound: "<green>→ Fuel Machine #%n% <gray>%pos%"
+      click_cycle: "<dark_gray>Click to cycle target (-1 = unbound)"
+
+  production_line_outlet:
+    title: "<dark_gray>Production Line Outlet"
+    line_status:
+      title: "<aqua>Line Status"
+      not_configured: "<gray>This outlet is not part of any production line"
+      waiting: "<gray>Status: <yellow>Waiting for products from upstream"
+      receiving: "<gray>Status: <green>Products ready to collect"
+
   pneumatic_distributor:
     title: "<dark_gray>Pneumatic Distributor"
     pressurized_gauge: "<#00cfff>Pressurized Steam"
@@ -1521,4 +1589,26 @@ message:
     target_out_of_range: "<red>Target out of range (max %range% blocks)"
   steam_science_interface:
     claimed: "<green>Claimed <aqua>%points%</aqua> research points (total <aqua>%total%</aqua>)"
+
+line:
+  unknown_creator: "Unknown"
+  state:
+    waiting: "<yellow>Waiting"
+    pushing: "<green>Pushing"
+    blocked: "<gold>Downstream Blocked"
+    receiving: "<green>Receiving"
+  blueprint:
+    start_with_inlet: "Right-click a <white>Production Line Inlet</white> to begin configuration"
+    already_in_line: "This block already belongs to a production line"
+    started: "Configuration started! Left-click each steam processor in order, then the outlet; Shift+right-click to cancel"
+    already_selected: "This block is already in the current configuration"
+    not_adjacent: "Block must be directly adjacent to the previous one (horizontal only)"
+    not_collinear: "Block must follow the same axis as the rest of the line"
+    invalid_member: "This block is not a valid line member (only steam processors are accepted)"
+    too_short: "Line is too short (minimum: inlet + 1 machine + outlet)"
+    activation_error: "An error occurred during line activation — rolled back"
+    activated: "Production line activated! <white>%count%</white> machine(s) in line, numbered <white>#%number%</white>"
+    added: "Added machine <white>#%position%</white>. Continue left-clicking machines or the outlet"
+    cancelled: "Production line configuration cancelled"
+    invalidated: "Your production line <white>#%number%</white> has been invalidated!"
 

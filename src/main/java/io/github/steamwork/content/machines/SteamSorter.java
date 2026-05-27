@@ -11,8 +11,10 @@ import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
+import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
+import io.github.pylonmc.rebar.item.ItemTypeWrapper;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
@@ -104,7 +106,7 @@ public class SteamSorter extends RebarBlock implements
      */
     private final VirtualInventory inputInventory = new VirtualInventory(7);
     /** 每个面的幽灵过滤材质，null = 无过滤（索引与 FACES 一一对应）。 */
-    private final @Nullable Material[] filterMaterials = new @Nullable Material[6];
+    private final @Nullable ItemStack[] filterItems = new @Nullable ItemStack[6];
     /** 与 filterMaterials 对应的 GUI 交互按钮。 */
     private final FilterSlotItem[] filterSlotItems = new FilterSlotItem[6];
     /** 工作 tick 间隔，1–200，GUI 可调（默认取配置文件值）。 */
@@ -154,9 +156,13 @@ public class SteamSorter extends RebarBlock implements
                 pdc.getOrDefault(TICK_INTERVAL_KEY, PersistentDataType.INTEGER, defaultTickInterval)));
         setTickInterval(tickIntervalOverride);
         for (int i = 0; i < 6; i++) {
-            String matName = pdc.get(FILTER_KEYS[i], PersistentDataType.STRING);
-            if (matName != null) {
-                try { filterMaterials[i] = Material.valueOf(matName); }
+            ItemStack saved = pdc.get(FILTER_KEYS[i], RebarSerializers.ITEM_STACK);
+            if (saved != null && !saved.getType().isAir()) {
+                filterItems[i] = saved.clone().asQuantity(1);
+            } else {
+                String matName = pdc.get(FILTER_KEYS[i], PersistentDataType.STRING);
+                if (matName == null) continue;
+                try { filterItems[i] = new ItemStack(Material.valueOf(matName)); }
                 catch (IllegalArgumentException ignored) {}
             }
         }
@@ -171,8 +177,8 @@ public class SteamSorter extends RebarBlock implements
     public void write(@NotNull PersistentDataContainer pdc) {
         pdc.set(TICK_INTERVAL_KEY, PersistentDataType.INTEGER, tickIntervalOverride);
         for (int i = 0; i < 6; i++) {
-            if (filterMaterials[i] != null) {
-                pdc.set(FILTER_KEYS[i], PersistentDataType.STRING, filterMaterials[i].name());
+            if (filterItems[i] != null && !filterItems[i].getType().isAir()) {
+                pdc.set(FILTER_KEYS[i], RebarSerializers.ITEM_STACK, filterItems[i].clone().asQuantity(1));
             } else {
                 pdc.remove(FILTER_KEYS[i]);
             }
@@ -261,9 +267,9 @@ public class SteamSorter extends RebarBlock implements
 
         for (int fi = 0; fi < FACES.length; fi++) {
             Block neighbor = getBlock().getRelative(FACES[fi]);
-            Material filter = filterMaterials[fi];
-            boolean filterSet = filter != null;
-            boolean typeMatch = filterSet && filter == item.getType();
+            ItemStack filter = filterItems[fi];
+            boolean filterSet = filter != null && !filter.getType().isAir();
+            boolean typeMatch = filterSet && filterMatches(filter, item);
 
             // 直连气动输出端
             if (BlockStorage.get(neighbor) instanceof PneumaticOutput) {
@@ -304,6 +310,10 @@ public class SteamSorter extends RebarBlock implements
             }
         }
         return null;
+    }
+
+    private boolean filterMatches(@NotNull ItemStack filter, @NotNull ItemStack item) {
+        return ItemTypeWrapper.of(filter).equals(ItemTypeWrapper.of(item));
     }
 
     private void spawnSortFx() {
@@ -399,18 +409,19 @@ public class SteamSorter extends RebarBlock implements
 
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            Material mat = filterMaterials[index];
-            if (mat == null) {
+            ItemStack filter = filterItems[index];
+            if (filter == null || filter.getType().isAir()) {
                 return ItemStackBuilder.of(Material.GRAY_STAINED_GLASS_PANE)
                         .name(noItalic(Component.translatable(
                                 "steamwork.gui.steam_sorter.filter.empty")))
                         .lore(List.of(noItalic(Component.translatable(
                                 "steamwork.gui.steam_sorter.filter.ghost_hint"))));
             }
-            return ItemStackBuilder.of(mat)
+            ItemStack display = filter.clone().asQuantity(1);
+            return ItemStackBuilder.of(display)
                     .name(noItalic(Component.translatable(
                             "steamwork.gui.steam_sorter.filter.set",
-                            RebarArgument.of("item", Component.translatable(mat.translationKey())))))
+                            RebarArgument.of("item", display.effectiveName()))))
                     .lore(List.of(noItalic(Component.translatable(
                             "steamwork.gui.steam_sorter.filter.ghost_hint_clear"))))
                     .amount(1);
@@ -419,16 +430,20 @@ public class SteamSorter extends RebarBlock implements
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player,
                                 @NotNull Click click) {
+            if (clickType.isRightClick()) {
+                filterItems[index] = null;
+                notifyWindows();
+                return;
+            }
+
             // 优先读取光标（拖动中的物品），其次读取主手
             ItemStack cursor = player.getOpenInventory().getCursor();
             if (cursor != null && !cursor.getType().isAir()) {
-                filterMaterials[index] = cursor.getType();
+                filterItems[index] = cursor.clone().asQuantity(1);
             } else {
                 ItemStack hand = player.getInventory().getItemInMainHand();
                 if (!hand.getType().isAir()) {
-                    filterMaterials[index] = hand.getType();
-                } else {
-                    filterMaterials[index] = null;
+                    filterItems[index] = hand.clone().asQuantity(1);
                 }
             }
             notifyWindows();

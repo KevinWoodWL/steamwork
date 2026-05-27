@@ -60,7 +60,9 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_ASSEMBLY_BENCH,
             SteamworkKeys.STEAM_MOTOR,
             SteamworkKeys.STEAM_CANISTER_BRASS, SteamworkKeys.STEAM_CANISTER_INVAR,
-            SteamworkKeys.STEAM_CANISTER_TUNGSTEN);
+            SteamworkKeys.STEAM_CANISTER_TUNGSTEN,
+            SteamworkKeys.PRODUCTION_LINE_INLET, SteamworkKeys.PRODUCTION_LINE_OUTLET,
+            SteamworkKeys.PRODUCTION_LINE_BLUEPRINT);
 
     public static final Research CHEMISTRY_BASIC_RESEARCH = new Research(
             steamworkKey("chemistry_basic_research"), SteamworkItems.STEAM_SCIENCE_INTERFACE, 18L,

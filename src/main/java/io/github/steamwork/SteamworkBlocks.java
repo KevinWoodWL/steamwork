@@ -32,6 +32,8 @@ import io.github.steamwork.content.machines.SimpleSteamTurbine;
 import io.github.steamwork.content.machines.AdvancedSteamTurbine;
 import io.github.steamwork.content.machines.SteamWashingTrough;
 import io.github.steamwork.content.machines.TungstenBoiler;
+import io.github.steamwork.content.line.ProductionLineInlet;
+import io.github.steamwork.content.line.ProductionLineOutlet;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import org.bukkit.Material;
 
@@ -60,7 +62,7 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.HEAVY_IMPACT_CRUSHER, Material.ANVIL, HeavyImpactCrusher.class);
         RebarBlock.register(SteamworkKeys.HYDRAULIC_FORGE, Material.SMITHING_TABLE, HydraulicForge.class);
         RebarBlock.register(SteamworkKeys.PRECISION_CRYSTALLIZER, Material.AMETHYST_BLOCK, PrecisionCrystallizer.class);
-        RebarBlock.register(SteamworkKeys.PRECISION_CENTRIFUGE, Material.LIGHTNING_ROD, PrecisionCentrifuge.class);
+        RebarBlock.register(SteamworkKeys.PRECISION_CENTRIFUGE, Material.REINFORCED_DEEPSLATE, PrecisionCentrifuge.class);
         RebarBlock.register(SteamworkKeys.STEAM_PRESSURIZED_FURNACE, Material.CUT_COPPER_SLAB, SteamPressurizedFurnace.class);
         RebarBlock.register(SteamworkKeys.STEAM_ASSEMBLY_BENCH, Material.SMITHING_TABLE, SteamAssemblyBench.class);
         RebarBlock.register(SteamworkKeys.STEAM_SCIENCE_INTERFACE, Material.LECTERN, SteamScienceInterface.class);
@@ -73,6 +75,8 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.PNEUMATIC_INPUT, Material.STRUCTURE_VOID, PneumaticInput.class);
         RebarBlock.register(SteamworkKeys.PNEUMATIC_OUTPUT, Material.STRUCTURE_VOID, PneumaticOutput.class);
         RebarBlock.register(SteamworkKeys.PNEUMATIC_DISTRIBUTOR, Material.DISPENSER, PneumaticDistributor.class);
+        RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_INLET, Material.DISPENSER, ProductionLineInlet.class);
+        RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_OUTLET, Material.DROPPER, ProductionLineOutlet.class);
         RebarBlock.register(SteamworkKeys.STEAM_DISTILLATION_TOWER, Material.CAULDRON, SteamDistillationTower.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_TOWER_SECTION, Material.LIGHT_GRAY_STAINED_GLASS, RebarBlock.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_CONDENSER, Material.CUT_COPPER, RebarBlock.class);

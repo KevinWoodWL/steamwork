@@ -183,6 +183,9 @@ public final class SteamworkPages {
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_CRYSTALLIZER);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_CENTRIFUGE);
         STEAM_AUTOMATION.addItem(SteamworkItems.MACHINE_CALIBRATOR);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_INLET);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_OUTLET);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_BLUEPRINT);
 
         ROOT.addPage(SteamworkItems.MACHINE_CALIBRATOR, STEAM_CALIBRATION);
         STEAM_CALIBRATION.addItem(SteamworkItems.MACHINE_CALIBRATOR);

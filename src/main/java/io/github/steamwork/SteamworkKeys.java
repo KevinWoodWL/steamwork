@@ -166,6 +166,11 @@ public final class SteamworkKeys {
     public static final NamespacedKey UPGRADE_MODULE_BOOST = steamworkKey("upgrade_module_boost");
     public static final NamespacedKey UPGRADE_MODULE_PYLON_COMPAT = steamworkKey("upgrade_module_pylon_compat");
 
+    // Production line
+    public static final NamespacedKey PRODUCTION_LINE_INLET = steamworkKey("production_line_inlet");
+    public static final NamespacedKey PRODUCTION_LINE_OUTLET = steamworkKey("production_line_outlet");
+    public static final NamespacedKey PRODUCTION_LINE_BLUEPRINT = steamworkKey("production_line_blueprint");
+
     // Steam logistics
     public static final NamespacedKey STEAM_COMPRESSOR = steamworkKey("steam_compressor");
     public static final NamespacedKey PNEUMATIC_CARGO_HUB = steamworkKey("pneumatic_cargo_hub");
