@@ -548,6 +548,34 @@ item:
       <arrow> 可直连原版容器、Rebar 机器或通过导管连接<white>汽动输入端</white>
     waila: "汽动输出端 | 每 %interval% tick 发送 %extract% 个 | %state%"
 
+  production_line_inlet:
+    name: "产线入口"
+    lore: |-
+      <arrow> 蒸汽产线的物料入口，内置 <white>7 格原料槽</white>和 <white>7 格燃料槽</white>
+      <arrow> 气动网络（ingredient/fuel INPUT 组）或玩家可直接放入物品
+      <arrow> 每 tick 推送原料；燃料支持轮询或单目标绑定模式
+      <arrow> 兼容原版熔炉、高炉、烟熏炉作为产线中间机器
+    waila_idle: "产线入口 | 未激活"
+    waila: "产线入口 #%number% | %state% | 制作人：%creator%"
+
+  production_line_outlet:
+    name: "产线出口"
+    lore: |-
+      <arrow> 蒸汽产线的成品出口，内置 9 格缓冲仓
+      <arrow> 接收产线末台机器推来的成品
+      <arrow> 气动网络（OUTPUT 组）或玩家可从缓冲仓取走成品
+    waila_idle: "产线出口 | 未激活"
+    waila: "产线出口 #%number% | %state% | 制作人：%creator%"
+
+  production_line_blueprint:
+    name: "产线蓝图"
+    lore: |-
+      <arrow> 手持此道具配置蒸汽产线
+      <arrow> 右键<white>产线入口</white>开始配置
+      <arrow> 依次左键各蒸汽加工机器（必须共线紧密排列）
+      <arrow> 左键<white>产线出口</white>完成配置并激活产线
+      <arrow> Shift + 右键任意方块取消当前配置
+
   pneumatic_distributor:
     name: "汽动分发器"
     lore: |-
@@ -621,6 +649,7 @@ item:
       <arrow> 硬铝合金转子高速旋转，按密度加权随机分离混合物
       <arrow> 处理样品/废料/复合粉末，每次产出加权随机的多种产物之一
       <arrow> 给样品系列、机器废屑等"模糊输入"提供高级回收路线
+      <arrow> 多方块：机器两侧各 2 根、上下角各 2 根 Pylon 钢支撑梁（共 8 根）
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
     waila: "精密离心机 | 过热蒸汽 %steam-bar% | %state%"
 
@@ -992,6 +1021,12 @@ gui:
       status_active: "<green>联动模组已安装，以下配方已解锁"
       recipes_header: "<gray>可制作的配方（共 <yellow>%count%</yellow> 条）："
       more: "<dark_gray>……以及 <yellow>%count%</yellow> 条更多"
+    line_status:
+      title: "<aqua>产线状态"
+      running: "<gray>状态：<green>运行中"
+      waiting: "<gray>状态：<yellow>等待输料"
+      jammed: "<gray>状态：<gold>下游阻塞"
+      position: "<gray>产线位置：<reset><white>#%position%"
 
   steam_sterilizer:
     title: "<dark_gray>蒸汽灭菌箱"
@@ -1284,6 +1319,39 @@ gui:
     tick_interval_increase: "<gray>左键 <white>+1<gray>，Shift+左键 <white>+10"
     tick_interval_decrease: "<gray>右键 <white>-1<gray>，Shift+右键 <white>-10"
 
+  production_line_inlet:
+    title: "<dark_gray>产线入口"
+    line_status:
+      title: "<aqua>产线状态"
+      not_configured: "<gray>该入口尚未加入任何产线"
+      waiting: "<gray>状态：<yellow>原料缓冲为空，等待物料投入"
+      pushing: "<gray>状态：<green>正在向下游推送物品"
+      blocked: "<gray>状态：<gold>下游阻塞，物品无法推出"
+    scan_button:
+      title: "<aqua>扫描燃料目标"
+      not_in_line: "<gray>该入口尚未加入任何产线"
+      hint: "<gray>点击扫描产线中的燃料机器 <white>（已找到 %count% 个）"
+    mode_toggle:
+      title: "<aqua>燃料分发模式"
+      round_robin: "<green>当前：轮询模式"
+      single_target: "<yellow>当前：单目标模式"
+      hint: "<gray>点击切换模式"
+    machine_slot:
+      no_scan: "<gray>未扫描 — 点击上方扫描按钮"
+      empty: "<gray>（无机器）"
+      machine: "<white>燃料机 #%n% <gray>%pos%"
+      unbound: "<gold>未绑定"
+      bound: "<green>→ 燃料机 #%n% <gray>%pos%"
+      click_cycle: "<dark_gray>点击切换目标机器（-1 = 未绑定）"
+
+  production_line_outlet:
+    title: "<dark_gray>产线出口"
+    line_status:
+      title: "<aqua>产线状态"
+      not_configured: "<gray>该出口尚未加入任何产线"
+      waiting: "<gray>状态：<yellow>等待上游推送产物"
+      receiving: "<gray>状态：<green>缓冲仓有产物，等待取走"
+
   pneumatic_distributor:
     title: "<dark_gray>汽动分发器"
     pressurized_gauge: "<#00cfff>加压蒸汽"
@@ -1527,4 +1595,26 @@ message:
     no_steam_arm_nearby: "<red>附近没有蒸汽动力臂在范围内"
   steam_science_interface:
     claimed: "<green>已领取 <aqua>%points%</aqua> 研究点数（累计 <aqua>%total%</aqua>）"
+
+line:
+  unknown_creator: "未知"
+  state:
+    waiting: "<yellow>等待"
+    pushing: "<green>推送中"
+    blocked: "<gold>下游阻塞"
+    receiving: "<green>接收中"
+  blueprint:
+    start_with_inlet: "请先右键<white>产线入口</white>开始配置"
+    already_in_line: "该方块已属于某条产线，无法重复加入"
+    started: "配置开始！请依次左键各蒸汽加工机器，最后左键<white>产线出口</white>；Shift+右键取消"
+    already_selected: "该方块已在当前配置序列中"
+    not_adjacent: "方块必须与上一个紧密相邻（仅水平四方向）"
+    not_collinear: "方块必须与产线方向保持一致（直线排列）"
+    invalid_member: "该方块不是合法的产线成员（仅接受蒸汽加工机器）"
+    too_short: "产线过短（至少需要：入口 + 1 台机器 + 出口）"
+    activation_error: "产线激活时出现错误，已回滚"
+    activated: "产线激活成功！共 <white>%count%</white> 台机器，编号为 <white>#%number%</white>"
+    added: "已加入第 <white>%position%</white> 台机器，继续左键下一台机器或出口"
+    cancelled: "产线配置已取消"
+    invalidated: "你的产线 <white>#%number%</white> 已失效！"
 

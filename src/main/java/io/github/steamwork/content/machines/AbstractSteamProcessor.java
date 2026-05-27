@@ -3,6 +3,7 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
+import io.github.steamwork.content.line.ProductionLineMember;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
 import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
@@ -30,6 +31,8 @@ import io.github.steamwork.recipes.SteamProcessRecipe;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -60,6 +63,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
@@ -84,7 +88,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         RebarTickingBlock,
         RebarVirtualInventoryBlock,
         SteamBoostable,
-        UpgradeableMachine {
+        UpgradeableMachine,
+        ProductionLineMember {
 
     protected final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     protected final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
@@ -160,6 +165,14 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private final RecipeLockItem recipeLockItem = new RecipeLockItem();
     private final PylonCompatItem pylonCompatItem = new PylonCompatItem();
 
+    // ===== 产线成员字段 =====
+    @Nullable private UUID lineId = null;
+    private int linePosition = 0;
+    @NotNull private BlockFace lineDirection = BlockFace.SELF;
+    @Nullable private String lineCreator = null;
+    private int lineNumber = 0;
+    private final LineStatusItem lineStatusItem = new LineStatusItem();
+
     /**
      * 本机当前配方已锁定的产出物品。在 {@link #startRecipe(SteamProcessRecipe)} 时
      * 于 {@code onRecipeStart()} 之后立即固定，确保离心机等随机产出配方在整个加工周期
@@ -208,6 +221,24 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         recipeTicksRemaining = pdc.getOrDefault(ticksPdcKey, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
         try { getFacing(); } catch (IllegalStateException e) { setFacing(org.bukkit.block.BlockFace.SOUTH); }
         lockedRecipeKey = pdc.get(lockedRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
+        String lineIdStr = pdc.get(LINE_ID_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+        if (lineIdStr != null) {
+            try {
+                lineId = UUID.fromString(lineIdStr);
+                linePosition = pdc.getOrDefault(LINE_POSITION_KEY, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
+                String lineDir = pdc.get(LINE_DIRECTION_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+                try {
+                    lineDirection = lineDir != null ? BlockFace.valueOf(lineDir) : BlockFace.SELF;
+                } catch (IllegalArgumentException ignored) {
+                    lineDirection = BlockFace.SELF;
+                }
+                lineCreator = pdc.get(LINE_CREATOR_KEY, org.bukkit.persistence.PersistentDataType.STRING);
+                lineNumber = pdc.getOrDefault(LINE_NUMBER_KEY, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
+            } catch (IllegalArgumentException ignored) {
+                // PDC 中的 UUID 字符串损坏，视为未加入产线，方块正常加载
+                lineId = null;
+            }
+        }
     }
 
     // ===== 抽象接口 =====
@@ -323,40 +354,40 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         } else {
             pdc.remove(lockedRecipePdcKey);
         }
+        if (lineId != null) {
+            pdc.set(LINE_ID_KEY, org.bukkit.persistence.PersistentDataType.STRING, lineId.toString());
+            pdc.set(LINE_POSITION_KEY, org.bukkit.persistence.PersistentDataType.INTEGER, linePosition);
+            pdc.set(LINE_DIRECTION_KEY, org.bukkit.persistence.PersistentDataType.STRING, lineDirection.name());
+            pdc.set(LINE_NUMBER_KEY, org.bukkit.persistence.PersistentDataType.INTEGER, lineNumber);
+            if (lineCreator != null) {
+                pdc.set(LINE_CREATOR_KEY, org.bukkit.persistence.PersistentDataType.STRING, lineCreator);
+            } else {
+                pdc.remove(LINE_CREATOR_KEY);
+            }
+        } else {
+            pdc.remove(LINE_ID_KEY);
+            pdc.remove(LINE_POSITION_KEY);
+            pdc.remove(LINE_DIRECTION_KEY);
+            pdc.remove(LINE_CREATOR_KEY);
+            pdc.remove(LINE_NUMBER_KEY);
+        }
     }
 
     @Override
     public @NotNull Gui createGui() {
-        // 只有支持 Pylon 联动的机器才在右下角显示联动配方指示物品。
-        // 注意：InvUI 要求 setStructure 必须在 addIngredient 之前调用，
-        // 因此两个分支都独立构造完整的 builder 链，不共享 builder 变量。
-        if (!pylonCompatItem.getPreview().isEmpty()) {
-            return Gui.builder()
-                    .setStructure(
-                            "# # # # # # # # #",
-                            "# i i i i i p o #",
-                            "# # # # # # # # #",
-                            "# # l # s # a # #",
-                            "# # # # P # # # #"
-                    )
-                    .addIngredient('#', GuiItems.background())
-                    .addIngredient('i', inputInventory)
-                    .addIngredient('o', outputInventory)
-                    .addIngredient('p', progressItem)
-                    .addIngredient('s', steamGaugeItem)
-                    .addIngredient('a', statusItem)
-                    .addIngredient('l', recipeLockItem)
-                    .addIngredient('P', pylonCompatItem)
-                    .build();
-        }
+        boolean hasPylon = !pylonCompatItem.getPreview().isEmpty();
+        boolean inLine = isInLine();
+        // 'L' 仅在产线模式下插入第 4 行末尾；'P' 仅在支持 Pylon 联动时出现。
+        String row4 = inLine ? "# # l # s # a L #" : "# # l # s # a # #";
+        String row5 = hasPylon ? "# # # # P # # # #" : "# # # # # # # # #";
 
-        return Gui.builder()
+        var builder = Gui.builder()
                 .setStructure(
                         "# # # # # # # # #",
                         "# i i i i i p o #",
                         "# # # # # # # # #",
-                        "# # l # s # a # #",
-                        "# # # # # # # # #"
+                        row4,
+                        row5
                 )
                 .addIngredient('#', GuiItems.background())
                 .addIngredient('i', inputInventory)
@@ -364,8 +395,12 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                 .addIngredient('p', progressItem)
                 .addIngredient('s', steamGaugeItem)
                 .addIngredient('a', statusItem)
-                .addIngredient('l', recipeLockItem)
-                .build();
+                .addIngredient('l', recipeLockItem);
+
+        if (hasPylon) builder.addIngredient('P', pylonCompatItem);
+        if (inLine)   builder.addIngredient('L', lineStatusItem);
+
+        return builder.build();
     }
 
     @Override
@@ -393,19 +428,28 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         if (!hasValidStructure()) {
             resetRecipe();
             currentReason = StopReason.NO_STRUCTURE;
+            if (isInLine()) {
+                // 多方块结构损坏 → 自动解散整条产线，避免产线永久阻塞。
+                disbandLine();
+            }
             notifyGuiItems();
             return;
         }
 
-        if (hasAutoInput()) {
-            pullFromAllAdjacent();
+        if (isInLine()) {
+            // 产线模式：跳过漏斗/容器交互，由上游主动推送输入；主动推送输出给下游。
+            pushToNextInLine();
         } else {
-            pullFromHopperAbove();
-        }
-        if (hasAutoOutput()) {
-            pushToAllAdjacent();
-        } else {
-            pushToContainerBelow();
+            if (hasAutoInput()) {
+                pullFromAllAdjacent();
+            } else {
+                pullFromHopperAbove();
+            }
+            if (hasAutoOutput()) {
+                pushToAllAdjacent();
+            } else {
+                pushToContainerBelow();
+            }
         }
 
         if (isProcessing()) {
@@ -881,6 +925,35 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         }
     }
 
+    /**
+     * 产线模式下：将输出槽中的一个物品推给产线下游成员。
+     * 每 tick 最多转移一个物品（与入口节奏保持一致）。
+     * 若下游无法接收（背压/阻塞），本帧跳过，让输出槽暂时堆积。
+     */
+    private void pushToNextInLine() {
+        if (lineDirection == BlockFace.SELF) return;
+        Block nextBlock = getBlock().getRelative(lineDirection);
+        RebarBlock nextRebar = RebarBlock.getRebarBlock(nextBlock);
+        if (!(nextRebar instanceof ProductionLineMember next)) return;
+
+        for (int i = 0; i < outputInventory.getSize(); i++) {
+            ItemStack stack = outputInventory.getItem(i);
+            if (stack == null || stack.isEmpty()) continue;
+            ItemStack single = stack.clone();
+            single.setAmount(1);
+            if (next.acceptFromLine(single)) {
+                if (stack.getAmount() <= 1) {
+                    outputInventory.setItem(new MachineUpdateReason(), i, null);
+                } else {
+                    ItemStack updated = stack.clone();
+                    updated.setAmount(stack.getAmount() - 1);
+                    outputInventory.setItem(new MachineUpdateReason(), i, updated);
+                }
+            }
+            return; // 无论成否，每 tick 只尝试一次
+        }
+    }
+
     // ===== 升级辅助 =====
 
     private int countUpgrade(@NotNull UpgradeType type) {
@@ -907,6 +980,100 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     private boolean hasAutoOutput() {
         return countUpgrade(UpgradeType.AUTO_OUTPUT) > 0;
+    }
+
+    /**
+     * 解散整条产线（向上下游扫描所有同 lineId 成员并调用 leaveLine）。
+     * 通常由多方块结构损坏触发，防止产线永久阻塞。
+     */
+    private void disbandLine() {
+        if (lineId == null || lineDirection == BlockFace.SELF) {
+            leaveLine();
+            return;
+        }
+        UUID id = lineId;
+        BlockFace dir = lineDirection;
+
+        // 从 YAML 注册表中删除该产线（在 leaveLine 清空 lineId 之前执行）
+        io.github.steamwork.content.line.ProductionLineRegistry registry =
+                io.github.steamwork.content.line.ProductionLineRegistry.get();
+        io.github.steamwork.content.line.ProductionLineRegistry.LineRecord record =
+                registry != null ? registry.unregister(id) : null;
+        if (record != null) {
+            Player target = Bukkit.getPlayer(record.creatorUuid());
+            if (target != null) {
+                target.sendMessage(Component.text("[", NamedTextColor.DARK_GRAY)
+                        .append(Component.text("蒸汽工坊", NamedTextColor.GOLD))
+                        .append(Component.text("] ", NamedTextColor.DARK_GRAY))
+                        .append(Component.translatable(
+                                "steamwork.line.blueprint.invalidated",
+                                RebarArgument.of("number", Component.text(record.number()))
+                        ).color(NamedTextColor.RED)));
+            }
+        }
+
+        Block self = getBlock();
+        // 向下游清除
+        Block cursor = self.getRelative(dir);
+        while (true) {
+            RebarBlock rb = RebarBlock.getRebarBlock(cursor);
+            if (!(rb instanceof ProductionLineMember m)) break;
+            if (!id.equals(m.getLineId())) break;
+            m.leaveLine();
+            cursor = cursor.getRelative(dir);
+        }
+        // 向上游清除
+        BlockFace reverse = dir.getOppositeFace();
+        cursor = self.getRelative(reverse);
+        while (true) {
+            RebarBlock rb = RebarBlock.getRebarBlock(cursor);
+            if (!(rb instanceof ProductionLineMember m)) break;
+            if (!id.equals(m.getLineId())) break;
+            m.leaveLine();
+            cursor = cursor.getRelative(reverse);
+        }
+        // 清除自身
+        leaveLine();
+    }
+
+    // ===== ProductionLineMember =====
+
+    @Override public @Nullable UUID getLineId() { return lineId; }
+    @Override public int getLinePosition() { return linePosition; }
+    @Override public @NotNull BlockFace getLineDirection() { return lineDirection; }
+    @Override public @Nullable String getLineCreator() { return lineCreator; }
+    @Override public int getLineNumber() { return lineNumber; }
+
+    @Override
+    public void setLineCreator(@Nullable String creator) { this.lineCreator = creator; }
+
+    @Override
+    public void setLineNumber(int number) { this.lineNumber = number; }
+
+    @Override
+    public void joinLine(@NotNull UUID id, int position, @NotNull BlockFace direction) {
+        this.lineId = id;
+        this.linePosition = position;
+        this.lineDirection = direction;
+    }
+
+    @Override
+    public void leaveLine() {
+        this.lineId = null;
+        this.linePosition = 0;
+        this.lineDirection = BlockFace.SELF;
+        this.lineCreator = null;
+        this.lineNumber = 0;
+    }
+
+    /**
+     * 接受来自产线上游的物品，放入输入槽。
+     */
+    @Override
+    public boolean acceptFromLine(@NotNull ItemStack item) {
+        if (!inputInventory.canHold(item)) return false;
+        inputInventory.addItem(new MachineUpdateReason(), item);
+        return true;
     }
 
     // ===== 升级 GUI =====
@@ -961,6 +1128,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         steamGaugeItem.notifyWindows();
         progressItem.notifyWindows();
         pylonCompatItem.notifyWindows(); // 已安装/未安装状态会随模组变化更新
+        lineStatusItem.notifyWindows();  // 产线运行/等待/阻塞状态
     }
 
     private void setActive(boolean active) {
@@ -1218,6 +1386,50 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
             return ItemStackBuilder.of(mat)
                     .name(noItalic(Component.translatable(titleKey)))
                     .lore(lore);
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
+    }
+
+    /**
+     * 产线状态指示物品（仅在机器已加入产线时显示）。
+     * <ul>
+     *   <li>青色 — 机器正在运行（有输入或正在加工）</li>
+     *   <li>黄色 — 等待输入</li>
+     *   <li>橙色 — 输出积压（下游阻塞）</li>
+     * </ul>
+     */
+    private final class LineStatusItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            // 检查输出槽是否有积压（下游阻塞）
+            boolean outputHasItems = false;
+            for (int i = 0; i < outputInventory.getSize(); i++) {
+                ItemStack stack = outputInventory.getItem(i);
+                if (stack != null && !stack.isEmpty()) { outputHasItems = true; break; }
+            }
+
+            Material mat;
+            String stateKey;
+            if (outputHasItems) {
+                mat = Material.ORANGE_STAINED_GLASS_PANE;
+                stateKey = "jammed";
+            } else if (isProcessing() || !isInputEmpty()) {
+                mat = Material.CYAN_STAINED_GLASS_PANE;
+                stateKey = "running";
+            } else {
+                mat = Material.YELLOW_STAINED_GLASS_PANE;
+                stateKey = "waiting";
+            }
+
+            return ItemStackBuilder.of(mat)
+                    .name(noItalic(Component.translatable(SHARED_KEY + ".line_status.title")))
+                    .lore(List.of(
+                            noItalic(Component.translatable(SHARED_KEY + ".line_status." + stateKey)),
+                            noItalic(Component.translatable(SHARED_KEY + ".line_status.position",
+                                    RebarArgument.of("position", Component.text(linePosition))))
+                    ));
         }
 
         @Override

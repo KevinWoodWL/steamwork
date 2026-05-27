@@ -1,0 +1,107 @@
+package io.github.steamwork.content.line;
+
+import io.github.pylonmc.rebar.block.RebarBlock;
+import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
+import java.util.UUID;
+
+import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
+
+/**
+ * 产线成员接口：由产线入口（ProductionLineInlet）、产线出口（ProductionLineOutlet）
+ * 以及参与产线的蒸汽加工机（AbstractSteamProcessor 子类）共同实现。
+ *
+ * <p>线信息通过蓝图道具写入各成员方块的 PDC，服务器重载后可恢复。</p>
+ */
+public interface ProductionLineMember {
+
+    /** 产线 UUID，格式化为 String 存入 PDC。 */
+    NamespacedKey LINE_ID_KEY = steamworkKey("line_id");
+    /** 在产线中的序号（0 = 入口，1..n = 机器，n+1 = 出口）。 */
+    NamespacedKey LINE_POSITION_KEY = steamworkKey("line_position");
+    /**
+     * 朝向产线下一个成员的方向（NORTH/SOUTH/EAST/WEST）。
+     * 入口、中间机器均存真实方向；出口也存该方向（=整条产线的走向），
+     * 仅用于解散扫描，不用于 push。
+     */
+    NamespacedKey LINE_DIRECTION_KEY = steamworkKey("line_direction");
+    /** 激活该产线的玩家游戏名。 */
+    NamespacedKey LINE_CREATOR_KEY = steamworkKey("line_creator");
+    /** 创建者个人视角下的产线编号，例如 #1、#2。 */
+    NamespacedKey LINE_NUMBER_KEY = steamworkKey("line_number");
+
+    // ===== 读取 =====
+
+    @Nullable UUID getLineId();
+
+    int getLinePosition();
+
+    @NotNull BlockFace getLineDirection();
+
+    /** 激活该产线的玩家游戏名；若尚未激活则为 null。 */
+    @Nullable String getLineCreator();
+
+    /** 创建者个人视角下的产线编号；未加入产线时为 0。 */
+    int getLineNumber();
+
+    default boolean isInLine() { return getLineId() != null; }
+
+    // ===== 写入（蓝图调用）=====
+
+    void joinLine(@NotNull UUID lineId, int position, @NotNull BlockFace direction);
+
+    /** 设置产线制作人，在 joinLine 后由 activateLine 统一调用。 */
+    void setLineCreator(@Nullable String creator);
+
+    /** 设置创建者个人视角下的产线编号，在 joinLine 后由 activateLine 统一调用。 */
+    void setLineNumber(int number);
+
+    void leaveLine();
+
+    // ===== 多方块附属方块 =====
+
+    /**
+     * 返回本成员"拥有"的多方块附属方块集合（默认空集）。
+     * 产线扫描器遇到这些方块时会跳过，不要求它们是 {@link ProductionLineMember}，
+     * 也不会对它们调用 {@link #joinLine}。
+     * <p>多方块机器（如精密离心机）需覆盖此方法，返回所有结构辅助方块的位置。</p>
+     */
+    default @NotNull Set<Block> getOwnedMultiblockComponentBlocks() {
+        return Set.of();
+    }
+
+    // ===== 物品推送协议 =====
+
+    /**
+     * 被上游成员调用：尝试将 {@code item}（数量=1）放入本成员的输入缓冲。
+     *
+     * @return {@code true} 表示接受成功；{@code false} 表示缓冲满，拒绝接收。
+     */
+    boolean acceptFromLine(@NotNull ItemStack item);
+
+    /** 是否有燃料槽（如原版熔炉/高炉/烟熏炉）。默认 false。 */
+    default boolean hasFuelSlot() { return false; }
+
+    /** 被入口调用：将 {@code item}（数量=1）推入燃料槽。默认拒绝。 */
+    default boolean acceptFuelFromLine(@NotNull ItemStack item) { return false; }
+
+    /**
+     * 工厂方法：将方块包装为 {@link ProductionLineMember}。
+     * 优先检测 Rebar 方块，失败后尝试原版熔炉包装。
+     * 若是其它 Rebar 方块（非成员）则返回 null，不会误包装。
+     */
+    @Nullable
+    static ProductionLineMember of(@NotNull Block block) {
+        RebarBlock rb = RebarBlock.getRebarBlock(block);
+        if (rb instanceof ProductionLineMember m) return m;
+        if (rb != null) return null; // 是 Rebar 方块但不是产线成员
+        if (VanillaFurnaceMember.isVanillaFurnace(block)) return new VanillaFurnaceMember(block);
+        return null;
+    }
+}
