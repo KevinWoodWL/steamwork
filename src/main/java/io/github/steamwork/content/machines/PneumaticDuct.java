@@ -58,13 +58,14 @@ public class PneumaticDuct extends RebarBlock implements
 
     private static final float SINGLE_SCALE = 0.35F;
     private static final double HALF_SEGMENT = 0.5D;
+    private static final double ENDPOINT_SEGMENT = 1.0D;
 
     /**
      * Three slightly-different thicknesses assigned round-robin to face segments.
      * Prevents Z-fighting where multiple segments originate from the same duct centre
      * and their bounding boxes overlap in the joint area.
      * 0.35F is intentionally excluded — that value is reserved for blocks that create
-     * seamless visual connections to CargoDuct (matching CargoDuct's own convention).
+     * seamless visual connections to endpoint connectors using CargoDuct's convention.
      */
     private static final float[] LINE_THICKNESSES = {0.3495F, 0.3490F, 0.3485F};
     private static final double DISPLAY_SCAN_RADIUS = 1.25D;
@@ -136,7 +137,6 @@ public class PneumaticDuct extends RebarBlock implements
         Block neighbor = getBlock().getRelative(face);
         RebarBlock rb = BlockStorage.get(neighbor);
         return rb instanceof PneumaticDuct
-                || rb instanceof io.github.pylonmc.rebar.content.cargo.CargoDuct
                 || rb instanceof SteamCatapult
                 || rb instanceof PneumaticInput input
                         && input.acceptsPneumaticConnection(face.getOppositeFace())
@@ -204,8 +204,6 @@ public class PneumaticDuct extends RebarBlock implements
             RebarBlock rb = BlockStorage.get(neighbor);
             if (rb instanceof PneumaticDuct duct) {
                 duct.refreshDisplays();
-            } else if (rb instanceof io.github.pylonmc.rebar.content.cargo.CargoDuct cargoDuct) {
-                cargoDuct.updateConnectedFaces();
             } else if (rb instanceof PneumaticInput input) {
                 input.refreshDisplays();
             } else if (rb instanceof PneumaticOutput output) {
@@ -254,8 +252,9 @@ public class PneumaticDuct extends RebarBlock implements
     private @NotNull ItemDisplay createFaceDisplay(@NotNull BlockFace face, int index) {
         float thickness = LINE_THICKNESSES[index % LINE_THICKNESSES.length];
         Location center = getBlock().getLocation().toCenterLocation();
+        double length = faceSegmentLength(face);
         Vector3d from = new Vector3d();
-        Vector3d to = new Vector3d(face.getModX() * HALF_SEGMENT, face.getModY() * HALF_SEGMENT, face.getModZ() * HALF_SEGMENT);
+        Vector3d to = new Vector3d(face.getModX() * length, face.getModY() * length, face.getModZ() * length);
 
         ItemDisplay display = new ItemDisplayBuilder()
                 .itemStack(ductLineStack())
@@ -269,6 +268,13 @@ public class PneumaticDuct extends RebarBlock implements
                 .build(center);
         markDisplay(display);
         return display;
+    }
+
+    private double faceSegmentLength(@NotNull BlockFace face) {
+        RebarBlock rb = BlockStorage.get(getBlock().getRelative(face));
+        return rb instanceof PneumaticInput || rb instanceof PneumaticOutput
+                ? ENDPOINT_SEGMENT
+                : HALF_SEGMENT;
     }
 
     private ItemStack ductLineStack() {
@@ -318,7 +324,7 @@ public class PneumaticDuct extends RebarBlock implements
 
     public static boolean isNetworkDuct(@NotNull Block block) {
         RebarBlock rb = BlockStorage.get(block);
-        return rb instanceof PneumaticDuct || rb instanceof io.github.pylonmc.rebar.content.cargo.CargoDuct;
+        return rb instanceof PneumaticDuct;
     }
 
     public static @NotNull List<Block> findReachableEndpoints(@NotNull Block origin) {
@@ -338,7 +344,7 @@ public class PneumaticDuct extends RebarBlock implements
                 visited.add(neighbor);
 
                 RebarBlock rb = BlockStorage.get(neighbor);
-                if (rb instanceof PneumaticDuct || rb instanceof io.github.pylonmc.rebar.content.cargo.CargoDuct) {
+                if (rb instanceof PneumaticDuct) {
                     queue.add(neighbor);
                 } else if (rb instanceof SteamCatapult
                         || rb instanceof PneumaticInput input
@@ -366,7 +372,6 @@ public class PneumaticDuct extends RebarBlock implements
     public static boolean isNetworkConnector(@NotNull Block block) {
         RebarBlock rb = BlockStorage.get(block);
         return rb instanceof PneumaticDuct
-                || rb instanceof io.github.pylonmc.rebar.content.cargo.CargoDuct
                 || rb instanceof PneumaticInput
                 || rb instanceof PneumaticOutput;
     }

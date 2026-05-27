@@ -53,19 +53,22 @@ java {
     withSourcesJar()
 }
 
-// 构建时间后缀（格式：yyyyMMdd-HHmm），加在 jar 文件名末尾方便辨别多次构建。
+// 构建时间后缀（格式：yyyyMMdd-HHmm），快照版加在文件名末尾，正式版不加。
 val buildTimestamp: String = LocalDateTime.now()
     .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm"))
+
+val isSnapshot = project.version.toString().contains("SNAPSHOT", ignoreCase = true)
+val jarSuffix  = if (isSnapshot) "-$buildTimestamp" else ""
 
 tasks.shadowJar {
     mergeServiceFiles()
     archiveBaseName = project.name
     archiveClassifier = null
-    archiveFileName.set("${project.name}-${project.version}.jar")
+    archiveFileName.set("${project.name}-${project.version}${jarSuffix}.jar")
 }
 
 tasks.named<Jar>("sourcesJar") {
-    archiveFileName.set("${project.name}-${project.version}-sources.jar")
+    archiveFileName.set("${project.name}-${project.version}${jarSuffix}-sources.jar")
 }
 
 // 原始 jar（无 shadow 依赖）对玩家无用，禁用以免和 shadowJar 混淆。

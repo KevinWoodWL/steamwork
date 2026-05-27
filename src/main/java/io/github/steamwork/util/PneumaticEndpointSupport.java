@@ -1,5 +1,6 @@
 package io.github.steamwork.util;
 
+import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder;
@@ -20,64 +21,70 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 共享给 {@code PneumaticInput} / {@code PneumaticOutput} 的显示实体与朝向计算工具。
- *
- * <p>两端点都是 STRUCTURE_VOID 适配器方块，使用同一套 ItemDisplay 渲染（主体 + 标志 + 一段导管），
- * 朝向/管道长度计算也完全一致。这里把高度重复的 PDC 标记 + 朝向 + 实体回收逻辑集中到一处。</p>
+ * Shared display and facing helpers for pneumatic input/output endpoints.
  */
 public final class PneumaticEndpointSupport {
 
-    public  static final double DISPLAY_SCAN_RADIUS     = 1.25D;
+    public static final double DISPLAY_SCAN_RADIUS = 1.25D;
+
+    private static final BlockFace[] ALL_FACES = {
+            BlockFace.NORTH, BlockFace.SOUTH,
+            BlockFace.EAST,  BlockFace.WEST,
+            BlockFace.UP,    BlockFace.DOWN
+    };
+
     private PneumaticEndpointSupport() {}
 
-    /** 优先使用玩家视线的竖直方向（俯视 → DOWN，仰视 → UP），否则回退到水平面。 */
     public static @NotNull BlockFace resolvePlacementFacing(@NotNull BlockCreateContext context) {
         BlockFace vertical = context.getFacingVertical();
         return vertical != BlockFace.SELF ? vertical : context.getFacing();
     }
 
     /**
-     * 端点的导管侧朝向：若 {@code facing} 那一面紧邻一个网络连接器则取 facing，
-     * 否则取其反面——保证玩家放置时朝任意方向都能自动对齐导管。
+     * Returns the face currently used by the pneumatic network. If no adjacent duct
+     * exists yet, fall back to the back side of the endpoint body.
      */
     public static @NotNull BlockFace pneumaticConnectionFace(@NotNull Block block, @NotNull BlockFace facing) {
-        return PneumaticDuct.isNetworkConnector(block.getRelative(facing))
-                ? facing : facing.getOppositeFace();
+        for (BlockFace face : ALL_FACES) {
+            var rb = BlockStorage.get(block.getRelative(face));
+            if (rb instanceof PneumaticDuct) {
+                return face;
+            }
+        }
+        return facing.getOppositeFace();
     }
 
     /**
-     * 朝指定面延伸的一段管道 Transform。
-     *
-     * <ul>
-     *   <li><b>已连接</b>（face 侧紧邻导管）：管道从方块中心延伸到方块面（0.5），
-     *       与 {@link PneumaticDuct} 的 line display（HALF_SEGMENT=0.5）无缝对接。</li>
-     *   <li><b>未连接</b>：管道向内收，内侧端与主体背面（0.3 格）齐平，外侧端不超出方块面，
-     *       视觉上贴合主体、不外露。</li>
-     * </ul>
+     * Legacy free connector transform: point a short duct segment toward a known
+     * connection face. Kept for callers that do not have endpoint-facing context.
      */
     public static @NotNull TransformBuilder ductTransform(@NotNull Block block, @NotNull BlockFace face) {
         boolean connected = PneumaticDuct.isNetworkConnector(block.getRelative(face));
         if (connected) {
-            // 管道从主体背面（-0.3）延伸到方块面（+0.5），总长 0.8，center 在 +0.1。
-            // translate(+0.1) 在 world Z 上偏移；lookAlong 旋转把 +Z 对齐 ductFace 方向，
-            // 因此 ±0.4 的延伸自然落在正确的侧面。
             return new TransformBuilder()
                     .lookAlong(face)
                     .translate(0, 0, 0.1)
                     .scale(0.35, 0.35, 0.80);
-        } else {
-            // 内侧端贴合主体背面（0.3），外侧端收在方块内（0.175 处），不外露
-            return new TransformBuilder()
-                    .lookAlong(face)
-                    .translate(0, 0, 0.0625)
-                    .scale(0.35, 0.35, 0.475);
         }
+        return new TransformBuilder()
+                .lookAlong(face)
+                .translate(0, 0, 0.0625)
+                .scale(0.35, 0.35, 0.475);
     }
 
     /**
-     * 创建一个属于本方块的 ItemDisplay 并打上 PDC 标记，便于后续
-     * {@link #findManagedDisplays} / {@link #clearManagedDisplays} 回收。
+     * Pylon cargo-extractor style endpoint duct: the endpoint owns only the short
+     * body connector, while the duct block draws the network segment into it.
      */
+    public static @NotNull TransformBuilder ductTransform(@NotNull Block block,
+                                                          @NotNull BlockFace face,
+                                                          @NotNull BlockFace endpointFacing) {
+        return new TransformBuilder()
+                .lookAlong(endpointFacing)
+                .translate(0, 0, -0.0625)
+                .scale(0.35, 0.35, 0.475);
+    }
+
     public static @NotNull ItemDisplay createDisplay(
             @NotNull Block block,
             @NotNull Material material,
@@ -98,7 +105,6 @@ public final class PneumaticEndpointSupport {
         return display;
     }
 
-    /** 扫描方块周围所有由本方块创建（marker + owner 坐标都匹配）的 ItemDisplay。 */
     public static @NotNull List<ItemDisplay> findManagedDisplays(
             @NotNull Block block,
             @NotNull NamespacedKey markerKey,
@@ -118,7 +124,6 @@ public final class PneumaticEndpointSupport {
         return displays;
     }
 
-    /** 移除所有匹配的 ItemDisplay（用于刷新 / 破坏时回收）。 */
     public static void clearManagedDisplays(
             @NotNull Block block,
             @NotNull NamespacedKey markerKey,

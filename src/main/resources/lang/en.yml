@@ -1,4 +1,4 @@
-addon: "蒸汽工坊"
+addon: "Steamwork"
 
 item:
   zinc_ingot:
@@ -1301,6 +1301,9 @@ gui:
     title: "<dark_gray>Pneumatic Input"
     whitelist: "<white>Whitelist"
     blacklist: "<gray>Blacklist"
+    buffer_slot: |-
+      <gray>Item buffer — 1 slot, max 64 of the same type
+      <dark_gray>Network push stops when full or type conflict
     mode_hint: "<gray>Click to toggle filter mode"
     slot_mode_title: "<#ffd166>Slot Mode"
     slot_mode_auto: "<gray>Current: <white>Auto"
@@ -1385,8 +1388,25 @@ gui:
       auto: "<gray>Current: <aqua>Auto-route (template match → fuel slot, others → ingredient)"
       auto_hint: "<dark_gray>Set the fuel type in the fuel template slot to the right"
       fuel: "<gray>Current: <gold>Push all to fuel slot"
-      off: "<gray>Current: <red>Disabled (buffer only)"
+      "off": "<gray>Current: <red>Disabled (buffer only)"
       hint: "<dark_gray>Click to cycle modes"
+    filter_mode:
+      title: "<aqua>Filter Mode"
+      "off": "<gray>Filter: <white>Off — all items pass through"
+      whitelist: "<gray>Filter: <green>Whitelist — only listed items pass through"
+      blacklist: "<gray>Filter: <red>Blacklist — listed items are intercepted"
+      left_hint: "<dark_gray>Left-click to cycle: Off → Whitelist → Blacklist"
+      right_hint: "<dark_gray>Right-click to open the filter list"
+    bl_behavior:
+      title: "<aqua>Blacklist Behavior"
+      inactive: "<gray>Active only in Blacklist mode"
+      retain: "<gray>Behavior: <yellow>Retain — blacklisted items stay in the buffer"
+      eject: "<gray>Behavior: <aqua>Eject — blacklisted items are sent to the line outlet"
+      hint: "<dark_gray>Click to toggle behavior"
+    filter_list:
+      title: "<dark_gray>Filter List"
+      back: "<yellow>Back"
+      back_hint: "<gray>Return to the buffer chest menu"
 
   pneumatic_distributor:
     title: "<dark_gray>Pneumatic Distributor"
@@ -1488,7 +1508,7 @@ guide:
     palladium_alloy: "<gray>Palladium Alloy - Pylon Palladium synergy"
   button:
     root:
-      name: "<white>蒸汽工坊"
+      name: "<white>Steamwork"
     metals:
       name: "Ingots & Metals"
     basic_materials:
@@ -1512,7 +1532,7 @@ guide:
     steam_distillation:
       name: "Steam Distillation"
   page:
-    root: "<white>蒸汽工坊"
+    root: "<white>Steamwork"
     metals: "Ingots & Metals"
     basic_materials: "Basic Materials"
     components: "Mechanical Components"
@@ -1581,6 +1601,7 @@ research:
   material_basic_machines: "Basic Steam Machines"
   # Tier 2 - mid-tier processing
   precision_steam_automation: "Steam Automation"
+  precision_production_line: "Steam Production Line"
   chemistry_basic_research: "Basic Steam Research"
   # Tier 3 - advanced alloys & fluids
   material_advanced_ingots: "Advanced Ingots"
@@ -1588,7 +1609,7 @@ research:
   chemistry_heating_chamber: "Steam Superheating"
   material_steam_logistics: "Steam Logistics"
   chemistry_distillation: "Steam Distillation"
-  precision_milling: "Precision Milling"
+  precision_advanced_automation_1: "Steam Precision Automation I"
   # Tier 4 - endgame
   precision_turbines_1: "Steam Turbine I"
   precision_turbines_2: "Steam Turbine II"

@@ -1307,6 +1307,9 @@ gui:
     title: "<dark_gray>汽动输入端"
     whitelist: "<white>白名单"
     blacklist: "<gray>黑名单"
+    buffer_slot: |-
+      <gray>物品缓冲槽 — 1 格，最多缓存同种 64 个
+      <dark_gray>缓冲槽满或类型冲突时，网络停止推入
     mode_hint: "<gray>点击切换过滤模式"
     slot_mode_title: "<#ffd166>栏位模式"
     slot_mode_auto: "<gray>当前：<white>自动"
@@ -1391,8 +1394,25 @@ gui:
       auto: "<gray>当前：<aqua>自动分流（模板物品 → 燃料槽，其余 → 原料槽）"
       auto_hint: "<dark_gray>在右侧燃料模板格设置燃料类型"
       fuel: "<gray>当前：<gold>全部推送到燃料槽"
-      off: "<gray>当前：<red>不推送（仅缓存）"
+      "off": "<gray>当前：<red>不推送（仅缓存）"
       hint: "<dark_gray>点击切换模式"
+    filter_mode:
+      title: "<aqua>过滤模式"
+      "off": "<gray>过滤：<white>关闭 — 所有物品均可通过"
+      whitelist: "<gray>过滤：<green>白名单 — 仅名单内物品可通过"
+      blacklist: "<gray>过滤：<red>黑名单 — 拦截名单内物品"
+      left_hint: "<dark_gray>左键循环切换：关闭 → 白名单 → 黑名单"
+      right_hint: "<dark_gray>右键打开名单列表"
+    bl_behavior:
+      title: "<aqua>黑名单行为"
+      inactive: "<gray>仅在黑名单模式下生效"
+      retain: "<gray>行为：<yellow>留存 — 黑名单物品保留在缓存箱"
+      eject: "<gray>行为：<aqua>弹出 — 黑名单物品直接传送到产线出口"
+      hint: "<dark_gray>点击切换行为"
+    filter_list:
+      title: "<dark_gray>名单列表"
+      back: "<yellow>返回"
+      back_hint: "<gray>返回缓存箱主界面"
 
   pneumatic_distributor:
     title: "<dark_gray>汽动分发器"
@@ -1585,6 +1605,7 @@ research:
   material_basic_machines: "蒸汽基础机器"
   # Tier 2 - 中期加工
   precision_steam_automation: "蒸汽自动化"
+  precision_production_line: "蒸汽自动化产线"
   chemistry_basic_research: "基础蒸汽科研"
   # Tier 3 - 高级合金与流体
   material_advanced_ingots: "高级合金锭"
@@ -1592,7 +1613,7 @@ research:
   chemistry_heating_chamber: "蒸汽过热"
   material_steam_logistics: "蒸汽货运"
   chemistry_distillation: "蒸汽精馏"
-  precision_milling: "精密铣削"
+  precision_advanced_automation_1: "蒸汽精密自动化I"
   # Tier 4 - 终局
   precision_turbines_1: "蒸汽涡轮I"
   precision_turbines_2: "蒸汽涡轮II"

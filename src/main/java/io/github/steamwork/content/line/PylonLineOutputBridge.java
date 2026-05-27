@@ -2,8 +2,11 @@ package io.github.steamwork.content.line;
 
 import io.github.pylonmc.pylon.recipes.GrindstoneRecipe;
 import io.github.pylonmc.rebar.block.RebarBlock;
+import io.github.steamwork.Steamwork;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Item;
@@ -15,6 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,8 +33,20 @@ public final class PylonLineOutputBridge implements Listener {
     private static final int MAX_OUTPUT_CAPTURE_TICKS = 20 * 60;
     private static final int MAX_NEXT_MEMBER_GAP = 4;
     private static final double GRINDSTONE_CAPTURE_RADIUS_SQUARED = 1.0;
+    private static final int RETRY_INTERVAL_TICKS = 5;
+    private static final long BUFFER_EXPIRY_MS = 60_000L;
 
     private static final Map<BlockKey, PendingOutput> PENDING_OUTPUTS = new HashMap<>();
+    // Items that couldn't be pushed immediately (next member full); drained every RETRY_INTERVAL_TICKS.
+    private static final Map<BlockKey, BufferedDelivery> BUFFERED = new HashMap<>();
+
+    public PylonLineOutputBridge() {
+        Bukkit.getScheduler().runTaskTimer(
+                Steamwork.getInstance(),
+                PylonLineOutputBridge::drainBuffered,
+                RETRY_INTERVAL_TICKS, RETRY_INTERVAL_TICKS
+        );
+    }
 
     static void expectOutput(@NotNull Block block, @NotNull Object recipe) {
         if (!(recipe instanceof GrindstoneRecipe grindstoneRecipe)) return;
@@ -68,21 +85,94 @@ public final class PylonLineOutputBridge implements Listener {
             return;
         }
 
-        ProductionLineMember next = findNextMember(source, pending);
-        if (next == null) return;
-
         ItemStack stack = entity.getItemStack();
-        if (stack == null || stack.isEmpty()) return;
-
-        ItemStack single = stack.clone().asQuantity(1);
-        if (!next.acceptFromLine(single)) return;
-
-        if (stack.getAmount() <= 1) {
-            event.setCancelled(true);
+        if (stack == null || stack.isEmpty()) {
             PENDING_OUTPUTS.remove(key);
+            return;
+        }
+
+        // Always cancel: line grindstones must never drop items on the ground.
+        event.setCancelled(true);
+        PENDING_OUTPUTS.remove(key);
+
+        int total = stack.getAmount();
+        int delivered = 0;
+        ProductionLineMember next = findNextMember(source, pending.direction(), pending.lineId());
+        if (next != null) {
+            while (delivered < total) {
+                if (!next.acceptFromLine(stack.asQuantity(1))) break;
+                delivered++;
+            }
+        }
+
+        int remaining = total - delivered;
+        if (remaining > 0) {
+            enqueueBuffer(key, pending.lineId(), pending.direction(), stack.asQuantity(remaining));
+        }
+    }
+
+    private static void enqueueBuffer(
+            @NotNull BlockKey key,
+            @NotNull UUID lineId,
+            @NotNull BlockFace direction,
+            @NotNull ItemStack item
+    ) {
+        long expiresAt = System.currentTimeMillis() + BUFFER_EXPIRY_MS;
+        BufferedDelivery existing = BUFFERED.get(key);
+        if (existing == null) {
+            Deque<ItemStack> queue = new ArrayDeque<>();
+            queue.add(item.clone());
+            BUFFERED.put(key, new BufferedDelivery(lineId, direction, queue, expiresAt));
         } else {
-            stack.setAmount(stack.getAmount() - 1);
-            entity.setItemStack(stack);
+            existing.items().add(item.clone());
+            // Refresh expiry each time a new item is added.
+            BUFFERED.put(key, new BufferedDelivery(existing.lineId(), existing.direction(), existing.items(), expiresAt));
+        }
+    }
+
+    private static void drainBuffered() {
+        if (BUFFERED.isEmpty()) return;
+        long now = System.currentTimeMillis();
+        Iterator<Map.Entry<BlockKey, BufferedDelivery>> it = BUFFERED.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<BlockKey, BufferedDelivery> entry = it.next();
+            BufferedDelivery delivery = entry.getValue();
+
+            if (delivery.expiresAt() < now) {
+                it.remove();
+                continue;
+            }
+
+            Block source = entry.getKey().toBlock();
+            if (source == null) { it.remove(); continue; }
+
+            ProductionLineMember sourceMember = ProductionLineMember.of(source);
+            if (sourceMember == null || !delivery.lineId().equals(sourceMember.getLineId())) {
+                it.remove();
+                continue;
+            }
+
+            ProductionLineMember next = findNextMember(source, delivery.direction(), delivery.lineId());
+            if (next == null) continue;
+
+            Deque<ItemStack> items = delivery.items();
+            while (!items.isEmpty()) {
+                ItemStack head = items.peek();
+                int unitsSent = 0;
+                int total = head.getAmount();
+                while (unitsSent < total) {
+                    if (!next.acceptFromLine(head.asQuantity(1))) break;
+                    unitsSent++;
+                }
+                head.setAmount(head.getAmount() - unitsSent);
+                if (head.getAmount() <= 0) {
+                    items.poll();
+                } else {
+                    break; // Next member still full; retry next interval.
+                }
+            }
+
+            if (items.isEmpty()) it.remove();
         }
     }
 
@@ -126,11 +216,15 @@ public final class PylonLineOutputBridge implements Listener {
     }
 
     @Nullable
-    private static ProductionLineMember findNextMember(@NotNull Block source, @NotNull PendingOutput pending) {
+    private static ProductionLineMember findNextMember(
+            @NotNull Block source,
+            @NotNull BlockFace direction,
+            @NotNull UUID lineId
+    ) {
         for (int i = 1; i <= MAX_NEXT_MEMBER_GAP; i++) {
-            Block candidate = source.getRelative(pending.direction(), i);
+            Block candidate = source.getRelative(direction, i);
             ProductionLineMember member = ProductionLineMember.of(candidate);
-            if (member != null && pending.lineId().equals(member.getLineId())) return member;
+            if (member != null && lineId.equals(member.getLineId())) return member;
         }
         return null;
     }
@@ -142,9 +236,21 @@ public final class PylonLineOutputBridge implements Listener {
             long expiresAtGameTime
     ) {}
 
+    private record BufferedDelivery(
+            @NotNull UUID lineId,
+            @NotNull BlockFace direction,
+            @NotNull Deque<ItemStack> items,
+            long expiresAt
+    ) {}
+
     private record BlockKey(@NotNull UUID worldId, int x, int y, int z) {
         static @NotNull BlockKey of(@NotNull Block block) {
             return new BlockKey(block.getWorld().getUID(), block.getX(), block.getY(), block.getZ());
+        }
+
+        @Nullable Block toBlock() {
+            World world = Bukkit.getWorld(worldId);
+            return world != null ? world.getBlockAt(x, y, z) : null;
         }
     }
 }

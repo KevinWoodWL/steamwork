@@ -99,8 +99,8 @@ public class PneumaticInput extends RebarBlock implements
 
     // ── 状态字段 ──────────────────────────────────────────────────────────────
 
-    /** 缓冲背包：网络将物品推入此处，本机再转发到相邻容器。 */
-    private final VirtualInventory bufferInventory = new VirtualInventory(4);
+    /** 缓冲槽：只有 1 格，最多缓存 64 个同种物品；满或类型冲突时网络停止推入。 */
+    private final VirtualInventory bufferInventory = new VirtualInventory(1);
 
     /** 过滤槽：最多放 3 种物品作为黑/白名单模板（仅检查 Material，忽略 NBT）。 */
     private final VirtualInventory filterInventory = new VirtualInventory(3);
@@ -236,7 +236,7 @@ public class PneumaticInput extends RebarBlock implements
                         .translate(0, 0, -0.3)
                         .scale(0.45, 0.45, 0.05)));
         newUuids.add(buildDisplay(Material.GRAY_CONCRETE, ":duct",
-                PneumaticEndpointSupport.ductTransform(getBlock(), ductFace)));
+                PneumaticEndpointSupport.ductTransform(getBlock(), ductFace, getFacing())));
         displayUuids = List.copyOf(newUuids);
     }
 
@@ -408,11 +408,15 @@ public class PneumaticInput extends RebarBlock implements
     @Override
     public @NotNull Gui createGui() {
         return Gui.builder()
-                .setStructure("# # f f f m s # #")
+                .setStructure(
+                        "# # f f f m s # #",
+                        "# # # # b # # # #"
+                )
                 .addIngredient('#', GuiItems.background())
                 .addIngredient('f', filterInventory)
                 .addIngredient('m', filterModeItem)
                 .addIngredient('s', slotModeItem)
+                .addIngredient('b', bufferInventory)
                 .build();
     }
 

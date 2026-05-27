@@ -204,7 +204,7 @@ public class PneumaticOutput extends RebarBlock implements
                         .translate(0, 0, -0.3)
                         .scale(0.45, 0.45, 0.05)));
         newUuids.add(buildDisplay(Material.GRAY_CONCRETE, ":duct",
-                PneumaticEndpointSupport.ductTransform(getBlock(), ductFace)));
+                PneumaticEndpointSupport.ductTransform(getBlock(), ductFace, getFacing())));
         displayUuids = List.copyOf(newUuids);
     }
 

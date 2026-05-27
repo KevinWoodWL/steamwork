@@ -60,9 +60,12 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_ASSEMBLY_BENCH,
             SteamworkKeys.STEAM_MOTOR,
             SteamworkKeys.STEAM_CANISTER_BRASS, SteamworkKeys.STEAM_CANISTER_INVAR,
-            SteamworkKeys.STEAM_CANISTER_TUNGSTEN,
+            SteamworkKeys.STEAM_CANISTER_TUNGSTEN);
+
+    public static final Research PRECISION_PRODUCTION_LINE = new Research(
+            steamworkKey("precision_production_line"), SteamworkItems.PRODUCTION_LINE_INLET, 100L,
             SteamworkKeys.PRODUCTION_LINE_INLET, SteamworkKeys.PRODUCTION_LINE_OUTLET,
-            SteamworkKeys.PRODUCTION_LINE_BLUEPRINT);
+            SteamworkKeys.PRODUCTION_LINE_BLUEPRINT, SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST);
 
     public static final Research CHEMISTRY_BASIC_RESEARCH = new Research(
             steamworkKey("chemistry_basic_research"), SteamworkItems.STEAM_SCIENCE_INTERFACE, 18L,
@@ -108,13 +111,21 @@ public final class SteamworkResearches {
             SteamworkKeys.WASTE_ACID_VIAL, SteamworkKeys.MINERAL_CONCENTRATE,
             SteamworkKeys.FIBER_RESIDUE);
 
-    public static final Research PRECISION_MILLING = new Research(
-            steamworkKey("precision_milling"), SteamworkItems.STEAM_PRECISION_MILL, 160L,
+    public static final Research PRECISION_ADVANCED_AUTOMATION_1 = new Research(
+            steamworkKey("precision_advanced_automation_1"), SteamworkItems.STEAM_PRECISION_MILL, 100L,
             SteamworkKeys.STEAM_PRECISION_MILL,
             SteamworkKeys.PRECISION_GEAR, SteamworkKeys.PRECISION_SCREW,
             SteamworkKeys.PRECISION_VALVE, SteamworkKeys.WEAR_PLATE,
             SteamworkKeys.HEAT_SINK, SteamworkKeys.MILLING_BLADE,
-            SteamworkKeys.CATALYST_CORE, SteamworkKeys.PRECISION_BEARING);
+            SteamworkKeys.CATALYST_CORE, SteamworkKeys.PRECISION_BEARING,
+            SteamworkKeys.PRECISION_CATALYTIC_REACTOR,
+            SteamworkKeys.HEAVY_IMPACT_CRUSHER,
+            SteamworkKeys.HYDRAULIC_FORGE,
+            SteamworkKeys.HIGH_PRESSURE_PIPE, SteamworkKeys.HIGH_PRESSURE_FLANGE,
+            SteamworkKeys.HYDRAULIC_PISTON, SteamworkKeys.HYDRAULIC_SEAL,
+            SteamworkKeys.FORGED_PLATE,
+            SteamworkKeys.PRECISION_CRYSTALLIZER,
+            SteamworkKeys.PRECISION_CENTRIFUGE);
 
     // ---- Tier 4: endgame ------------------------------------------------
 
@@ -144,6 +155,7 @@ public final class SteamworkResearches {
         MATERIAL_BASIC_MACHINES.register();
 
         PRECISION_STEAM_AUTOMATION.register();
+        PRECISION_PRODUCTION_LINE.register();
         CHEMISTRY_BASIC_RESEARCH.register();
 
         MATERIAL_ADVANCED_INGOTS.register();
@@ -151,7 +163,7 @@ public final class SteamworkResearches {
         CHEMISTRY_HEATING_CHAMBER.register();
         MATERIAL_STEAM_LOGISTICS.register();
         CHEMISTRY_DISTILLATION.register();
-        PRECISION_MILLING.register();
+        PRECISION_ADVANCED_AUTOMATION_1.register();
 
         PRECISION_TURBINES_1.register();
         PRECISION_TURBINES_2.register();

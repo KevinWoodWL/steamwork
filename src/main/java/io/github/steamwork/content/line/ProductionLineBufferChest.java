@@ -33,6 +33,7 @@ import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.inventory.VirtualInventory;
 import xyz.xenondevs.invui.item.AbstractItem;
 import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.window.Window;
 
 import java.util.List;
 import java.util.Map;
@@ -50,38 +51,44 @@ public class ProductionLineBufferChest extends RebarBlock implements
 
     private static final int MAX_GAP = 4;
 
-    private static final NamespacedKey KEY_PUSH_MODE     = steamworkKey("buffer_push_mode");
+    private static final NamespacedKey KEY_PUSH_MODE      = steamworkKey("buffer_push_mode");
     private static final NamespacedKey KEY_FUEL_TEMPLATE  = steamworkKey("buffer_fuel_template");
+    private static final NamespacedKey KEY_FILTER_MODE    = steamworkKey("buffer_filter_mode");
+    private static final NamespacedKey KEY_BL_BEHAVIOR    = steamworkKey("buffer_blacklist_behavior");
+    private static final NamespacedKey KEY_FILTER_LIST    = steamworkKey("buffer_filter_list");
 
-    /**
-     * 推送模式。
-     * <ul>
-     *   <li>INGREDIENT — 全部送原料槽（默认）</li>
-     *   <li>AUTO — 匹配燃料模板的物品送燃料槽，其余送原料槽</li>
-     *   <li>FUEL — 全部送燃料槽</li>
-     *   <li>OFF — 不推送（仅缓存）</li>
-     * </ul>
-     */
     enum PushMode { INGREDIENT, AUTO, FUEL, OFF }
+
+    /** OFF = 不过滤；WHITELIST = 仅放行名单内；BLACKLIST = 拦截名单内。 */
+    enum FilterMode { OFF, WHITELIST, BLACKLIST }
+
+    /** RETAIN = 黑名单物品留在缓存箱；EJECT = 直接传送到产线出口。 */
+    enum BlacklistBehavior { RETAIN, EJECT }
 
     public static class Item extends RebarItem {
         public Item(@NotNull ItemStack stack) { super(stack); }
     }
 
-    private final VirtualInventory buffer = new VirtualInventory(27);
+    private final VirtualInventory buffer     = new VirtualInventory(27);
+    private final VirtualInventory filterList = new VirtualInventory(27);
 
-    @Nullable private UUID lineId = null;
-    private int linePosition = 0;
-    @NotNull private BlockFace lineDirection = BlockFace.SELF;
-    @Nullable private String lineCreator = null;
-    private int lineNumber = 0;
-    private boolean lastPushSucceeded = false;
-    @NotNull  private PushMode   pushMode     = PushMode.INGREDIENT;
-    @Nullable private ItemStack  fuelTemplate = null;
+    @Nullable private UUID      lineId    = null;
+    private int                 linePosition  = 0;
+    @NotNull  private BlockFace lineDirection = BlockFace.SELF;
+    @Nullable private String    lineCreator   = null;
+    private int                 lineNumber    = 0;
+    private boolean             lastPushSucceeded = false;
 
-    private final LineInfoItem    lineInfoItem    = new LineInfoItem();
-    private final ModeToggleItem  modeToggleItem  = new ModeToggleItem();
-    private final FuelFilterItem  fuelFilterItem  = new FuelFilterItem();
+    @NotNull  private PushMode          pushMode          = PushMode.INGREDIENT;
+    @Nullable private ItemStack         fuelTemplate      = null;
+    @NotNull  private FilterMode        filterMode        = FilterMode.OFF;
+    @NotNull  private BlacklistBehavior blacklistBehavior = BlacklistBehavior.RETAIN;
+
+    private final LineInfoItem          lineInfoItem          = new LineInfoItem();
+    private final ModeToggleItem        modeToggleItem        = new ModeToggleItem();
+    private final FuelFilterItem        fuelFilterItem        = new FuelFilterItem();
+    private final FilterModeItem        filterModeItem        = new FilterModeItem();
+    private final BlacklistBehaviorItem blacklistBehaviorItem = new BlacklistBehaviorItem();
 
     @SuppressWarnings("unused")
     public ProductionLineBufferChest(@NotNull Block block, @NotNull BlockCreateContext context) {
@@ -119,6 +126,26 @@ public class ProductionLineBufferChest extends RebarBlock implements
         if (templateBytes != null) {
             try { fuelTemplate = ItemStack.deserializeBytes(templateBytes); } catch (Exception ignored) {}
         }
+        String fm = pdc.get(KEY_FILTER_MODE, PersistentDataType.STRING);
+        if (fm != null) {
+            try { filterMode = FilterMode.valueOf(fm); } catch (IllegalArgumentException ignored) {}
+        }
+        String blb = pdc.get(KEY_BL_BEHAVIOR, PersistentDataType.STRING);
+        if (blb != null) {
+            try { blacklistBehavior = BlacklistBehavior.valueOf(blb); } catch (IllegalArgumentException ignored) {}
+        }
+        // 名单列表持久化：用 TAG_CONTAINER 存每格序列化字节
+        PersistentDataContainer flc = pdc.get(KEY_FILTER_LIST, PersistentDataType.TAG_CONTAINER);
+        if (flc != null) {
+            for (int i = 0; i < filterList.getSize(); i++) {
+                NamespacedKey slotKey = steamworkKey("fl_" + i);
+                byte[] bytes = flc.get(slotKey, PersistentDataType.BYTE_ARRAY);
+                if (bytes != null) {
+                    try { filterList.setItem(new MachineUpdateReason(), i, ItemStack.deserializeBytes(bytes)); }
+                    catch (Exception ignored) {}
+                }
+            }
+        }
     }
 
     @Override
@@ -148,11 +175,30 @@ public class ProductionLineBufferChest extends RebarBlock implements
         } else {
             pdc.remove(KEY_FUEL_TEMPLATE);
         }
+        pdc.set(KEY_FILTER_MODE, PersistentDataType.STRING, filterMode.name());
+        pdc.set(KEY_BL_BEHAVIOR, PersistentDataType.STRING, blacklistBehavior.name());
+        // 保存名单列表
+        boolean hasFilterItems = false;
+        PersistentDataContainer flc = pdc.getAdapterContext().newPersistentDataContainer();
+        for (int i = 0; i < filterList.getSize(); i++) {
+            ItemStack slot = filterList.getItem(i);
+            if (slot != null && !slot.isEmpty()) {
+                flc.set(steamworkKey("fl_" + i), PersistentDataType.BYTE_ARRAY, slot.serializeAsBytes());
+                hasFilterItems = true;
+            }
+        }
+        if (hasFilterItems) pdc.set(KEY_FILTER_LIST, PersistentDataType.TAG_CONTAINER, flc);
+        else pdc.remove(KEY_FILTER_LIST);
     }
 
     @Override
     public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
         RebarVirtualInventoryBlock.super.onBreak(drops, context);
+        // 名单列表物品也一起掉落
+        for (int i = 0; i < filterList.getSize(); i++) {
+            ItemStack slot = filterList.getItem(i);
+            if (slot != null && !slot.isEmpty()) drops.add(slot.clone());
+        }
     }
 
     @Override
@@ -187,11 +233,30 @@ public class ProductionLineBufferChest extends RebarBlock implements
             hasItems = true;
 
             ItemStack single = stack.clone().asQuantity(1);
+
+            // 过滤逻辑
+            if (filterMode != FilterMode.OFF) {
+                boolean inList = isInFilterList(single);
+                if (filterMode == FilterMode.WHITELIST && !inList) continue;
+                if (filterMode == FilterMode.BLACKLIST && inList) {
+                    // 黑名单物品：按行为处理
+                    if (blacklistBehavior == BlacklistBehavior.EJECT) {
+                        ProductionLineMember outlet = findOutlet();
+                        if (outlet != null && outlet.acceptFromLine(single)) {
+                            decrementBuffer(i, stack);
+                            lastPushSucceeded = true;
+                            return;
+                        }
+                    }
+                    // RETAIN 或 EJECT 但出口满：跳过此格
+                    continue;
+                }
+            }
+
             boolean accepted;
             if (pushMode == PushMode.FUEL) {
                 accepted = next.acceptFuelFromLine(single);
             } else if (pushMode == PushMode.AUTO && hasTemplate && single.isSimilar(fuelTemplate) && next.hasFuelSlot()) {
-                // AUTO 模式：匹配模板 → 燃料槽；匹配失败则本格跳过（不送原料槽）
                 accepted = next.acceptFuelFromLine(single);
             } else {
                 accepted = next.acceptFromLine(single);
@@ -203,6 +268,32 @@ public class ProductionLineBufferChest extends RebarBlock implements
             return;
         }
         lastPushSucceeded = !hasItems;
+    }
+
+    /** 判断物品是否在名单列表中（按物品类型匹配，忽略数量）。 */
+    private boolean isInFilterList(@NotNull ItemStack item) {
+        for (int i = 0; i < filterList.getSize(); i++) {
+            ItemStack slot = filterList.getItem(i);
+            if (slot != null && !slot.isEmpty() && slot.isSimilar(item)) return true;
+        }
+        return false;
+    }
+
+    /** 沿产线方向找到出口。 */
+    @Nullable
+    private ProductionLineMember findOutlet() {
+        if (lineId == null || lineDirection == BlockFace.SELF) return null;
+        Block cursor = getBlock().getRelative(lineDirection);
+        for (int i = 0; i < 64; i++) {
+            ProductionLineMember m = ProductionLineMember.of(cursor);
+            if (m != null && lineId.equals(m.getLineId())) {
+                if (m instanceof ProductionLineOutlet) return m;
+                cursor = cursor.getRelative(lineDirection);
+                continue;
+            }
+            cursor = cursor.getRelative(lineDirection);
+        }
+        return null;
     }
 
     private void decrementBuffer(int slot, @NotNull ItemStack current) {
@@ -225,17 +316,14 @@ public class ProductionLineBufferChest extends RebarBlock implements
         return null;
     }
 
-    @Override public @Nullable UUID getLineId() { return lineId; }
-    @Override public int getLinePosition() { return linePosition; }
-    @Override public @NotNull BlockFace getLineDirection() { return lineDirection; }
-    @Override public @Nullable String getLineCreator() { return lineCreator; }
-    @Override public int getLineNumber() { return lineNumber; }
+    @Override public @Nullable UUID getLineId()              { return lineId; }
+    @Override public int getLinePosition()                    { return linePosition; }
+    @Override public @NotNull BlockFace getLineDirection()    { return lineDirection; }
+    @Override public @Nullable String getLineCreator()        { return lineCreator; }
+    @Override public int getLineNumber()                      { return lineNumber; }
 
-    @Override
-    public void setLineCreator(@Nullable String creator) { this.lineCreator = creator; }
-
-    @Override
-    public void setLineNumber(int number) { this.lineNumber = number; }
+    @Override public void setLineCreator(@Nullable String creator) { this.lineCreator = creator; }
+    @Override public void setLineNumber(int number)                { this.lineNumber = number; }
 
     @Override
     public void joinLine(@NotNull UUID id, int position, @NotNull BlockFace direction) {
@@ -289,14 +377,37 @@ public class ProductionLineBufferChest extends RebarBlock implements
                         "b b b b b b b b b",
                         "b b b b b b b b b",
                         "b b b b b b b b b",
-                        "# # # L M F # # #"
+                        "# # L M F W B # #"
                 )
                 .addIngredient('#', GuiItems.background())
                 .addIngredient('b', buffer)
                 .addIngredient('L', lineInfoItem)
                 .addIngredient('M', modeToggleItem)
                 .addIngredient('F', fuelFilterItem)
+                .addIngredient('W', filterModeItem)
+                .addIngredient('B', blacklistBehaviorItem)
                 .build();
+    }
+
+    /** 打开名单管理子界面。 */
+    private void openFilterListGui(@NotNull Player player) {
+        Gui gui = Gui.builder()
+                .setStructure(
+                        "f f f f f f f f f",
+                        "f f f f f f f f f",
+                        "f f f f f f f f f",
+                        "# # # # < # # # #"
+                )
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('f', filterList)
+                .addIngredient('<', new BackItem(player))
+                .build();
+        Window.builder()
+                .setUpperGui(gui)
+                .setTitle(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_list.title"))
+                .setViewer(player)
+                .build()
+                .open();
     }
 
     @Override
@@ -306,7 +417,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
 
     @Override
     public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
-        return Map.of("buffer", buffer);
+        return Map.of("buffer", buffer, "filter_list", filterList);
     }
 
     private boolean hasBufferedItems() {
@@ -317,6 +428,8 @@ public class ProductionLineBufferChest extends RebarBlock implements
         return false;
     }
 
+    // ===== GUI 项目 =====
+
     private final class LineInfoItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
@@ -325,28 +438,55 @@ public class ProductionLineBufferChest extends RebarBlock implements
                         .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.line_status.title")))
                         .lore(List.of(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.line_status.not_configured"))));
             }
-
             boolean hasItems = hasBufferedItems();
             Material mat;
             String stateKey;
             if (!hasItems) {
-                mat = Material.YELLOW_STAINED_GLASS_PANE;
-                stateKey = "waiting";
+                mat = Material.YELLOW_STAINED_GLASS_PANE; stateKey = "waiting";
             } else if (lastPushSucceeded) {
-                mat = Material.GREEN_STAINED_GLASS_PANE;
-                stateKey = "pushing";
+                mat = Material.GREEN_STAINED_GLASS_PANE;  stateKey = "pushing";
             } else {
-                mat = Material.ORANGE_STAINED_GLASS_PANE;
-                stateKey = "buffering";
+                mat = Material.ORANGE_STAINED_GLASS_PANE; stateKey = "buffering";
             }
-
             return ItemStackBuilder.of(mat)
                     .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.line_status.title")))
                     .lore(List.of(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.line_status." + stateKey))));
         }
+        @Override public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {}
+    }
 
+    private final class ModeToggleItem extends AbstractItem {
         @Override
-        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {}
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            Material mat = switch (pushMode) {
+                case INGREDIENT -> Material.LIME_STAINED_GLASS_PANE;
+                case AUTO       -> Material.LIGHT_BLUE_STAINED_GLASS_PANE;
+                case FUEL       -> Material.ORANGE_STAINED_GLASS_PANE;
+                case OFF        -> Material.GRAY_STAINED_GLASS_PANE;
+            };
+            String modeKey = pushMode.name().toLowerCase();
+            List<Component> lore = pushMode == PushMode.AUTO
+                    ? List.of(
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode." + modeKey)),
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.auto_hint")),
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.hint")))
+                    : List.of(
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode." + modeKey)),
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.hint")));
+            return ItemStackBuilder.of(mat)
+                    .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.title")))
+                    .lore(lore);
+        }
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
+            pushMode = switch (pushMode) {
+                case INGREDIENT -> PushMode.AUTO;
+                case AUTO       -> PushMode.FUEL;
+                case FUEL       -> PushMode.OFF;
+                case OFF        -> PushMode.INGREDIENT;
+            };
+            notifyWindows();
+        }
     }
 
     private final class FuelFilterItem extends AbstractItem {
@@ -367,7 +507,6 @@ public class ProductionLineBufferChest extends RebarBlock implements
                             ni(Component.translatable("steamwork.gui.production_line_buffer_chest.fuel_filter.set_hint"))
                     ));
         }
-
         @Override
         public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
             if (type == ClickType.RIGHT || type == ClickType.SHIFT_RIGHT) {
@@ -387,38 +526,88 @@ public class ProductionLineBufferChest extends RebarBlock implements
         }
     }
 
-    private final class ModeToggleItem extends AbstractItem {
+    private final class FilterModeItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            Material mat = switch (pushMode) {
-                case INGREDIENT -> Material.LIME_STAINED_GLASS_PANE;
-                case AUTO       -> Material.LIGHT_BLUE_STAINED_GLASS_PANE;
-                case FUEL       -> Material.ORANGE_STAINED_GLASS_PANE;
-                case OFF        -> Material.GRAY_STAINED_GLASS_PANE;
+            Material mat = switch (filterMode) {
+                case OFF       -> Material.GRAY_STAINED_GLASS_PANE;
+                case WHITELIST -> Material.LIME_STAINED_GLASS_PANE;
+                case BLACKLIST -> Material.RED_STAINED_GLASS_PANE;
             };
-            String modeKey = pushMode.name().toLowerCase();
-            List<Component> lore = pushMode == PushMode.AUTO
-                    ? List.of(
-                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode." + modeKey)),
-                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.auto_hint")),
-                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.hint")))
-                    : List.of(
-                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode." + modeKey)),
-                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.hint")));
+            String modeKey = filterMode.name().toLowerCase();
             return ItemStackBuilder.of(mat)
-                    .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode.title")))
-                    .lore(lore);
+                    .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_mode.title")))
+                    .lore(List.of(
+                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_mode." + modeKey)),
+                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_mode.left_hint")),
+                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_mode.right_hint"))
+                    ));
         }
-
         @Override
         public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
-            pushMode = switch (pushMode) {
-                case INGREDIENT -> PushMode.AUTO;
-                case AUTO       -> PushMode.FUEL;
-                case FUEL       -> PushMode.OFF;
-                case OFF        -> PushMode.INGREDIENT;
-            };
+            if (type == ClickType.RIGHT || type == ClickType.SHIFT_RIGHT) {
+                // 右键打开名单子界面
+                openFilterListGui(player);
+            } else {
+                // 左键循环切换模式
+                filterMode = switch (filterMode) {
+                    case OFF       -> FilterMode.WHITELIST;
+                    case WHITELIST -> FilterMode.BLACKLIST;
+                    case BLACKLIST -> FilterMode.OFF;
+                };
+                notifyWindows();
+                blacklistBehaviorItem.notifyWindows();
+            }
+        }
+    }
+
+    private final class BlacklistBehaviorItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            boolean active = filterMode == FilterMode.BLACKLIST;
+            Material mat = !active
+                    ? Material.GRAY_STAINED_GLASS_PANE
+                    : blacklistBehavior == BlacklistBehavior.RETAIN
+                        ? Material.YELLOW_STAINED_GLASS_PANE
+                        : Material.CYAN_STAINED_GLASS_PANE;
+            String behavKey = blacklistBehavior.name().toLowerCase();
+            List<Component> lore = active
+                    ? List.of(
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.bl_behavior." + behavKey)),
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.bl_behavior.hint")))
+                    : List.of(
+                        ni(Component.translatable("steamwork.gui.production_line_buffer_chest.bl_behavior.inactive")));
+            return ItemStackBuilder.of(mat)
+                    .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.bl_behavior.title")))
+                    .lore(lore);
+        }
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
+            if (filterMode != FilterMode.BLACKLIST) return;
+            blacklistBehavior = blacklistBehavior == BlacklistBehavior.RETAIN
+                    ? BlacklistBehavior.EJECT
+                    : BlacklistBehavior.RETAIN;
             notifyWindows();
+        }
+    }
+
+    private final class BackItem extends AbstractItem {
+        private final Player player;
+        BackItem(@NotNull Player player) { this.player = player; }
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            return ItemStackBuilder.of(Material.ARROW)
+                    .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_list.back")))
+                    .lore(List.of(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_list.back_hint"))));
+        }
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
+            Window.builder()
+                    .setUpperGui(createGui())
+                    .setTitle(getGuiTitle())
+                    .setViewer(this.player)
+                    .build()
+                    .open();
         }
     }
 
