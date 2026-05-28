@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pylonmc/rebar
-          ref: '0.39.0'
+          ref: '0.40.0'
           path: rebar
 
       # --- Checkout pylon ---
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pylonmc/pylon
-          ref: '0.37.0'
+          ref: '0.38.0'
           path: pylon
 
       # --- Set up JDK 25 ---
