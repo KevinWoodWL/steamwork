@@ -226,14 +226,40 @@ public class SteamPress extends RebarBlock implements
 
     private static final Vector3i IRON_BLOCK_OFFSET = new Vector3i(0, -2, 0);
 
-    private @NotNull Block getIronBlockPos() {
+    public @NotNull Block getIronBlockPos() {
         return getBlock().getRelative(BlockFace.DOWN).getRelative(BlockFace.DOWN);
     }
 
-    private boolean hasValidStructure() {
+    public boolean hasValidStructure() {
         Block below1 = getBlock().getRelative(BlockFace.DOWN);
         Block below2 = below1.getRelative(BlockFace.DOWN);
         return below1.getType() == Material.AIR && below2.getType() == Material.IRON_BLOCK;
+    }
+
+    /**
+     * 供产线调用：将物品放入冲压机铁块上的展示实体（相当于玩家手持右键放入）。
+     * 如果机器正在加工或展示物品已存在且与 item 不同，则拒绝。
+     *
+     * @return true 表示成功接受
+     */
+    public boolean insertInputItem(@NotNull ItemStack item) {
+        if (!hasValidStructure()) return false;
+        if (isProcessing()) return false;
+        ItemDisplay existing = getDisplayEntity();
+        if (existing == null) {
+            spawnDisplayEntity(item.asQuantity(1));
+            return true;
+        }
+        ItemStack current = existing.getItemStack();
+        if (current == null || current.isEmpty()) {
+            existing.setItemStack(item.asQuantity(1));
+            return true;
+        }
+        if (!current.isSimilar(item)) return false;
+        if (current.getAmount() >= current.getMaxStackSize()) return false;
+        current.setAmount(current.getAmount() + 1);
+        existing.setItemStack(current);
+        return true;
     }
 
     private void syncGhostBlock() {
@@ -560,14 +586,29 @@ public class SteamPress extends RebarBlock implements
 
     private void completeRecipe(@NotNull SteamProcessRecipe recipe) {
         Block ironBlock = getIronBlockPos();
-        ironBlock.getWorld().dropItemNaturally(
-                ironBlock.getLocation().add(0.5, 0.5, 0.5),
-                recipe.producedStack().clone());
+        ItemStack produced = recipe.producedStack().clone();
+
+        // 优先将产物推送给产线下游成员
+        produced = io.github.steamwork.content.line.SteamPressMember.tryDeliverOutput(
+                ironBlock, produced);
+
+        if (!produced.isEmpty()) {
+            ironBlock.getWorld().dropItemNaturally(
+                    ironBlock.getLocation().add(0.5, 0.5, 0.5), produced);
+        }
 
         if (scrapChance > 0 && Math.random() < scrapChance) {
-            ironBlock.getWorld().dropItemNaturally(
-                    ironBlock.getLocation().add(0.5, 0.5, 0.5),
-                    SteamworkItems.MACHINE_SCRAP.clone());
+            ItemStack scrap = SteamworkItems.MACHINE_SCRAP.clone();
+            io.github.steamwork.content.line.ProductionLineMember pressMember =
+                    io.github.steamwork.content.line.ProductionLineMember.of(ironBlock);
+            if (pressMember != null && pressMember.isInLine()) {
+                scrap = io.github.steamwork.content.line.ProductionLineMember
+                        .deliverToNextMember(ironBlock, pressMember, scrap);
+            }
+            if (!scrap.isEmpty()) {
+                ironBlock.getWorld().dropItemNaturally(
+                        ironBlock.getLocation().add(0.5, 0.5, 0.5), scrap);
+            }
         }
 
         liftPiston();
@@ -596,8 +637,18 @@ public class SteamPress extends RebarBlock implements
     }
 
     private void dropScrap() {
-        getBlock().getWorld().dropItemNaturally(
-                getBlock().getLocation().add(0.5, 1.0, 0.5), SteamworkItems.MACHINE_SCRAP.clone());
+        Block ironBlock = getIronBlockPos();
+        ItemStack scrap = SteamworkItems.MACHINE_SCRAP.clone();
+        io.github.steamwork.content.line.ProductionLineMember pressMember =
+                io.github.steamwork.content.line.ProductionLineMember.of(ironBlock);
+        if (pressMember != null && pressMember.isInLine()) {
+            scrap = io.github.steamwork.content.line.ProductionLineMember
+                    .deliverToNextMember(ironBlock, pressMember, scrap);
+        }
+        if (!scrap.isEmpty()) {
+            ironBlock.getWorld().dropItemNaturally(
+                    ironBlock.getLocation().add(0.5, 1.0, 0.5), scrap);
+        }
     }
 
     private void spawnFx(int count) {

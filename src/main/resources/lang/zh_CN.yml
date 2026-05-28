@@ -573,7 +573,8 @@ item:
     lore: |-
       <arrow> 产线入口专用调校升级
       <arrow> 安装后，入口每 tick 自动对产线内<white>需要手动触发</white>的机器执行右键操作
-      <arrow> 支持实现了 ManualInteractMember 接口的 Rebar 机器
+      <arrow> 支持 Pylon 磨石、混合锅等手动触发机器
+      <arrow> 支持产线内的<white>原版合成器</white>：当所有参与配方的格子物品数量 > 1 时，每秒自动触发一次合成
       <arrow> 通过精密调校仪右键产线入口，在升级页面安装到升级槽
 
   production_line_outlet:
@@ -1531,6 +1532,9 @@ guide:
       name: "蒸汽货运"
     steam_automation:
       name: "蒸汽自动化"
+    production_line_supported_machines:
+      name: "产线支持机器"
+      lore: "<gray>显示所有可以放进产线的机器"
     steam_calibration:
       name: "蒸汽调校"
     steam_distillation:
@@ -1546,6 +1550,7 @@ guide:
     steam_machines: "蒸汽机械"
     steam_logistics: "蒸汽货运"
     steam_automation: "蒸汽自动化"
+    production_line_supported_machines: "产线支持机器"
     steam_calibration: "蒸汽调校"
     steam_distillation: "蒸汽蒸馏"
 

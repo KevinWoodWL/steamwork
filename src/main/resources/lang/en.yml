@@ -568,7 +568,8 @@ item:
     lore: |-
       <arrow> Calibration upgrade for the Production Line Inlet
       <arrow> When installed, the inlet automatically right-clicks <white>manual-trigger</white> machines each tick
-      <arrow> Supports any Rebar machine implementing the ManualInteractMember interface
+      <arrow> Supports Pylon Grindstone, Mixing Pot, and other manual-trigger machines
+      <arrow> Supports <white>vanilla Crafters</white> in the line: auto-crafts once per second when all recipe slots have more than 1 item
       <arrow> Right-click the inlet with a Precision Calibrator to install via the upgrade page
 
   production_line_outlet:
@@ -1527,6 +1528,9 @@ guide:
       name: "Steam Logistics"
     steam_automation:
       name: "Steam Automation"
+    production_line_supported_machines:
+      name: "Production Line Support"
+      lore: "<gray>Show all machines that can be placed in a production line"
     steam_calibration:
       name: "Steam Calibration"
     steam_distillation:
@@ -1542,6 +1546,7 @@ guide:
     steam_machines: "Steam Machines"
     steam_logistics: "Steam Logistics"
     steam_automation: "Steam Automation"
+    production_line_supported_machines: "Production Line Supported Machines"
     steam_calibration: "Steam Calibration"
     steam_distillation: "Steam Distillation"
 

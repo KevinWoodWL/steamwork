@@ -1,7 +1,9 @@
 package io.github.steamwork.content.line;
 
 import io.github.pylonmc.pylon.recipes.GrindstoneRecipe;
+import io.github.pylonmc.pylon.recipes.MixingPotRecipe;
 import io.github.pylonmc.rebar.block.RebarBlock;
+import io.github.pylonmc.rebar.recipe.FluidOrItem;
 import io.github.steamwork.Steamwork;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,6 +35,7 @@ public final class PylonLineOutputBridge implements Listener {
     private static final int MAX_OUTPUT_CAPTURE_TICKS = 20 * 60;
     private static final int MAX_NEXT_MEMBER_GAP = 4;
     private static final double GRINDSTONE_CAPTURE_RADIUS_SQUARED = 1.0;
+    private static final double MIXING_POT_CAPTURE_RADIUS_SQUARED = 1.0;
     private static final int RETRY_INTERVAL_TICKS = 5;
     private static final long BUFFER_EXPIRY_MS = 60_000L;
 
@@ -49,7 +52,6 @@ public final class PylonLineOutputBridge implements Listener {
     }
 
     static void expectOutput(@NotNull Block block, @NotNull Object recipe) {
-        if (!(recipe instanceof GrindstoneRecipe grindstoneRecipe)) return;
         ProductionLineMember member = ProductionLineMember.of(block);
         if (member == null || !member.isInLine()) return;
 
@@ -57,12 +59,44 @@ public final class PylonLineOutputBridge implements Listener {
         BlockFace direction = member.getLineDirection();
         if (lineId == null || direction == BlockFace.SELF) return;
 
+        if (recipe instanceof GrindstoneRecipe grindstoneRecipe) {
+            PENDING_OUTPUTS.put(BlockKey.of(block), new PendingOutput(
+                    lineId,
+                    direction,
+                    OutputSource.GRINDSTONE,
+                    grindstoneRecipe.getKey(),
+                    block.getWorld().getGameTime() + grindstoneRecipe.timeTicks() + MAX_OUTPUT_CAPTURE_TICKS
+            ));
+            return;
+        }
+
+        if (!(recipe instanceof MixingPotRecipe mixingPotRecipe)
+                || !(mixingPotRecipe.output() instanceof FluidOrItem.Item)) {
+            return;
+        }
+
         PENDING_OUTPUTS.put(BlockKey.of(block), new PendingOutput(
                 lineId,
                 direction,
-                grindstoneRecipe.getKey(),
-                block.getWorld().getGameTime() + grindstoneRecipe.timeTicks() + MAX_OUTPUT_CAPTURE_TICKS
+                OutputSource.MIXING_POT,
+                mixingPotRecipe.getKey(),
+                block.getWorld().getGameTime() + MAX_OUTPUT_CAPTURE_TICKS
         ));
+    }
+
+    static void cancelExpectedOutput(@NotNull Block block) {
+        PENDING_OUTPUTS.remove(BlockKey.of(block));
+    }
+
+    static boolean hasPendingOrBufferedOutput(@NotNull Block block) {
+        BlockKey key = BlockKey.of(block);
+        return PENDING_OUTPUTS.containsKey(key) || BUFFERED.containsKey(key);
+    }
+
+    static void clearSource(@NotNull Block block) {
+        BlockKey key = BlockKey.of(block);
+        PENDING_OUTPUTS.remove(key);
+        BUFFERED.remove(key);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -72,7 +106,7 @@ public final class PylonLineOutputBridge implements Listener {
         if (location.getWorld() == null) return;
 
         expireOldPendingOutputs(location.getWorld().getGameTime());
-        Block source = findPendingGrindstone(location);
+        Block source = findPendingSource(location);
         if (source == null) return;
 
         BlockKey key = BlockKey.of(source);
@@ -186,7 +220,7 @@ public final class PylonLineOutputBridge implements Listener {
     }
 
     @Nullable
-    private static Block findPendingGrindstone(@NotNull Location dropLocation) {
+    private static Block findPendingSource(@NotNull Location dropLocation) {
         Block center = dropLocation.getBlock();
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
@@ -194,8 +228,8 @@ public final class PylonLineOutputBridge implements Listener {
                     Block candidate = center.getRelative(dx, dy, dz);
                     PendingOutput pending = PENDING_OUTPUTS.get(BlockKey.of(candidate));
                     if (pending == null) continue;
-                    if (!isPylonGrindstone(candidate)) continue;
-                    if (!isNearGrindstoneOutput(candidate, dropLocation)) continue;
+                    if (!isExpectedSource(candidate, pending.source())) continue;
+                    if (!isNearExpectedOutput(candidate, dropLocation, pending.source())) continue;
                     return candidate;
                 }
             }
@@ -203,16 +237,40 @@ public final class PylonLineOutputBridge implements Listener {
         return null;
     }
 
-    private static boolean isPylonGrindstone(@NotNull Block block) {
+    private static boolean isExpectedSource(@NotNull Block block, @NotNull OutputSource source) {
+        return switch (source) {
+            case GRINDSTONE -> isPylonBlock(block, "grindstone");
+            case MIXING_POT -> isPylonBlock(block, "mixing_pot");
+        };
+    }
+
+    private static boolean isPylonBlock(@NotNull Block block, @NotNull String keyName) {
         RebarBlock rb = RebarBlock.getRebarBlock(block);
         NamespacedKey key = rb != null ? rb.getKey() : null;
-        return key != null && "pylon".equals(key.getNamespace()) && "grindstone".equals(key.getKey());
+        return key != null && "pylon".equals(key.getNamespace()) && keyName.equals(key.getKey());
+    }
+
+    private static boolean isNearExpectedOutput(
+            @NotNull Block block,
+            @NotNull Location dropLocation,
+            @NotNull OutputSource source
+    ) {
+        return switch (source) {
+            case GRINDSTONE -> isNearGrindstoneOutput(block, dropLocation);
+            case MIXING_POT -> isNearMixingPotOutput(block, dropLocation);
+        };
     }
 
     private static boolean isNearGrindstoneOutput(@NotNull Block block, @NotNull Location dropLocation) {
         Location expected = block.getLocation().toCenterLocation().add(0.0, 0.25, 0.0);
         if (!expected.getWorld().equals(dropLocation.getWorld())) return false;
         return expected.distanceSquared(dropLocation) <= GRINDSTONE_CAPTURE_RADIUS_SQUARED;
+    }
+
+    private static boolean isNearMixingPotOutput(@NotNull Block block, @NotNull Location dropLocation) {
+        Location expected = block.getLocation().toCenterLocation();
+        if (!expected.getWorld().equals(dropLocation.getWorld())) return false;
+        return expected.distanceSquared(dropLocation) <= MIXING_POT_CAPTURE_RADIUS_SQUARED;
     }
 
     @Nullable
@@ -232,9 +290,15 @@ public final class PylonLineOutputBridge implements Listener {
     private record PendingOutput(
             @NotNull UUID lineId,
             @NotNull BlockFace direction,
+            @NotNull OutputSource source,
             @NotNull NamespacedKey recipeKey,
             long expiresAtGameTime
     ) {}
+
+    private enum OutputSource {
+        GRINDSTONE,
+        MIXING_POT
+    }
 
     private record BufferedDelivery(
             @NotNull UUID lineId,

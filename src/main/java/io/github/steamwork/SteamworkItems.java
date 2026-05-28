@@ -56,7 +56,9 @@ import io.github.steamwork.recipes.SteamWashingRecipe;
 import io.github.pylonmc.pylon.PylonItems;
 import io.github.pylonmc.rebar.content.guide.RebarGuide;
 import io.github.pylonmc.rebar.guide.button.MachineRecipesButton;
+import io.github.pylonmc.rebar.guide.button.PageButton;
 import io.github.steamwork.guide.PylonCompatPageButton;
+import io.github.steamwork.guide.ProductionLineSupportedMachinesPage;
 import io.github.steamwork.guide.SequencedChainButton;
 import io.github.steamwork.guide.SequencedChainPage;
 import io.github.pylonmc.rebar.item.RebarItem;
@@ -516,6 +518,8 @@ public final class SteamworkItems {
         RebarItem.register(ProductionLineOutlet.Item.class, PRODUCTION_LINE_OUTLET, SteamworkKeys.PRODUCTION_LINE_OUTLET);
         RebarItem.register(ProductionLineBlueprint.class, PRODUCTION_LINE_BLUEPRINT, SteamworkKeys.PRODUCTION_LINE_BLUEPRINT);
         RebarItem.register(io.github.steamwork.content.line.AutoProductionModule.class, AUTO_PRODUCTION_MODULE, SteamworkKeys.AUTO_PRODUCTION_MODULE);
+        RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRODUCTION_LINE_INLET)
+                .addButton(new PageButton(PRODUCTION_LINE_BLUEPRINT, new ProductionLineSupportedMachinesPage()));
 
         // Precision mill products
         RebarItem.register(RebarItem.class, PRECISION_GEAR);

@@ -745,7 +745,13 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     private void dropScrap() {
         Block b = getBlock();
-        b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 1.0, 0.5), SteamworkItems.MACHINE_SCRAP.clone());
+        ItemStack scrap = SteamworkItems.MACHINE_SCRAP.clone();
+        if (isInLine()) {
+            scrap = io.github.steamwork.content.line.ProductionLineMember.deliverToNextMember(b, this, scrap);
+        }
+        if (!scrap.isEmpty()) {
+            b.getWorld().dropItemNaturally(b.getLocation().add(0.5, 1.0, 0.5), scrap);
+        }
     }
 
     protected void resetRecipe() {

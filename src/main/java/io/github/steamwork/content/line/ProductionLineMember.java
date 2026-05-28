@@ -101,15 +101,57 @@ public interface ProductionLineMember {
         RebarBlock rb = RebarBlock.getRebarBlock(block);
         if (rb instanceof ProductionLineMember m) return m;
         if (rb != null) {
+            if (PylonMixingPotMember.isPylonMixingPot(rb)
+                    && rb instanceof io.github.pylonmc.pylon.content.machines.simple.MixingPot mixingPot) {
+                return new PylonMixingPotMember(block, mixingPot);
+            }
             // 尝试将 Pylon 机器包装为产线成员（pylon 命名空间 + 有输入逻辑组或虚拟库存）
             if (PylonMachineMember.isPylonMachine(rb)) return new PylonMachineMember(block, rb);
             return null;
         }
+        if (SteamPressMember.isSteamPressBase(block)) return new SteamPressMember(block);
         if (VanillaFurnaceMember.isVanillaFurnace(block)) return new VanillaFurnaceMember(block);
+        if (VanillaCrafterMember.isVanillaCrafter(block)) return new VanillaCrafterMember(block);
         return null;
     }
 
     // ===== 解散扫描工具 =====
+
+    /**
+     * 将物品推送给产线下游的下一个成员。
+     * 若 {@code source} 不在产线中、方向未知或下游无成员，则原样返回。
+     *
+     * @param source 当前产线成员方块（调用方的 {@code getBlock()}）
+     * @param member 调用方自身（即已知的产线成员）
+     * @param item   待推送的物品（amount >= 1）
+     * @return 未能推送的剩余物品（可能 isEmpty()）
+     */
+    @NotNull
+    static ItemStack deliverToNextMember(
+            @NotNull Block source,
+            @NotNull ProductionLineMember member,
+            @NotNull ItemStack item
+    ) {
+        UUID lineId = member.getLineId();
+        BlockFace direction = member.getLineDirection();
+        if (lineId == null || direction == BlockFace.SELF) return item;
+
+        ProductionLineMember next = null;
+        for (int i = 1; i <= DISBAND_MAX_GAP + 1; i++) {
+            ProductionLineMember candidate = of(source.getRelative(direction, i));
+            if (candidate != null && lineId.equals(candidate.getLineId())) { next = candidate; break; }
+        }
+        if (next == null) return item;
+
+        ItemStack remaining = item.clone();
+        int delivered = 0;
+        while (delivered < remaining.getAmount()) {
+            if (!next.acceptFromLine(remaining.asQuantity(1))) break;
+            delivered++;
+        }
+        remaining.setAmount(remaining.getAmount() - delivered);
+        return remaining;
+    }
 
     /**
      * 相邻产线成员之间允许的最大间隔格数（对应 {@code ProductionLineListener.MAX_COMPONENT_GAP}）。

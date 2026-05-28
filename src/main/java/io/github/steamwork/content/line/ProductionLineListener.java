@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.CrafterCraftEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -44,6 +45,10 @@ public class ProductionLineListener implements Listener {
 
     /** 当前正在配置中的蓝图状态，key = 玩家 UUID。 */
     private final Map<UUID, BlueprintSession> sessions = new HashMap<>();
+
+    public ProductionLineListener() {
+        VanillaCrafterMember.scheduleBufferDrain();
+    }
 
     /**
      * 蓝图配置会话，记录已选中的方块列表（第一个为入口）。
@@ -209,6 +214,12 @@ public class ProductionLineListener implements Listener {
     public void onBlockBreak(@NotNull BlockBreakEvent event) {
         Block block = event.getBlock();
         ProductionLineMember member = ProductionLineMember.of(block);
+
+        // 若破坏的是冲压机本体（非产线成员自身），从铁块找到对应成员
+        if (member == null) {
+            member = SteamPressMember.fromPressBlock(block);
+        }
+
         if (member == null) return;
         if (!member.isInLine()) return;
 
@@ -252,6 +263,18 @@ public class ProductionLineListener implements Listener {
     }
 
     // ==================== 玩家离线 / 切换手持 ====================
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCrafterCraft(@NotNull CrafterCraftEvent event) {
+        Block block = event.getBlock();
+        if (!VanillaCrafterMember.isVanillaCrafter(block)) return;
+        VanillaCrafterMember member = new VanillaCrafterMember(block);
+        if (!member.isInLine()) return;
+
+        // Line crafters should hand products to the next member instead of dispensing them.
+        event.setCancelled(true);
+        member.tryCraftIntoLine(event.getRecipe(), event.getResult());
+    }
 
     @EventHandler
     public void onQuit(@NotNull PlayerQuitEvent event) {
