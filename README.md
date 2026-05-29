@@ -1,50 +1,30 @@
 # Steamwork（蒸汽工坊）
 
-Steamwork 是一个基于 Pylon/Rebar 的蒸汽与压力科技附属。它的目标不是重做
-Pylon 已经完成的金属、流体、研究、配方和指南体系，而是在这些基础上扩展锅炉、
-压力控制、蒸汽输送和蒸汽驱动机器。
+## Steamwork 是什么？
 
-## 当前内容
+Steamwork 是一个基于 Pylon 与 Rebar 的蒸汽与压力科技附属。它在 Pylon 已有的金属、流体、研究和
+指南体系之上，扩展出锅炉产能、蒸汽流体输送和蒸汽驱动机器的完整闭环。加上气动物流网络、产线自动化、
+升级模组和精密加工，让蒸汽科技成为 Pylon 生态中的重要一环。
 
-- `brass_ingot`
-- `rubber_gasket`
-- `pressure_gauge`
-- `copper_boiler`
-- `steam_arm`
+## 特色
 
-目前已经有第一条可玩的基础闭环：`copper_boiler` 接收 Pylon 的水并产出
-Steamwork 的蒸汽，`steam_arm` 消耗蒸汽，在附近原版库存或 Pylon/Rebar 物流组之间搬运物品。
+* 四级锅炉链（铜 → 因瓦 → 锰钢 → 钨），产出蒸汽、超热蒸汽和高压蒸汽
+* 十余种蒸汽驱动机器：灭菌器、浸煮桶、洗涤槽、压机、研磨机、精密磨坊、压力炉、铸造炉、催化反应釜、
+  重型破碎机、液压锻造机、结晶塔、离心机、蒸馏塔……
+* 气动输送网络 —— 输入口、输出口、管道、分配器、货物枢纽，实现自动化物品分拣与运输
+* 产线系统，用蓝图道具将多台机器串联成直线流水线
+* 升级模组，为机器插入节能、自动进出料、超速、批量等增强功能
+* 蒸汽工具、蒸汽盔甲与三级便携蒸汽罐，消耗蒸汽充能
+* 中英双语，游戏内指南引导玩家逐步解锁内容
 
 ## 依赖
 
 - Rebar
 - Pylon
-- MonolithLib 暂时为可选依赖，后续预留给大型蓝图/多方块结构。
 
-## 资源包约定
+## 预警
 
-资源包应依赖稳定的字符串 Custom Model Data。Rebar 的 `ItemStackBuilder.rebar(...)`
-会自动写入物品键，例如：
-
-```text
-steamwork:brass_ingot
-steamwork:copper_boiler
-steamwork:steam_arm
-```
-
-机器零件和动态方块显示使用稳定后缀：
-
-```text
-steamwork:copper_boiler:main
-steamwork:copper_boiler:gauge:low
-steamwork:copper_boiler:gauge:high
-steamwork:steam_arm:active=true
-```
-
-这些字符串应当视为资源包公开接口；模型不要依赖 Java 类名。
-
-蒸汽传输直接复用 Pylon 的流体管道，Steamwork 不再提供独立的 `steam_pipe`
-或 `pressure_valve` 方块。
+Steamwork 目前处于开发阶段，版本间可能不兼容。仅建议在测试服上使用。
 
 ## 贡献者
 
