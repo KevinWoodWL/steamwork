@@ -223,7 +223,7 @@ public final class SteamworkItems {
     public static final ItemStack FORGED_PLATE = ItemStackBuilder.rebar(Material.IRON_INGOT, SteamworkKeys.FORGED_PLATE).build();
 
     // Upgrade modules
-    public static final ItemStack MACHINE_CALIBRATOR = ItemStackBuilder.rebar(Material.BRUSH, SteamworkKeys.MACHINE_CALIBRATOR).build();
+    public static final ItemStack MACHINE_CALIBRATOR = ItemStackBuilder.rebar(Material.CLOCK, SteamworkKeys.MACHINE_CALIBRATOR).build();
 
     public static final ItemStack UPGRADE_MODULE_ENERGY_SAVE = ItemStackBuilder.rebar(Material.FEATHER, SteamworkKeys.UPGRADE_MODULE_ENERGY_SAVE).build();
     public static final ItemStack UPGRADE_MODULE_AUTO_INPUT = ItemStackBuilder.rebar(Material.HOPPER, SteamworkKeys.UPGRADE_MODULE_AUTO_INPUT).build();
@@ -371,6 +371,8 @@ public final class SteamworkItems {
         RebarItem.register(RebarItem.class, HYDRAULIC_SEAL);
         RebarItem.register(RebarItem.class, FORGED_PLATE);
         RebarItem.register(io.github.steamwork.content.machines.upgrade.MachineCalibrator.class, MACHINE_CALIBRATOR, SteamworkKeys.MACHINE_CALIBRATOR);
+        RebarGuide.getOrCreateInfoPage(SteamworkKeys.MACHINE_CALIBRATOR)
+                .addButton(new PageButton(MACHINE_CALIBRATOR, new io.github.steamwork.guide.CalibratorSupportedMachinesPage()));
         RebarItem.register(io.github.steamwork.content.machines.upgrade.EnergySaveUpgradeModule.class, UPGRADE_MODULE_ENERGY_SAVE, SteamworkKeys.UPGRADE_MODULE_ENERGY_SAVE);
         RebarItem.register(io.github.steamwork.content.machines.upgrade.AutoInputUpgradeModule.class, UPGRADE_MODULE_AUTO_INPUT, SteamworkKeys.UPGRADE_MODULE_AUTO_INPUT);
         RebarItem.register(io.github.steamwork.content.machines.upgrade.AutoOutputUpgradeModule.class, UPGRADE_MODULE_AUTO_OUTPUT, SteamworkKeys.UPGRADE_MODULE_AUTO_OUTPUT);

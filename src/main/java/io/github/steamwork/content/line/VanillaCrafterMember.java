@@ -42,6 +42,9 @@ class VanillaCrafterMember implements ManualInteractMember {
     private static final Map<BlockKey, Integer> ROUND_ROBIN_CURSOR = new HashMap<>();
     // 每个合成器独立的自动合成节流计数器
     private static final Map<BlockKey, Integer> AUTO_CRAFT_COOLDOWN = new HashMap<>();
+    // 每个合成器缓存的匹配配方（避免每 tick 全量遍历 Bukkit.recipeIterator）
+    // key = 合成器位置，value = 上次成功匹配的配方；格子内容变化时由 acceptFromLine 清除
+    private static final Map<BlockKey, CraftingRecipe> CACHED_RECIPE = new HashMap<>();
 
     private final @NotNull Block block;
 
@@ -136,6 +139,7 @@ class VanillaCrafterMember implements ManualInteractMember {
         BUFFERED_OUTPUTS.remove(BlockKey.of(block));
         ROUND_ROBIN_CURSOR.remove(BlockKey.of(block));
         AUTO_CRAFT_COOLDOWN.remove(BlockKey.of(block));
+        CACHED_RECIPE.remove(BlockKey.of(block));
     }
 
     @Override
@@ -173,6 +177,8 @@ class VanillaCrafterMember implements ManualInteractMember {
         current.setAmount(current.getAmount() + 1);
         inventory.setItem(targetSlot, current);
         ROUND_ROBIN_CURSOR.put(key, targetSlot);
+        // 格子内容变化，清除配方缓存
+        CACHED_RECIPE.remove(key);
         return true;
     }
 
@@ -223,33 +229,46 @@ class VanillaCrafterMember implements ManualInteractMember {
         if (!(block.getState() instanceof Crafter crafter)) return;
         Inventory inventory = crafter.getInventory();
 
+        // 优先尝试缓存的配方，避免每 tick 全量遍历 Bukkit.recipeIterator()
+        CraftingRecipe cached = CACHED_RECIPE.get(key);
+        if (cached != null && tryWithRecipe(crafter, inventory, cached, key)) return;
+
+        // 缓存未命中或失效，全量扫描一次并缓存结果
         for (java.util.Iterator<org.bukkit.inventory.Recipe> it = Bukkit.recipeIterator(); it.hasNext(); ) {
             org.bukkit.inventory.Recipe r = it.next();
             if (!(r instanceof CraftingRecipe recipe)) continue;
-            List<Integer> consumedSlots = planConsumedSlots(crafter, inventory, recipe);
-            if (consumedSlots == null || consumedSlots.isEmpty()) continue;
-
-            // 所有参与配方的格子数量必须 > 1，保证消耗后至少还剩 1 个
-            boolean allAboveOne = true;
-            for (int slot : consumedSlots) {
-                ItemStack stack = inventory.getItem(slot);
-                if (stack == null || stack.getAmount() <= 1) { allAboveOne = false; break; }
-            }
-            if (!allAboveOne) continue;
-
-            ItemStack result = recipe.getResult();
-            if (result.isEmpty()) continue;
-
-            if (tryCraftIntoLine(recipe, result)) {
-                AUTO_CRAFT_COOLDOWN.put(key, AUTO_CRAFT_INTERVAL_TICKS);
-                org.bukkit.Location center = block.getLocation().toCenterLocation().add(0, 0.5, 0);
-                block.getWorld().playSound(center, org.bukkit.Sound.UI_BUTTON_CLICK,
-                        org.bukkit.SoundCategory.BLOCKS, 0.5f, 1.0f);
-                block.getWorld().spawnParticle(org.bukkit.Particle.SMOKE, center,
-                        8, 0.2, 0.15, 0.2, 0.02);
+            if (tryWithRecipe(crafter, inventory, recipe, key)) {
+                CACHED_RECIPE.put(key, recipe);
                 return;
             }
         }
+        // 没有匹配配方，清除缓存
+        CACHED_RECIPE.remove(key);
+    }
+
+    private boolean tryWithRecipe(@NotNull Crafter crafter, @NotNull Inventory inventory,
+                                   @NotNull CraftingRecipe recipe, @NotNull BlockKey key) {
+        List<Integer> consumedSlots = planConsumedSlots(crafter, inventory, recipe);
+        if (consumedSlots == null || consumedSlots.isEmpty()) return false;
+
+        for (int slot : consumedSlots) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack == null || stack.getAmount() <= 1) return false;
+        }
+
+        ItemStack result = recipe.getResult();
+        if (result.isEmpty()) return false;
+
+        if (tryCraftIntoLine(recipe, result)) {
+            AUTO_CRAFT_COOLDOWN.put(key, AUTO_CRAFT_INTERVAL_TICKS);
+            org.bukkit.Location center = block.getLocation().toCenterLocation().add(0, 0.5, 0);
+            block.getWorld().playSound(center, org.bukkit.Sound.UI_BUTTON_CLICK,
+                    org.bukkit.SoundCategory.BLOCKS, 0.5f, 1.0f);
+            block.getWorld().spawnParticle(org.bukkit.Particle.SMOKE, center,
+                    8, 0.2, 0.15, 0.2, 0.02);
+            return true;
+        }
+        return false;
     }
 
     private @Nullable List<Integer> planConsumedSlots(

@@ -161,6 +161,7 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
         removeFluid(PylonFluids.WATER, waterPerCycle);
         addFluid(producedSteam(), effectiveSteam);
         scheduleBlockTextureItemRefresh();
+        spawnRunningFx();
     }
 
     /** 计算当前 cycle 的有效产汽倍率（启动期惩罚 × 热源利用率）。 */
@@ -199,6 +200,14 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
                 b.getLocation().add(0.5, 1.1, 0.5),
                 12, 0.4, 0.1, 0.4, 0.05);
         b.getWorld().playSound(b.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.4f, 1.5f);
+    }
+
+    /** 每次成功产汽时的视觉 + 音效，子类可覆盖以实现差异化效果。默认无效果。 */
+    protected void spawnRunningFx() {}
+
+    /** WAILA 蒸汽条颜色，子类可覆盖。默认普通蒸汽色 #d8edf0。 */
+    protected @NotNull TextColor steamBarColor() {
+        return TextColor.fromHexString("#d8edf0");
     }
 
     @Override
@@ -243,7 +252,7 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
                         fluidAmount(producedSteam()),
                         fluidCapacity(producedSteam()),
                         16,
-                        TextColor.fromHexString("#d8edf0")
+                        steamBarColor()
                 )),
                 RebarArgument.of("pressure", Component.translatable("steamwork.pressure." + pressureState())),
                 RebarArgument.of("structure", Component.translatable("steamwork.structure."

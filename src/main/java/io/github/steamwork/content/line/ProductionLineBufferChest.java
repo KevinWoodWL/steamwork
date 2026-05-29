@@ -78,6 +78,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
     @Nullable private String    lineCreator   = null;
     private int                 lineNumber    = 0;
     private boolean             lastPushSucceeded = false;
+    private boolean             lineJammed        = false;
 
     @NotNull  private PushMode          pushMode          = PushMode.INGREDIENT;
     @Nullable private ItemStack         fuelTemplate      = null;
@@ -151,6 +152,32 @@ public class ProductionLineBufferChest extends RebarBlock implements
     @Override
     public void postInitialise() {
         createLogisticGroup("buffer", LogisticGroupType.BOTH, buffer);
+        // 不在产线内时禁止向 buffer 放入物品（玩家手动放入和气动网络推送均拦截）
+        buffer.addPreUpdateHandler(event -> {
+            if (!isInLine() && event.getNewItem() != null && !event.getNewItem().isEmpty()) {
+                event.setCancelled(true);
+            }
+        });
+        // 名单列表幽灵槽：放入时不消耗玩家物品，取出时不给玩家物品；自动去重并整理
+        filterList.addPreUpdateHandler(event -> {
+            if (!(event.getUpdateReason() instanceof xyz.xenondevs.invui.inventory.event.PlayerUpdateReason)) return;
+            if (event.isAdd() || event.isSwap()) {
+                event.setCancelled(true);
+                ItemStack newItem = event.getNewItem();
+                if (newItem == null || newItem.isEmpty()) return;
+                // 去重：已存在相同物品则不写入
+                for (int i = 0; i < filterList.getSize(); i++) {
+                    ItemStack existing = filterList.getItem(i);
+                    if (existing != null && !existing.isEmpty() && existing.isSimilar(newItem)) return;
+                }
+                filterList.setItem(new MachineUpdateReason(), event.getSlot(), newItem.asQuantity(1));
+                compactFilterList();
+            } else if (event.isRemove()) {
+                event.setCancelled(true);
+                filterList.setItem(new MachineUpdateReason(), event.getSlot(), null);
+                compactFilterList();
+            }
+        });
     }
 
     @Override
@@ -194,15 +221,15 @@ public class ProductionLineBufferChest extends RebarBlock implements
     @Override
     public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
         RebarVirtualInventoryBlock.super.onBreak(drops, context);
-        // 名单列表物品也一起掉落
-        for (int i = 0; i < filterList.getSize(); i++) {
-            ItemStack slot = filterList.getItem(i);
-            if (slot != null && !slot.isEmpty()) drops.add(slot.clone());
-        }
+        // filterList 是幽灵槽，物品不是真实持有，不掉落
     }
 
     @Override
     public void tick() {
+        if (lineJammed) {
+            lineInfoItem.notifyWindows();
+            return;
+        }
         if (isInLine() && lineDirection != BlockFace.SELF) {
             pushAnyAcceptedItemToNext();
         }
@@ -279,6 +306,18 @@ public class ProductionLineBufferChest extends RebarBlock implements
         return false;
     }
 
+    /** 将名单列表中的非空槽位紧凑排列到前面，空槽位移到末尾。 */
+    private void compactFilterList() {
+        List<ItemStack> items = new java.util.ArrayList<>();
+        for (int i = 0; i < filterList.getSize(); i++) {
+            ItemStack slot = filterList.getItem(i);
+            if (slot != null && !slot.isEmpty()) items.add(slot.clone());
+        }
+        for (int i = 0; i < filterList.getSize(); i++) {
+            filterList.setItem(new MachineUpdateReason(), i, i < items.size() ? items.get(i) : null);
+        }
+    }
+
     /** 沿产线方向找到出口。 */
     @Nullable
     private ProductionLineMember findOutlet() {
@@ -340,7 +379,14 @@ public class ProductionLineBufferChest extends RebarBlock implements
         this.lineCreator = null;
         this.lineNumber = 0;
         this.lastPushSucceeded = false;
+        this.lineJammed = false;
     }
+
+    @Override
+    public void onLineJammed() { this.lineJammed = true; }
+
+    @Override
+    public void onLineResumed() { this.lineJammed = false; }
 
     @Override
     public boolean acceptFromLine(@NotNull ItemStack item) {

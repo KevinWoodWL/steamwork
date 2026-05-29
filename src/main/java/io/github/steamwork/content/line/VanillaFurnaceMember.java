@@ -123,6 +123,76 @@ class VanillaFurnaceMember implements ProductionLineMember {
     @Override
     public boolean hasFuelSlot() { return true; }
 
+    private static final org.bukkit.NamespacedKey LINE_JAMMED_KEY =
+            new org.bukkit.NamespacedKey("steamwork", "line_jammed");
+
+    /** 堵塞时在 PDC 写入标志，供 FurnaceSmeltEvent/FurnaceBurnEvent 拦截使用。 */
+    @Override
+    public void onLineJammed() {
+        var state = block.getState();
+        ((Container) state).getPersistentDataContainer()
+                .set(LINE_JAMMED_KEY, PersistentDataType.BYTE, (byte) 1);
+        // 立即冻结 cookTime，阻止当前进度继续推进
+        if (state instanceof Furnace furnace) {
+            furnace.setCookTime((short) 0);
+        }
+        state.update(true, false);
+    }
+
+    @Override
+    public void onLineResumed() {
+        var state = block.getState();
+        ((Container) state).getPersistentDataContainer().remove(LINE_JAMMED_KEY);
+        state.update(true, false);
+        // 解除停摆后循环推送产物槽，直到清空或下游满
+        org.bukkit.Bukkit.getScheduler().runTask(
+                io.github.steamwork.Steamwork.getInstance(),
+                this::drainResultSlot);
+    }
+
+    /** 循环推送产物槽中所有物品给下游，直到清空或下游拒绝。 */
+    private void drainResultSlot() {
+        if (!isInLine()) return;
+        BlockFace dir = getLineDirection();
+        if (dir == BlockFace.SELF) return;
+        UUID myLineId = getLineId();
+        if (myLineId == null) return;
+        if (!(block.getState() instanceof Furnace furnace)) return;
+        FurnaceInventory inv = furnace.getInventory();
+
+        // 找下游成员
+        ProductionLineMember downstream = null;
+        for (int i = 1; i <= DISBAND_MAX_GAP + 1; i++) {
+            ProductionLineMember candidate = ProductionLineMember.of(block.getRelative(dir, i));
+            if (candidate == null) continue;
+            if (!myLineId.equals(candidate.getLineId())) return;
+            downstream = candidate;
+            break;
+        }
+        if (downstream == null) return;
+
+        // 循环推送直到产物槽清空或下游拒绝
+        while (true) {
+            ItemStack result = inv.getResult();
+            if (result == null || result.getType() == Material.AIR) break;
+            ItemStack single = result.clone();
+            single.setAmount(1);
+            if (!downstream.acceptFromLine(single)) break;
+            if (result.getAmount() <= 1) {
+                inv.setResult(null);
+            } else {
+                result.setAmount(result.getAmount() - 1);
+                inv.setResult(result);
+            }
+        }
+    }
+
+    /** 检查熔炉是否处于产线停摆状态。 */
+    static boolean isLineJammed(@NotNull Block block) {
+        if (!(block.getState() instanceof Container container)) return false;
+        return container.getPersistentDataContainer().has(LINE_JAMMED_KEY, PersistentDataType.BYTE);
+    }
+
     // ===== 物品推送 =====
 
     /** 将 1 个物品放入熔炉的原料槽（slot 0）。 */

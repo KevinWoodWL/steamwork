@@ -96,6 +96,16 @@ public class ProductionLineInlet extends RebarBlock implements
     private int                  fuelRrIndex      = 0;
 
     private boolean lastPushSucceeded = false;
+    /** 出口满导致产线停摆时为 true。 */
+    private boolean outletJammed = false;
+    /** 停摆后每 100 tick（5 秒）通知一次产线主人，此为计数器。 */
+    private int jamNotifyCounter = 0;
+    private static final int JAM_NOTIFY_INTERVAL = 100; // 5 tick/次 × 20 次 = 100 tick = 5 秒
+
+    /** 缓存的产线出口引用，joinLine/leaveLine 时更新，避免每 tick 遍历整条产线。 */
+    @Nullable private ProductionLineOutlet cachedOutlet = null;
+    /** 缓存的产线内所有 ManualInteractMember，joinLine/leaveLine 时更新。 */
+    @Nullable private List<ManualInteractMember> cachedManualMembers = null;
 
     // ===== GUI 元素 =====
 
@@ -235,6 +245,28 @@ public class ProductionLineInlet extends RebarBlock implements
             return;
         }
 
+        // 出口满停摆：停止推送，每 JAM_NOTIFY_INTERVAL tick 通知产线主人
+        if (outletJammed) {
+            // 检查出口是否已经有空间，有则自动解除停摆
+            if (!isOutletFull()) {
+                outletJammed = false;
+                jamNotifyCounter = 0;
+                notifyAllMembers(false);
+                lineInfoItem.notifyWindows();
+                // 解除后继续正常 tick，不 return
+            } else {
+                // 持续通知所有成员保持停摆
+                notifyAllMembers(true);
+                jamNotifyCounter += 5;
+                if (jamNotifyCounter >= JAM_NOTIFY_INTERVAL) {
+                    jamNotifyCounter = 0;
+                    notifyJammedOwner();
+                }
+                lineInfoItem.notifyWindows();
+                return;
+            }
+        }
+
         // 推送一个原料物品
         for (int i = 0; i < 7; i++) {
             ItemStack item = ingredientBuffer.getItem(i);
@@ -248,22 +280,30 @@ public class ProductionLineInlet extends RebarBlock implements
                 lastPushSucceeded = true;
             } else {
                 lastPushSucceeded = false;
+                // 检查是否是出口满导致的阻塞
+                if (isOutletFull()) {
+                    outletJammed = true;
+                    jamNotifyCounter = JAM_NOTIFY_INTERVAL; // 立即触发第一次通知
+                    notifyAllMembers(true);
+                }
             }
             break;
         }
 
         // 推送一个燃料物品
-        for (int i = 0; i < 7; i++) {
-            ItemStack fuel = fuelBuffer.getItem(i);
-            if (fuel == null || fuel.isEmpty()) continue;
-            ProductionLineMember target = resolveFuelTarget(i);
-            if (target == null) continue;
-            ItemStack single = fuel.clone();
-            single.setAmount(1);
-            if (target.acceptFuelFromLine(single)) {
-                decrementBuffer(fuelBuffer, i, fuel);
+        if (!outletJammed) {
+            for (int i = 0; i < 7; i++) {
+                ItemStack fuel = fuelBuffer.getItem(i);
+                if (fuel == null || fuel.isEmpty()) continue;
+                ProductionLineMember target = resolveFuelTarget(i);
+                if (target == null) continue;
+                ItemStack single = fuel.clone();
+                single.setAmount(1);
+                if (target.acceptFuelFromLine(single)) {
+                    decrementBuffer(fuelBuffer, i, fuel);
+                }
+                break;
             }
-            break;
         }
 
         // 自动生产模组：对产线内需要手动触发的机器执行自动交互
@@ -279,18 +319,12 @@ public class ProductionLineInlet extends RebarBlock implements
 
     /**
      * 遍历产线内所有成员，对实现了 {@link ManualInteractMember} 的机器执行一次自动交互。
+     * 使用缓存列表，避免每 tick 重新扫描整条产线。
      */
     private void tickAutoInteract() {
         if (!isInLine() || lineDirection == BlockFace.SELF || lineId == null) return;
-        Block cursor = getBlock();
-        for (int step = 0; step < 64; step++) {
-            Block nextBlock = findNextMemberBlockFrom(cursor);
-            if (nextBlock == null) break;
-            ProductionLineMember m = ProductionLineMember.of(nextBlock);
-            if (m == null || !lineId.equals(m.getLineId())) break;
-            if (m instanceof ProductionLineOutlet) break;
-            if (m instanceof ManualInteractMember mim) mim.performAutoInteract();
-            cursor = nextBlock;
+        for (ManualInteractMember mim : getOrBuildCachedManualMembers()) {
+            mim.performAutoInteract();
         }
     }
 
@@ -389,6 +423,9 @@ public class ProductionLineInlet extends RebarBlock implements
         this.lineId        = id;
         this.linePosition  = position;
         this.lineDirection = direction;
+        // 缓存将在 postInitialise 或首次 tick 时延迟构建（此时产线其他成员可能还未 joinLine）
+        this.cachedOutlet = null;
+        this.cachedManualMembers = null;
     }
 
     @Override
@@ -399,9 +436,93 @@ public class ProductionLineInlet extends RebarBlock implements
         this.lineCreator   = null;
         this.lineNumber    = 0;
         this.lastPushSucceeded = false;
+        this.outletJammed = false;
+        this.jamNotifyCounter = 0;
+        this.cachedOutlet = null;
+        this.cachedManualMembers = null;
         this.fuelTargetBlocks.clear();
         Arrays.fill(fuelSlotBindings, -1);
         this.fuelRrIndex = 0;
+    }
+
+    /**
+     * 检查产线出口是否处于堵塞状态，委托给出口自身的连续拒绝计数。
+     */
+    private boolean isOutletFull() {
+        ProductionLineOutlet outlet = getOrBuildCachedOutlet();
+        return outlet != null && outlet.isJammed();
+    }
+
+    /** 懒加载并缓存产线出口引用。 */
+    @Nullable
+    private ProductionLineOutlet getOrBuildCachedOutlet() {
+        if (cachedOutlet != null) return cachedOutlet;
+        if (lineId == null || lineDirection == BlockFace.SELF) return null;
+        Block cursor = getBlock();
+        for (int step = 0; step < 64; step++) {
+            Block next = findNextMemberBlockFrom(cursor);
+            if (next == null) break;
+            ProductionLineMember m = ProductionLineMember.of(next);
+            if (m == null || !lineId.equals(m.getLineId())) break;
+            if (m instanceof ProductionLineOutlet outlet) {
+                cachedOutlet = outlet;
+                return outlet;
+            }
+            cursor = next;
+        }
+        return null;
+    }
+
+    /** 懒加载并缓存产线内所有 ManualInteractMember。 */
+    @NotNull
+    private List<ManualInteractMember> getOrBuildCachedManualMembers() {
+        if (cachedManualMembers != null) return cachedManualMembers;
+        List<ManualInteractMember> list = new ArrayList<>();
+        if (lineId == null || lineDirection == BlockFace.SELF) {
+            cachedManualMembers = list;
+            return list;
+        }
+        Block cursor = getBlock();
+        for (int step = 0; step < 64; step++) {
+            Block next = findNextMemberBlockFrom(cursor);
+            if (next == null) break;
+            ProductionLineMember m = ProductionLineMember.of(next);
+            if (m == null || !lineId.equals(m.getLineId())) break;
+            if (m instanceof ProductionLineOutlet) break;
+            if (m instanceof ManualInteractMember mim) list.add(mim);
+            cursor = next;
+        }
+        cachedManualMembers = list;
+        return list;
+    }
+
+    /**
+     * 遍历产线所有成员（含缓存箱、熔炉等），通知它们进入或退出停摆状态。
+     * 复用 cachedManualMembers 以外，还需要遍历所有成员（包括非 ManualInteract 的）。
+     */
+    private void notifyAllMembers(boolean jammed) {
+        if (lineId == null || lineDirection == BlockFace.SELF) return;
+        Block cursor = getBlock();
+        for (int step = 0; step < 64; step++) {
+            Block next = findNextMemberBlockFrom(cursor);
+            if (next == null) break;
+            ProductionLineMember m = ProductionLineMember.of(next);
+            if (m == null || !lineId.equals(m.getLineId())) break;
+            if (jammed) m.onLineJammed(); else m.onLineResumed();
+            if (m instanceof ProductionLineOutlet) break;
+            cursor = next;
+        }
+    }
+
+    /** 向产线主人发送堵塞通知。 */
+    private void notifyJammedOwner() {
+        if (lineCreator == null) return;
+        org.bukkit.entity.Player owner = org.bukkit.Bukkit.getPlayerExact(lineCreator);
+        if (owner == null) return;
+        ProductionLineListener.msg(owner, net.kyori.adventure.text.format.NamedTextColor.RED,
+                "steamwork.line.jammed",
+                io.github.pylonmc.rebar.i18n.RebarArgument.of("number",
+                        net.kyori.adventure.text.Component.text(lineNumber)));
     }
 
     @Override
@@ -421,7 +542,8 @@ public class ProductionLineInlet extends RebarBlock implements
             ItemStack s = ingredientBuffer.getItem(i);
             if (s != null && !s.isEmpty()) { hasItems = true; break; }
         }
-        String stateKey = (hasItems && !lastPushSucceeded) ? "blocked"
+        String stateKey = outletJammed ? "jammed"
+                        : (hasItems && !lastPushSucceeded) ? "blocked"
                         : hasItems ? "pushing" : "waiting";
         Component creatorComp = lineCreator != null
                 ? Component.text(lineCreator)
@@ -440,13 +562,14 @@ public class ProductionLineInlet extends RebarBlock implements
     public @NotNull Gui createGui() {
         var builder = Gui.builder()
                 .setStructure(
-                        "# # # # # # # # #",
+                        "# # # # T # # # #",
                         "# i i i i i i i #",
                         "# f f f f f f f #",
                         "# 0 1 2 3 4 5 6 #",
                         "# # # L S M # # #"
                 )
                 .addIngredient('#', GuiItems.background())
+                .addIngredient('T', new SlotHintItem())
                 .addIngredient('i', ingredientBuffer)
                 .addIngredient('f', fuelBuffer)
                 .addIngredient('L', lineInfoItem)
@@ -485,7 +608,9 @@ public class ProductionLineInlet extends RebarBlock implements
             }
             Material mat;
             String stateKey;
-            if (hasItems && !lastPushSucceeded) {
+            if (outletJammed) {
+                mat = Material.RED_STAINED_GLASS_PANE; stateKey = "jammed";
+            } else if (hasItems && !lastPushSucceeded) {
                 mat = Material.ORANGE_STAINED_GLASS_PANE; stateKey = "blocked";
             } else if (hasItems) {
                 mat = Material.GREEN_STAINED_GLASS_PANE; stateKey = "pushing";
@@ -632,6 +757,21 @@ public class ProductionLineInlet extends RebarBlock implements
             fuelSlotBindings[index] = next;
             notifyWindows();
         }
+    }
+
+    private final class SlotHintItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            return ItemStackBuilder.of(Material.PAPER)
+                    .name(ni(Component.translatable("steamwork.gui.production_line_inlet.slot_hint.title")))
+                    .lore(List.of(
+                            ni(Component.translatable("steamwork.gui.production_line_inlet.slot_hint.ingredient")),
+                            ni(Component.translatable("steamwork.gui.production_line_inlet.slot_hint.fuel"))
+                    ));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {}
     }
 
     private static @NotNull Component ni(@NotNull Component c) {

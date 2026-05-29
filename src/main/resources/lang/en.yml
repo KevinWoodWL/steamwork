@@ -338,24 +338,24 @@ item:
   manganese_steel_boiler:
     name: "Manganese Steel Boiler"
     lore: |-
-      <arrow> A heavy industrial boiler built from wear-resistant steel for fast steam output
+      <arrow> A heavy industrial boiler built from wear-resistant steel, produces <white>superheated steam</white>
       <arrow> Structure: manganese steel blocks on both sides, Pylon steel support beam on top, heat below
       <arrow> <attr>Water buffer:</attr> %water-buffer%
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
       <arrow> <attr>Water usage:</attr> %water-per-second%
-      <arrow> <attr>Steam output:</attr> %steam-per-second%
-    waila: "Manganese Steel Boiler | %structure% | Water %water-bar% | Steam %steam-bar% | %pressure%"
+      <arrow> <attr>Superheated steam output:</attr> %steam-per-second%
+    waila: "Manganese Steel Boiler | %structure% | Water %water-bar% | Superheated Steam %steam-bar% | %pressure%"
 
   tungsten_boiler:
     name: "Tungsten Boiler"
     lore: |-
-      <arrow> A top-end high-temperature boiler for extreme steam throughput
+      <arrow> A top-end high-temperature boiler, produces <white>superheated steam</white> at extreme throughput
       <arrow> Structure: tungsten blocks on both sides, Pylon refractory bricks on top, heat below
       <arrow> <attr>Water buffer:</attr> %water-buffer%
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
       <arrow> <attr>Water usage:</attr> %water-per-second%
-      <arrow> <attr>Steam output:</attr> %steam-per-second%
-    waila: "Tungsten Boiler | %structure% | Water %water-bar% | Steam %steam-bar% | %pressure%"
+      <arrow> <attr>Superheated steam output:</attr> %steam-per-second%
+    waila: "Tungsten Boiler | %structure% | Water %water-bar% | Superheated Steam %steam-bar% | %pressure%"
 
   steam_arm:
     name: "Steam Arm"
@@ -633,7 +633,7 @@ item:
   heavy_impact_crusher:
     name: "Heavy Impact Crusher"
     lore: |-
-      <arrow> A manganese steel crusher built for hard blocks and ores
+      <arrow> A manganese steel crusher with milling blades as impact heads, built for hard blocks and ores
       <arrow> Complements the steam grinder: grinder makes fine dust, crusher delivers coarse output and ore doubling
       <arrow> Slot in a Pylon Compat module to also run grindstone recipes (slower and more steam-hungry to fit the heavy duty role)
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
@@ -642,7 +642,7 @@ item:
   hydraulic_forge:
     name: "Hydraulic Forge"
     lore: |-
-      <arrow> Manganese bronze high-pressure forge dedicated to hydraulic system parts
+      <arrow> A forged-plate platform driven by hydraulic pressure for precision forming
       <arrow> The core source for high-pressure pipes, flanges, pistons, seals, and forged plates
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
     waila: "Hydraulic Forge | Superheated Steam %steam-bar% | %state%"
@@ -659,7 +659,7 @@ item:
   precision_centrifuge:
     name: "Precision Centrifuge"
     lore: |-
-      <arrow> A duralumin rotor spins fast enough to separate mixtures by density into weighted random outputs
+      <arrow> A duralumin rotor on precision bearings spins fast enough to separate mixtures by density into weighted random outputs
       <arrow> Processes samples, scrap, and composite dusts: every cycle yields one randomly weighted product
       <arrow> The premium recovery route for analysis samples, machine scrap, and other "fuzzy" inputs
       <arrow> Multiblock: 2 Pylon steel support beams on each side + 2 at each corner above/below (8 total)
@@ -668,7 +668,7 @@ item:
 
   high_pressure_pipe:
     name: "High-Pressure Pipe"
-    lore: <arrow> A forged pressure-rated pipe segment, the standard piece for hydraulic and high-pressure boiler lines
+    lore: <arrow> A manganese bronze forged pipe segment, wear- and pressure-resistant, the standard piece for hydraulic and high-pressure lines
 
   high_pressure_flange:
     name: "High-Pressure Flange"
@@ -1344,6 +1344,11 @@ gui:
       waiting: "<gray>Status: <yellow>Ingredient buffer empty, waiting for items"
       pushing: "<gray>Status: <green>Pushing items downstream"
       blocked: "<gray>Status: <gold>Downstream blocked"
+      jammed: "<gray>Status: <red>Outlet full — line halted"
+    slot_hint:
+      title: "<aqua>Slot Guide"
+      ingredient: "<gray>Row 1: <white>Ingredient slots</white> (pushed to line machines)"
+      fuel: "<gray>Row 2: <white>Fuel slots</white> (pushed to machines with a fuel slot)"
     scan_button:
       title: "<aqua>Scan Fuel Targets"
       not_in_line: "<gray>This inlet is not in a production line"
@@ -1531,6 +1536,9 @@ guide:
     production_line_supported_machines:
       name: "Production Line Support"
       lore: "<gray>Show all machines that can be placed in a production line"
+    calibrator_supported_machines:
+      name: "Calibrator Supported Machines"
+      lore: "<gray>Show all machines that can be opened with the Precision Calibrator"
     steam_calibration:
       name: "Steam Calibration"
     steam_distillation:
@@ -1547,6 +1555,7 @@ guide:
     steam_logistics: "Steam Logistics"
     steam_automation: "Steam Automation"
     production_line_supported_machines: "Production Line Supported Machines"
+    calibrator_supported_machines: "Calibrator Supported Machines"
     steam_calibration: "Steam Calibration"
     steam_distillation: "Steam Distillation"
 
@@ -1664,6 +1673,7 @@ line:
     waiting: "<yellow>Waiting"
     pushing: "<green>Pushing"
     blocked: "<gold>Downstream Blocked"
+    jammed: "<red>Outlet Full — Halted"
     receiving: "<green>Receiving"
     buffering: "<gold>Buffering"
   blueprint:
@@ -1680,4 +1690,5 @@ line:
     added: "Added machine <white>#%position%</white>. Continue left-clicking machines or the outlet"
     cancelled: "Production line configuration cancelled"
     invalidated: "Your production line <white>#%number%</white> has been invalidated!"
+  jammed: "Production line <white>#%number%</white> outlet is full — line halted! Clear the outlet to resume automatically"
 

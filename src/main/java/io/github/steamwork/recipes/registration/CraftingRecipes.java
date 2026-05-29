@@ -435,45 +435,44 @@ public final class CraftingRecipes {
         steamDistillationTower.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamDistillationTower);
 
-        // 蒸汽压缩机：镍铬合金（耐热压缩腔）+ 蒸汽马达 + 阀芯 + 压力表 + 黄铜 + 密封环
-        // 形状：VPV / NAN / BRB  （N=镍铬锭，A=活塞，V=阀芯）
+        // 蒸汽压缩机：镍铬合金（耐热压缩腔）+ 高压管件（高压气路）+ 阀芯 + 压力表 + 密封环
+        // 形状：VPV / TAT / HRH  （T=钨锭，A=活塞，V=阀芯，H=高压管件）
         ShapedRecipe steamCompressor = new ShapedRecipe(
                 SteamworkKeys.STEAM_COMPRESSOR, SteamworkItems.STEAM_COMPRESSOR);
-        steamCompressor.shape("VPV", "TAT", "BRB");
+        steamCompressor.shape("VPV", "TAT", "HRH");
         steamCompressor.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
         steamCompressor.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
         steamCompressor.setIngredient('T', rebarChoice(SteamworkItems.TUNGSTEN_INGOT));
         steamCompressor.setIngredient('A', Material.PISTON);
-        steamCompressor.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        steamCompressor.setIngredient('H', rebarChoice(SteamworkItems.HIGH_PRESSURE_PIPE));
         steamCompressor.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         steamCompressor.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamCompressor);
 
-        // 气动货运站：精密阀门 + 因瓦合金（低膨胀管路）+ 黄铜过滤器 + 压力表 + 密封环
-        // 形状：VFV / IPB / GRG  （I=因瓦锭，F=黄铜过滤器）
+        // 气动货运站：精密阀门 + 因瓦合金（低膨胀管路）+ 黄铜过滤器 + 压力表 + 高压法兰（管路接头）+ 密封环
+        // 形状：VFV / IPB / FRF  （I=因瓦锭，F=黄铜过滤器，P=高压法兰）
         ShapedRecipe pneumaticCargoHub = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_CARGO_HUB, SteamworkItems.PNEUMATIC_CARGO_HUB);
-        pneumaticCargoHub.shape("VFV", "IPB", "GRG");
+        pneumaticCargoHub.shape("VFV", "IPB", "FRF");
         pneumaticCargoHub.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
         pneumaticCargoHub.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FILTER));
         pneumaticCargoHub.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
-        pneumaticCargoHub.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
-        pneumaticCargoHub.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
-        pneumaticCargoHub.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        pneumaticCargoHub.setIngredient('P', rebarChoice(SteamworkItems.HIGH_PRESSURE_FLANGE));
+        pneumaticCargoHub.setIngredient('B', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
         pneumaticCargoHub.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         pneumaticCargoHub.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticCargoHub);
 
-        // 蒸汽弹射器：精密阀门 + 镍铬合金（弹射腔耐热壁）+ 发射器 + 活塞 + 垫圈 + 密封环
-        // 形状：VNV / DAD / GRG  （N=镍铬锭，D=发射器，A=活塞）
+        // 蒸汽弹射器：精密阀门 + 镍铬合金（弹射腔耐热壁）+ 发射器 + 液压活塞（高压推进）+ 液压密封件 + 密封环
+        // 形状：VNV / DAD / SRS  （N=镍铬锭，D=发射器，A=液压活塞，S=液压密封件，R=密封环）
         ShapedRecipe steamCatapult = new ShapedRecipe(
                 SteamworkKeys.STEAM_CATAPULT, SteamworkItems.STEAM_CATAPULT);
-        steamCatapult.shape("VNV", "DAD", "GRG");
+        steamCatapult.shape("VNV", "DAD", "SRS");
         steamCatapult.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
         steamCatapult.setIngredient('N', rebarChoice(SteamworkItems.NICHROME_INGOT));
         steamCatapult.setIngredient('D', Material.DISPENSER);
-        steamCatapult.setIngredient('A', Material.PISTON);
-        steamCatapult.setIngredient('G', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        steamCatapult.setIngredient('A', rebarChoice(SteamworkItems.HYDRAULIC_PISTON));
+        steamCatapult.setIngredient('S', rebarChoice(SteamworkItems.HYDRAULIC_SEAL));
         steamCatapult.setIngredient('R', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         steamCatapult.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamCatapult);
@@ -758,24 +757,25 @@ public final class CraftingRecipes {
         pylonCompatModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pylonCompatModule);
 
-        // 重型冲击破碎机：锰钢锭主体 + 铁砧（冲击元素） + 黄铜齿轮（传动） + 黄铜阀芯（控制）
-        // 形状：MGM / GAG / MVM
+        // 重型冲击破碎机：锰钢锭主体 + 铣削刀片（高硬度冲击头）+ 黄铜齿轮（传动）+ 黄铜阀芯（控制）
+        // 形状：MBM / GAG / MVM
         ShapedRecipe heavyImpactCrusher = new ShapedRecipe(
                 SteamworkKeys.HEAVY_IMPACT_CRUSHER, SteamworkItems.HEAVY_IMPACT_CRUSHER);
-        heavyImpactCrusher.shape("MGM", "GAG", "MVM");
+        heavyImpactCrusher.shape("MBM", "GAG", "MVM");
         heavyImpactCrusher.setIngredient('M', rebarChoice(SteamworkItems.MANGANESE_STEEL_INGOT));
+        heavyImpactCrusher.setIngredient('B', rebarChoice(SteamworkItems.MILLING_BLADE));
         heavyImpactCrusher.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
         heavyImpactCrusher.setIngredient('A', Material.ANVIL);
         heavyImpactCrusher.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
         heavyImpactCrusher.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(heavyImpactCrusher);
 
-        // 液压锻造机：锰青铜锭主体 + 因瓦合金（耐压结构） + 黄铜密封环（密封） + 铁砧（锻造平台）
+        // 液压锻造机：锻造钢板（高强度锻造平台）+ 因瓦合金（耐压结构）+ 黄铜密封环（密封）+ 铁砧（锻造基座）
         // 形状：MIM / SAS / MIM
         ShapedRecipe hydraulicForge = new ShapedRecipe(
                 SteamworkKeys.HYDRAULIC_FORGE, SteamworkItems.HYDRAULIC_FORGE);
         hydraulicForge.shape("MIM", "SAS", "MIM");
-        hydraulicForge.setIngredient('M', rebarChoice(SteamworkItems.MANGANESE_BRONZE_INGOT));
+        hydraulicForge.setIngredient('M', rebarChoice(SteamworkItems.FORGED_PLATE));
         hydraulicForge.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
         hydraulicForge.setIngredient('S', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         hydraulicForge.setIngredient('A', Material.ANVIL);
@@ -795,15 +795,15 @@ public final class CraftingRecipes {
         RecipeType.VANILLA_SHAPED.addRecipe(precisionCrystallizer);
 
 
-        // 精密离心机：硬铝转子壳体 + 黄铜扇叶（旋转动力）+ 黄铜筛网（分离介质）+ 因瓦阀芯（高速稳定）
-        // 形状：DFD / SVS / DFD（D=硬铝锭, F=黄铜扇叶, S=黄铜筛网, V=黄铜阀芯）
+        // 精密离心机：硬铝转子壳体 + 黄铜扇叶（旋转动力）+ 精密轴承（高速旋转支撑）+ 精密螺杆（精密紧固）
+        // 形状：DFD / SBS / DFD（D=硬铝锭, F=黄铜扇叶, S=精密螺杆, B=精密轴承）
         ShapedRecipe precisionCentrifuge = new ShapedRecipe(
                 SteamworkKeys.PRECISION_CENTRIFUGE, SteamworkItems.PRECISION_CENTRIFUGE);
-        precisionCentrifuge.shape("DFD", "SVS", "DFD");
+        precisionCentrifuge.shape("DFD", "SBS", "DFD");
         precisionCentrifuge.setIngredient('D', rebarChoice(SteamworkItems.DURALUMIN_INGOT));
         precisionCentrifuge.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FAN_BLADE));
-        precisionCentrifuge.setIngredient('S', rebarChoice(SteamworkItems.BRASS_SIEVE));
-        precisionCentrifuge.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        precisionCentrifuge.setIngredient('S', rebarChoice(SteamworkItems.PRECISION_SCREW));
+        precisionCentrifuge.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
         precisionCentrifuge.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(precisionCentrifuge);
     }

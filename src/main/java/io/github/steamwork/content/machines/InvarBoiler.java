@@ -6,6 +6,8 @@ import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkKeys;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -42,5 +44,17 @@ public class InvarBoiler extends AbstractSteamBoiler {
     @Override
     protected @NotNull RebarFluid producedSteam() {
         return SteamworkFluids.STEAM;
+    }
+
+    @Override
+    protected void spawnRunningFx() {
+        Block b = getBlock();
+        // 细密白烟：比青铜锅炉的泄漏烟更小更稳定，体现高效密封
+        b.getWorld().spawnParticle(Particle.CLOUD,
+                b.getLocation().add(0.5, 1.05, 0.5),
+                4, 0.15, 0.05, 0.15, 0.02);
+        if (Math.random() < 0.25) {
+            b.getWorld().playSound(b.getLocation(), Sound.BLOCK_LAVA_EXTINGUISH, 0.2f, 1.8f);
+        }
     }
 }

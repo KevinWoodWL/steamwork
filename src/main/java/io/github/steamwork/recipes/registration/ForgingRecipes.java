@@ -18,13 +18,13 @@ public final class ForgingRecipes {
 
     public static void register() {
         // ===== 高压管件链 =====
-        // 黄铜锭 → 高压管件（锅炉/液压系统的基础管路）
+        // 锰青铜锭 → 高压管件（耐磨耐压，适合高压气路与液压管路）
         SteamForgingRecipe.RECIPE_TYPE.addRecipe(new SteamForgingRecipe(
                 steamworkKey("forge_high_pressure_pipe"),
-                RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
+                RecipeInput.of(SteamworkItems.MANGANESE_BRONZE_INGOT, 2),
                 SteamworkItems.HIGH_PRESSURE_PIPE.clone().asQuantity(4),
-                40.0,
-                200));
+                50.0,
+                240));
 
         // 因瓦合金 → 高压法兰（连接件，需要低热膨胀以保证密封）
         SteamForgingRecipe.RECIPE_TYPE.addRecipe(new SteamForgingRecipe(

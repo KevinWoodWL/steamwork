@@ -59,7 +59,7 @@ public class ProductionLineOutlet extends RebarBlock implements
 
     // ===== 缓冲 =====
 
-    private final VirtualInventory buffer = new VirtualInventory(9);
+    private final VirtualInventory buffer = new VirtualInventory(7);
 
     // ===== 产线成员字段 =====
 
@@ -70,6 +70,13 @@ public class ProductionLineOutlet extends RebarBlock implements
     private int lineNumber = 0;
 
     private final LineInfoItem lineInfoItem = new LineInfoItem();
+
+    /**
+     * 连续拒绝来自上游推送的次数。
+     * acceptFromLine 返回 false 时递增，返回 true 或 tick 中成功排出物品时归零。
+     */
+    private int consecutiveRejections = 0;
+    private static final int JAM_THRESHOLD = 3;
 
     // ===== 构造 =====
 
@@ -108,6 +115,16 @@ public class ProductionLineOutlet extends RebarBlock implements
     @Override
     public void postInitialise() {
         createLogisticGroup("buffer", LogisticGroupType.OUTPUT, buffer);
+        // 任何方式取走物品（玩家、漏斗、气动）都重置堵塞计数
+        buffer.addPostUpdateHandler(event -> {
+            ItemStack prev = event.getPreviousItem();
+            ItemStack next = event.getNewItem();
+            int prevAmt = (prev != null && !prev.isEmpty()) ? prev.getAmount() : 0;
+            int nextAmt = (next != null && !next.isEmpty()) ? next.getAmount() : 0;
+            if (nextAmt < prevAmt) {
+                consecutiveRejections = 0;
+            }
+        });
     }
 
     @Override
@@ -174,17 +191,33 @@ public class ProductionLineOutlet extends RebarBlock implements
         this.lineDirection = BlockFace.SELF;
         this.lineCreator = null;
         this.lineNumber = 0;
+        this.consecutiveRejections = 0;
     }
 
     /**
      * 接收来自产线上游的物品，放入出口缓冲。
+     * 成功时重置连续拒绝计数，失败时递增。
      */
     @Override
     public boolean acceptFromLine(@NotNull ItemStack item) {
-        if (!buffer.canHold(item)) return false;
+        if (!buffer.canHold(item)) {
+            consecutiveRejections++;
+            return false;
+        }
         buffer.addItem(new MachineUpdateReason(), item);
+        consecutiveRejections = 0;
         lineInfoItem.notifyWindows();
         return true;
+    }
+
+    /** 出口是否处于堵塞状态：连续拒绝次数达到阈值。 */
+    public boolean isJammed() {
+        return consecutiveRejections >= JAM_THRESHOLD;
+    }
+
+    /** 外部排出物品后（漏斗/气动取走）重置堵塞计数。 */
+    public void resetJam() {
+        consecutiveRejections = 0;
     }
 
     // ===== WAILA =====

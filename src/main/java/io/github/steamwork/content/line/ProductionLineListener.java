@@ -18,7 +18,9 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
+import org.bukkit.event.inventory.FurnaceStartSmeltEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -257,9 +259,32 @@ public class ProductionLineListener implements Listener {
         if (!VanillaFurnaceMember.isVanillaFurnace(block)) return;
         VanillaFurnaceMember member = new VanillaFurnaceMember(block);
         if (!member.isInLine()) return;
+        // 产线停摆时取消烧炼完成
+        if (VanillaFurnaceMember.isLineJammed(block)) {
+            event.setCancelled(true);
+            return;
+        }
         // 延迟 1 tick，等 Bukkit 把产物写入结果槽后再推送
         Bukkit.getScheduler().runTask(io.github.steamwork.Steamwork.getInstance(),
                 () -> new VanillaFurnaceMember(block).tryPushResultDownstream());
+    }
+
+    /** 停摆时阻止新燃料被点燃，避免空烧燃料。 */
+    @EventHandler(ignoreCancelled = true)
+    public void onFurnaceBurn(@NotNull FurnaceBurnEvent event) {
+        Block block = event.getBlock();
+        if (!VanillaFurnaceMember.isVanillaFurnace(block)) return;
+        if (!VanillaFurnaceMember.isLineJammed(block)) return;
+        event.setCancelled(true);
+    }
+
+    /** 停摆时阻止开始新的烧炼进度。 */
+    @EventHandler(ignoreCancelled = true)
+    public void onFurnaceStartSmelt(@NotNull FurnaceStartSmeltEvent event) {
+        Block block = event.getBlock();
+        if (!VanillaFurnaceMember.isVanillaFurnace(block)) return;
+        if (!VanillaFurnaceMember.isLineJammed(block)) return;
+        event.setTotalCookTime(0);
     }
 
     // ==================== 玩家离线 / 切换手持 ====================
@@ -381,21 +406,21 @@ public class ProductionLineListener implements Listener {
     }
 
     /** 向玩家发送带颜色的产线系统提示消息（无占位符版）。 */
-    private static void msg(@NotNull Player player, @NotNull NamedTextColor color,
+    static void msg(@NotNull Player player, @NotNull NamedTextColor color,
                             @NotNull String key) {
         player.sendMessage(linePrefix().append(Component.translatable(key).color(color)));
     }
 
     /** 向玩家发送带颜色的产线系统提示消息（含命名占位符版）。 */
-    private static void msg(@NotNull Player player, @NotNull NamedTextColor color,
+    static void msg(@NotNull Player player, @NotNull NamedTextColor color,
                             @NotNull String key, @NotNull RebarArgument... args) {
         player.sendMessage(linePrefix().append(Component.translatable(key, args).color(color)));
     }
 
     /** 构造产线消息前缀：&8[&6蒸汽工坊&8] 。 */
-    private static @NotNull Component linePrefix() {
+    static @NotNull Component linePrefix() {
         return Component.text("[", NamedTextColor.DARK_GRAY)
-                .append(Component.text("蒸汽工坊", NamedTextColor.GOLD))
+                .append(Component.translatable("steamwork.addon").color(NamedTextColor.GOLD))
                 .append(Component.text("] ", NamedTextColor.DARK_GRAY));
     }
 }

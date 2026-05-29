@@ -125,7 +125,8 @@ public final class SteamworkResearches {
             SteamworkKeys.HYDRAULIC_PISTON, SteamworkKeys.HYDRAULIC_SEAL,
             SteamworkKeys.FORGED_PLATE,
             SteamworkKeys.PRECISION_CRYSTALLIZER,
-            SteamworkKeys.PRECISION_CENTRIFUGE);
+            SteamworkKeys.PRECISION_CENTRIFUGE,
+            SteamworkKeys.PRECISION_FOUNDRY);
 
     // ---- Tier 4: endgame ------------------------------------------------
 

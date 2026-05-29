@@ -338,24 +338,24 @@ item:
   manganese_steel_boiler:
     name: "锰钢锅炉"
     lore: |-
-      <arrow> 以耐磨锰钢承受高负载的工业锅炉，产汽速度很快
+      <arrow> 以耐磨锰钢承受高负载的工业锅炉，产生<white>过热蒸汽</white>
       <arrow> 结构：核心左右放锰钢块，上方放 Pylon 钢支撑梁，下方需要热源
       <arrow> <attr>水缓冲：</attr> %water-buffer%
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>过热蒸汽缓冲：</attr> %steam-buffer%
       <arrow> <attr>耗水：</attr> %water-per-second%
-      <arrow> <attr>产汽：</attr> %steam-per-second%
-    waila: "锰钢锅炉 | %structure% | 水 %water-bar% | 蒸汽 %steam-bar% | %pressure%"
+      <arrow> <attr>产过热蒸汽：</attr> %steam-per-second%
+    waila: "锰钢锅炉 | %structure% | 水 %water-bar% | 过热蒸汽 %steam-bar% | %pressure%"
 
   tungsten_boiler:
     name: "钨锅炉"
     lore: |-
-      <arrow> 面向高温高压系统的顶级锅炉，产汽速度极高
+      <arrow> 面向高温高压系统的顶级锅炉，产生<white>过热蒸汽</white>，产量极高
       <arrow> 结构：核心左右放钨块，上方放 Pylon 耐火砖，下方需要热源
       <arrow> <attr>水缓冲：</attr> %water-buffer%
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>过热蒸汽缓冲：</attr> %steam-buffer%
       <arrow> <attr>耗水：</attr> %water-per-second%
-      <arrow> <attr>产汽：</attr> %steam-per-second%
-    waila: "钨锅炉 | %structure% | 水 %water-bar% | 蒸汽 %steam-bar% | %pressure%"
+      <arrow> <attr>产过热蒸汽：</attr> %steam-per-second%
+    waila: "钨锅炉 | %structure% | 水 %water-bar% | 过热蒸汽 %steam-bar% | %pressure%"
 
   steam_arm:
     name: "蒸汽动力臂"
@@ -639,7 +639,7 @@ item:
   heavy_impact_crusher:
     name: "重型冲击破碎机"
     lore: |-
-      <arrow> 锰钢锻造的高耐磨破碎机，专门处理硬质方块与矿物
+      <arrow> 锰钢锻造的高耐磨破碎机，铣削刀片作为冲击头，专门处理硬质方块与矿物
       <arrow> 与蒸汽研磨机互补：研磨机出细粉，破碎机出粗碎与双倍矿
       <arrow> 装入 Pylon 联动模组后还可执行磨石配方（更慢更耗汽，体现重型定位）
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
@@ -648,7 +648,7 @@ item:
   hydraulic_forge:
     name: "液压锻造机"
     lore: |-
-      <arrow> 锰青铜骨架的高压锻造平台，专门产出液压系统中间件
+      <arrow> 锻造钢板构成的高强度锻造平台，液压驱动精密成型
       <arrow> 高压管件、法兰、活塞、密封件、锻造钢板的核心来源
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
     waila: "液压锻造机 | 过热蒸汽 %steam-bar% | %state%"
@@ -665,7 +665,7 @@ item:
   precision_centrifuge:
     name: "精密离心机"
     lore: |-
-      <arrow> 硬铝合金转子高速旋转，按密度加权随机分离混合物
+      <arrow> 硬铝合金转子高速旋转，精密轴承支撑，按密度加权随机分离混合物
       <arrow> 处理样品/废料/复合粉末，每次产出加权随机的多种产物之一
       <arrow> 给样品系列、机器废屑等"模糊输入"提供高级回收路线
       <arrow> 多方块：机器两侧各 2 根、上下角各 2 根 Pylon 钢支撑梁（共 8 根）
@@ -674,7 +674,7 @@ item:
 
   high_pressure_pipe:
     name: "高压管件"
-    lore: <arrow> 锻造而成的耐压管段，液压管路与高压锅炉支线的标准件
+    lore: <arrow> 锰青铜锻造的耐磨耐压管段，液压管路与高压气路的标准件
 
   high_pressure_flange:
     name: "高压法兰"
@@ -1350,6 +1350,11 @@ gui:
       waiting: "<gray>状态：<yellow>原料缓冲为空，等待物料投入"
       pushing: "<gray>状态：<green>正在向下游推送物品"
       blocked: "<gray>状态：<gold>下游阻塞，物品无法推出"
+      jammed: "<gray>状态：<red>出口已满，产线停摆"
+    slot_hint:
+      title: "<aqua>槽位说明"
+      ingredient: "<gray>第一行：<white>原料槽</white>（推送给产线机器）"
+      fuel: "<gray>第二行：<white>燃料槽</white>（推送给有燃料槽的机器）"
     scan_button:
       title: "<aqua>扫描燃料目标"
       not_in_line: "<gray>该入口尚未加入任何产线"
@@ -1535,6 +1540,9 @@ guide:
     production_line_supported_machines:
       name: "产线支持机器"
       lore: "<gray>显示所有可以放进产线的机器"
+    calibrator_supported_machines:
+      name: "调校仪支持机器"
+      lore: "<gray>显示所有可以用精密调校仪打开升级槽的机器"
     steam_calibration:
       name: "蒸汽调校"
     steam_distillation:
@@ -1551,6 +1559,7 @@ guide:
     steam_logistics: "蒸汽货运"
     steam_automation: "蒸汽自动化"
     production_line_supported_machines: "产线支持机器"
+    calibrator_supported_machines: "调校仪支持机器"
     steam_calibration: "蒸汽调校"
     steam_distillation: "蒸汽蒸馏"
 
@@ -1670,6 +1679,7 @@ line:
     waiting: "<yellow>等待"
     pushing: "<green>推送中"
     blocked: "<gold>下游阻塞"
+    jammed: "<red>出口满停摆"
     receiving: "<green>接收中"
     buffering: "<gold>缓存中"
   blueprint:
@@ -1686,4 +1696,5 @@ line:
     added: "已加入第 <white>%position%</white> 台机器，继续左键下一台机器或出口"
     cancelled: "产线配置已取消"
     invalidated: "你的产线 <white>#%number%</white> 已失效！"
+  jammed: "产线 <white>#%number%</white> 出口已满，产线已停摆！请清空出口后自动恢复"
 

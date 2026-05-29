@@ -171,6 +171,8 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     @NotNull private BlockFace lineDirection = BlockFace.SELF;
     @Nullable private String lineCreator = null;
     private int lineNumber = 0;
+    /** 产线堵塞停摆标志，true 时 tick 跳过所有加工逻辑。 */
+    private boolean lineJammed = false;
     private final LineStatusItem lineStatusItem = new LineStatusItem();
 
     /**
@@ -424,6 +426,12 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
     @Override
     public void tick() {
+        // 产线堵塞停摆：跳过所有加工逻辑
+        if (lineJammed) {
+            notifyGuiItems();
+            return;
+        }
+
         // 多方块结构检查（单方块机器默认 true，直接跳过）。
         if (!hasValidStructure()) {
             resetRecipe();
@@ -1059,7 +1067,14 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         this.lineDirection = BlockFace.SELF;
         this.lineCreator = null;
         this.lineNumber = 0;
+        this.lineJammed = false;
     }
+
+    @Override
+    public void onLineJammed() { this.lineJammed = true; }
+
+    @Override
+    public void onLineResumed() { this.lineJammed = false; }
 
     /**
      * 接受来自产线上游的物品，放入输入槽。

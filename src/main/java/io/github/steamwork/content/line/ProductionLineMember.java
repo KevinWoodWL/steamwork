@@ -92,6 +92,18 @@ public interface ProductionLineMember {
     default boolean acceptFuelFromLine(@NotNull ItemStack item) { return false; }
 
     /**
+     * 产线进入堵塞停摆时由入口调用，通知成员暂停工作。
+     * 默认无操作；需要主动停摆的成员（如原版熔炉）可覆盖此方法。
+     */
+    default void onLineJammed() {}
+
+    /**
+     * 产线从堵塞状态恢复时由入口调用，通知成员恢复工作。
+     * 默认无操作。
+     */
+    default void onLineResumed() {}
+
+    /**
      * 工厂方法：将方块包装为 {@link ProductionLineMember}。
      * 优先检测 Rebar 方块，失败后尝试原版熔炉包装。
      * 若是其它 Rebar 方块（非成员）则返回 null，不会误包装。
