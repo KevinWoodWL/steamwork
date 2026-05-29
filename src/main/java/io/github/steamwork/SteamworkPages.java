@@ -71,6 +71,9 @@ public final class SteamworkPages {
         BASIC_MATERIALS.addItem(SteamworkItems.ZINC_CONCENTRATE);
         BASIC_MATERIALS.addItem(SteamworkItems.SILICA_GRIT);
         BASIC_MATERIALS.addItem(SteamworkItems.MINERAL_FLUX);
+        BASIC_MATERIALS.addItem(SteamworkItems.GRANITE_DUST);
+        BASIC_MATERIALS.addItem(SteamworkItems.DIORITE_DUST);
+        BASIC_MATERIALS.addItem(SteamworkItems.ANDESITE_DUST);
         BASIC_MATERIALS.addItem(SteamworkItems.RUBBER_GASKET);
         BASIC_MATERIALS.addItem(SteamworkItems.PRESSURE_GAUGE);
         BASIC_MATERIALS.addItem(SteamworkItems.HEAT_TREATED_METAL);

@@ -1,4 +1,4 @@
-addon: "蒸汽工坊"
+﻿addon: "蒸汽工坊"
 
 item:
   zinc_ingot:
@@ -76,6 +76,24 @@ item:
     lore: |-
       <arrow> 由细砂、黏土和骨粉调制的冶炼添加剂
       <arrow> 后续可用于高温合金和炉体材料
+
+  granite_dust:
+    name: "花岗岩粉"
+    lore: |-
+      <arrow> 沙砾经蒸汽洗选分离出的岩石矿物碎屑
+      <arrow> 可用于建材或进一步加工
+
+  diorite_dust:
+    name: "闪长岩粉"
+    lore: |-
+      <arrow> 沙砾经蒸汽洗选分离出的岩石矿物碎屑
+      <arrow> 可用于建材或进一步加工
+
+  andesite_dust:
+    name: "安山岩粉"
+    lore: |-
+      <arrow> 沙砾经蒸汽洗选分离出的岩石矿物碎屑
+      <arrow> 可用于建材或进一步加工
 
   treated_wood:
     name: "处理木材"
@@ -1511,6 +1529,8 @@ guide:
     steam_crystallizing: "<gray>精密结晶 | 消耗 %steam% 蒸汽 | %time%"
     steam_centrifugation: "<gray>精密离心 | 消耗 %steam% 蒸汽 | %time%"
     steam_milling: "<gray>蒸汽铣削 | 消耗 %steam% 蒸汽 | %time%"
+    steam_foundry: "<gray>精密铸造 | 消耗 %steam% 过热蒸汽 | %time%"
+    steam_catalytic_reaction: "<gray>催化反应 | 消耗 %steam% 过热蒸汽 | %time%"
     steam_research: "<gray>蒸汽科研 | %discipline% | %points% 点 | %steam% 蒸汽 | %time%"
     steam_distillation: "<gray>蒸汽精馏 | %sections% 段塔 | %steam% 过热蒸汽 | %time%"
     phosphor_bronze: "<gray>磷青铜 — Pylon 锡协同"

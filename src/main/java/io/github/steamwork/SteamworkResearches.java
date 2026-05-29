@@ -51,7 +51,8 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_WASHING_TROUGH,
             SteamworkKeys.STEAM_PRESS, SteamworkKeys.STEAM_GRINDER,
             SteamworkKeys.STEAM_PRESSURIZED_FURNACE,
-            SteamworkKeys.HEAT_TREATED_METAL, SteamworkKeys.MACHINE_SCRAP);
+            SteamworkKeys.HEAT_TREATED_METAL, SteamworkKeys.MACHINE_SCRAP,
+            SteamworkKeys.GRANITE_DUST, SteamworkKeys.DIORITE_DUST, SteamworkKeys.ANDESITE_DUST);
 
     // ---- Tier 2: mid-tier processing ------------------------------------
 
@@ -124,6 +125,7 @@ public final class SteamworkResearches {
             SteamworkKeys.HIGH_PRESSURE_PIPE, SteamworkKeys.HIGH_PRESSURE_FLANGE,
             SteamworkKeys.HYDRAULIC_PISTON, SteamworkKeys.HYDRAULIC_SEAL,
             SteamworkKeys.FORGED_PLATE,
+            SteamworkKeys.HIGH_POLYMER, SteamworkKeys.PALLADIUM_ALLOY_INGOT,
             SteamworkKeys.PRECISION_CRYSTALLIZER,
             SteamworkKeys.PRECISION_CENTRIFUGE,
             SteamworkKeys.PRECISION_FOUNDRY);

@@ -42,5 +42,44 @@ public final class CatalyticReactionRecipes {
                 SteamworkItems.HIGH_POLYMER.clone().asQuantity(2),
                 220.0,
                 320));
+
+        // ===== 有机催化合成 =====
+        // 植物精华 + 矿物浸出液 → 无菌培养基（有机-矿物协同催化，给无菌培养基加一条高效来源）
+        SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(new SteamCatalyticReactionRecipe(
+                steamworkKey("react_organic_catalyst"),
+                List.of(
+                        RecipeInput.of(SteamworkItems.PLANT_ESSENCE, 2),
+                        RecipeInput.of(SteamworkItems.MINERAL_LEACHATE_VIAL),
+                        RecipeInput.of(SteamworkItems.CATALYST_CORE)
+                ),
+                SteamworkItems.STERILE_CULTURE.clone().asQuantity(3),
+                180.0,
+                280));
+
+        // ===== 矿物精炼 =====
+        // 矿物浓缩液 + 废酸 → 锌精矿（酸浸提锌，给锌精矿加一条化工路径）
+        SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(new SteamCatalyticReactionRecipe(
+                steamworkKey("react_refined_mineral"),
+                List.of(
+                        RecipeInput.of(SteamworkItems.MINERAL_CONCENTRATE, 2),
+                        RecipeInput.of(SteamworkItems.WASTE_ACID_VIAL),
+                        RecipeInput.of(SteamworkItems.CATALYST_CORE)
+                ),
+                SteamworkItems.ZINC_CONCENTRATE.clone().asQuantity(4),
+                200.0,
+                300));
+
+        // ===== 高聚物硫化 =====
+        // 高聚物 + 硫化橡胶 → 液压密封件（解决高聚物无下游，同时给液压密封加一条不依赖锻造机的来源）
+        SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(new SteamCatalyticReactionRecipe(
+                steamworkKey("react_vulcanized_compound"),
+                List.of(
+                        RecipeInput.of(SteamworkItems.HIGH_POLYMER, 2),
+                        RecipeInput.of(SteamworkItems.VULCANIZED_RUBBER, 2),
+                        RecipeInput.of(SteamworkItems.CATALYST_CORE)
+                ),
+                SteamworkItems.HYDRAULIC_SEAL.clone().asQuantity(4),
+                240.0,
+                340));
     }
 }

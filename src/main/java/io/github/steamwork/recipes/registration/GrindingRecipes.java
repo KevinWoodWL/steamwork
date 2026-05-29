@@ -16,7 +16,15 @@ public final class GrindingRecipes {
     }
 
     public static void register() {
-        // ===== 岩石粉碎类（填回阶段 1 删除的"闪长岩/花岗岩 → 石英"，原本就属于粉碎工艺） =====
+        // 下界岩研磨：16 下界岩 → 1 烈焰粉（提炼下界岩中的火焰物质，早期无需进入下界深处也能积累烈焰粉）。
+        SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
+                steamworkKey("grind_netherrack_to_blaze_powder"),
+                RecipeInput.of(new ItemStack(Material.NETHERRACK, 16)),
+                new ItemStack(Material.BLAZE_POWDER, 1),
+                35.0,
+                200));
+
+
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_diorite_to_quartz"),
                 RecipeInput.of(new ItemStack(Material.DIORITE)),
@@ -78,5 +86,42 @@ public final class GrindingRecipes {
                 new ItemStack(Material.IRON_INGOT),
                 40.0,
                 240));
+
+        // ===== 高合金锭研磨（研磨机专属定位：高合金锭 → 粉末，冲压机不覆盖此路径） =====
+        // 用于将已铸造的高合金锭磨回粉末，支持配方调整和回收再利用。
+        SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
+                steamworkKey("grind_invar_to_dust"),
+                RecipeInput.of(SteamworkItems.INVAR_INGOT),
+                SteamworkItems.INVAR_DUST,
+                55.0,
+                280));
+
+        SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
+                steamworkKey("grind_duralumin_to_dust"),
+                RecipeInput.of(SteamworkItems.DURALUMIN_INGOT),
+                SteamworkItems.DURALUMIN_DUST,
+                50.0,
+                260));
+
+        SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
+                steamworkKey("grind_manganese_steel_to_dust"),
+                RecipeInput.of(SteamworkItems.MANGANESE_STEEL_INGOT),
+                SteamworkItems.MANGANESE_STEEL_DUST,
+                60.0,
+                300));
+
+        SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
+                steamworkKey("grind_manganese_bronze_to_dust"),
+                RecipeInput.of(SteamworkItems.MANGANESE_BRONZE_INGOT),
+                SteamworkItems.MANGANESE_BRONZE_DUST,
+                55.0,
+                280));
+
+        SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
+                steamworkKey("grind_tungsten_to_dust"),
+                RecipeInput.of(SteamworkItems.TUNGSTEN_INGOT),
+                SteamworkItems.TUNGSTEN_DUST,
+                80.0,
+                380));
     }
 }

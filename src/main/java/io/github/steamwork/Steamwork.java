@@ -95,6 +95,6 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
 
     @Override
     public @NotNull Material getMaterial() {
-        return Material.COPPER_INGOT;
+        return Material.FURNACE;
     }
 }

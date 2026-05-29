@@ -22,6 +22,9 @@ public final class SteamworkKeys {
     public static final NamespacedKey STERILE_BIOMASS = steamworkKey("sterile_biomass");
     public static final NamespacedKey SILICA_GRIT = steamworkKey("silica_grit");
     public static final NamespacedKey MINERAL_FLUX = steamworkKey("mineral_flux");
+    public static final NamespacedKey GRANITE_DUST  = steamworkKey("granite_dust");
+    public static final NamespacedKey DIORITE_DUST  = steamworkKey("diorite_dust");
+    public static final NamespacedKey ANDESITE_DUST = steamworkKey("andesite_dust");
     public static final NamespacedKey TREATED_WOOD = steamworkKey("treated_wood");
     public static final NamespacedKey FIBERBOARD = steamworkKey("fiberboard");
     public static final NamespacedKey RUBBERIZED_FABRIC = steamworkKey("rubberized_fabric");

@@ -77,6 +77,24 @@ item:
       <arrow> A smelting additive blended from grit, clay, and bone meal
       <arrow> Reserved for high-temperature alloys and furnace materials
 
+  granite_dust:
+    name: "Granite Dust"
+    lore: |-
+      <arrow> Rock mineral fragments separated from gravel in a washing trough
+      <arrow> Useful as a building material or for further processing
+
+  diorite_dust:
+    name: "Diorite Dust"
+    lore: |-
+      <arrow> Rock mineral fragments separated from gravel in a washing trough
+      <arrow> Useful as a building material or for further processing
+
+  andesite_dust:
+    name: "Andesite Dust"
+    lore: |-
+      <arrow> Rock mineral fragments separated from gravel in a washing trough
+      <arrow> Useful as a building material or for further processing
+
   treated_wood:
     name: "Treated Wood"
     lore: |-

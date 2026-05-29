@@ -86,8 +86,11 @@ public final class SteamworkItems {
     public static final ItemStack RAW_RESIN = ItemStackBuilder.rebar(Material.HONEYCOMB, SteamworkKeys.RAW_RESIN).build();
     public static final ItemStack VULCANIZED_RUBBER = ItemStackBuilder.rebar(Material.BLACK_DYE, SteamworkKeys.VULCANIZED_RUBBER).build();
     public static final ItemStack STERILE_BIOMASS = ItemStackBuilder.rebar(Material.BONE_MEAL, SteamworkKeys.STERILE_BIOMASS).build();
-    public static final ItemStack SILICA_GRIT = ItemStackBuilder.rebar(Material.QUARTZ, SteamworkKeys.SILICA_GRIT).build();
-    public static final ItemStack MINERAL_FLUX = ItemStackBuilder.rebar(Material.SUGAR, SteamworkKeys.MINERAL_FLUX).build();
+    public static final ItemStack SILICA_GRIT    = ItemStackBuilder.rebar(Material.QUARTZ,  SteamworkKeys.SILICA_GRIT).build();
+    public static final ItemStack MINERAL_FLUX   = ItemStackBuilder.rebar(Material.SUGAR,   SteamworkKeys.MINERAL_FLUX).build();
+    public static final ItemStack GRANITE_DUST   = ItemStackBuilder.rebar(Material.GLOWSTONE_DUST, SteamworkKeys.GRANITE_DUST).build();
+    public static final ItemStack DIORITE_DUST   = ItemStackBuilder.rebar(Material.SUGAR,          SteamworkKeys.DIORITE_DUST).build();
+    public static final ItemStack ANDESITE_DUST  = ItemStackBuilder.rebar(Material.GUNPOWDER,      SteamworkKeys.ANDESITE_DUST).build();
     public static final ItemStack TREATED_WOOD = ItemStackBuilder.rebar(Material.STICK, SteamworkKeys.TREATED_WOOD).build();
     public static final ItemStack FIBERBOARD = ItemStackBuilder.rebar(Material.BROWN_DYE, SteamworkKeys.FIBERBOARD).build();
     public static final ItemStack RUBBERIZED_FABRIC = ItemStackBuilder.rebar(Material.GRAY_DYE, SteamworkKeys.RUBBERIZED_FABRIC).build();
@@ -218,7 +221,7 @@ public final class SteamworkItems {
     // Hydraulic forge products
     public static final ItemStack HIGH_PRESSURE_PIPE = ItemStackBuilder.rebar(Material.IRON_BARS, SteamworkKeys.HIGH_PRESSURE_PIPE).build();
     public static final ItemStack HIGH_PRESSURE_FLANGE = ItemStackBuilder.rebar(Material.LIGHTNING_ROD, SteamworkKeys.HIGH_PRESSURE_FLANGE).build();
-    public static final ItemStack HYDRAULIC_PISTON = ItemStackBuilder.rebar(Material.PISTON, SteamworkKeys.HYDRAULIC_PISTON).build();
+    public static final ItemStack HYDRAULIC_PISTON = ItemStackBuilder.rebar(Material.TRIPWIRE_HOOK, SteamworkKeys.HYDRAULIC_PISTON).build();
     public static final ItemStack HYDRAULIC_SEAL = ItemStackBuilder.rebar(Material.HONEYCOMB, SteamworkKeys.HYDRAULIC_SEAL).build();
     public static final ItemStack FORGED_PLATE = ItemStackBuilder.rebar(Material.IRON_INGOT, SteamworkKeys.FORGED_PLATE).build();
 
@@ -299,6 +302,9 @@ public final class SteamworkItems {
         RebarItem.register(RebarItem.class, STERILE_BIOMASS);
         RebarItem.register(RebarItem.class, SILICA_GRIT);
         RebarItem.register(RebarItem.class, MINERAL_FLUX);
+        RebarItem.register(RebarItem.class, GRANITE_DUST);
+        RebarItem.register(RebarItem.class, DIORITE_DUST);
+        RebarItem.register(RebarItem.class, ANDESITE_DUST);
         RebarItem.register(RebarItem.class, TREATED_WOOD);
         RebarItem.register(RebarItem.class, FIBERBOARD);
         RebarItem.register(RebarItem.class, RUBBERIZED_FABRIC);

@@ -15,6 +15,14 @@ public final class SteepingRecipes {
     }
 
     public static void register() {
+        // 圆石浸煮：16 圆石 → 1 下界岩（高温蒸汽软化并渗入硫化物，模拟下界岩的形成环境）。
+        SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                steamworkKey("steep_cobblestone_to_netherrack"),
+                RecipeInput.of(new ItemStack(Material.COBBLESTONE, 16)),
+                new ItemStack(Material.NETHERRACK, 1),
+                30.0,
+                180));
+
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_bamboo_to_fiber"),
                 RecipeInput.of(new ItemStack(Material.BAMBOO, 4)),
@@ -239,5 +247,22 @@ public final class SteepingRecipes {
                 SteamworkItems.RUBBERIZED_FABRIC,
                 45.0,
                 220));
+
+        // ===== 化工浸出路径 =====
+        // 矿物助熔剂 + 蒸馏水 → 矿物浸出液（水浸法提取矿物离子，给矿物浸出液加一条浸煮路径）
+        SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                steamworkKey("steep_mineral_flux_to_leachate"),
+                RecipeInput.of(SteamworkItems.MINERAL_FLUX, 3),
+                SteamworkItems.MINERAL_LEACHATE_VIAL.clone().asQuantity(2),
+                55.0,
+                260));
+
+        // 植物精华 + 无菌生质 → 无菌培养基（生物活性浸培，与催化反应堆路径形成竞争）
+        SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
+                steamworkKey("steep_plant_essence_to_culture"),
+                RecipeInput.of(SteamworkItems.PLANT_ESSENCE, 2),
+                SteamworkItems.STERILE_CULTURE.clone().asQuantity(3),
+                60.0,
+                280));
     }
 }

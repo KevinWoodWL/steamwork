@@ -3,9 +3,12 @@ package io.github.steamwork.recipes.registration;
 import io.github.pylonmc.pylon.PylonItems;
 import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.steamwork.SteamworkItems;
+import io.github.steamwork.recipes.SteamWashingRandomRecipe;
 import io.github.steamwork.recipes.SteamWashingRecipe;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
@@ -146,5 +149,19 @@ public final class WashingRecipes {
                 2,
                 50.0,
                 240));
+
+        // ===== 沙砾岩石分选（随机产出） =====
+        // 沙砾经高压蒸汽水流冲洗，分离出其中夹带的岩石矿物碎屑，
+        // 随机产出花岗岩粉、闪长岩粉或安山岩粉之一（等概率 1/3）。
+        SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRandomRecipe(
+                steamworkKey("wash_gravel_to_stone_dust"),
+                RecipeInput.of(new ItemStack(Material.GRAVEL, 3)),
+                List.of(
+                        SteamworkItems.GRANITE_DUST,
+                        SteamworkItems.DIORITE_DUST,
+                        SteamworkItems.ANDESITE_DUST
+                ),
+                40.0,
+                220));
     }
 }

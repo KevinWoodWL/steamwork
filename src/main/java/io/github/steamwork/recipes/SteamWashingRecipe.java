@@ -25,21 +25,60 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * Recipe for the Steam Washing Trough.
  * Washes ores and sediments for ore multiplication and processing.
  */
-public record SteamWashingRecipe(
-        @NotNull NamespacedKey key,
-        @NotNull RecipeInput.Item ingredient,
-        @NotNull ItemStack result,
-        int outputCount,
-        double steamCost,
-        int timeTicks
-) implements SteamProcessRecipe {
+public class SteamWashingRecipe implements SteamProcessRecipe {
 
     public static final RecipeType<SteamWashingRecipe> RECIPE_TYPE =
             new RecipeType<>(steamworkKey("steam_washing"));
 
+    private final @NotNull NamespacedKey key;
+    private final @NotNull RecipeInput.Item ingredient;
+    private final @NotNull ItemStack result;
+    private final int outputCount;
+    private final double steamCost;
+    private final int timeTicks;
+
+    public SteamWashingRecipe(
+            @NotNull NamespacedKey key,
+            @NotNull RecipeInput.Item ingredient,
+            @NotNull ItemStack result,
+            int outputCount,
+            double steamCost,
+            int timeTicks
+    ) {
+        this.key = key;
+        this.ingredient = ingredient;
+        this.result = result;
+        this.outputCount = outputCount;
+        this.steamCost = steamCost;
+        this.timeTicks = timeTicks;
+    }
+
     @Override
     public @NotNull NamespacedKey getKey() {
         return key;
+    }
+
+    @Override
+    public @NotNull RecipeInput.Item ingredient() {
+        return ingredient;
+    }
+
+    public @NotNull ItemStack result() {
+        return result;
+    }
+
+    public int outputCount() {
+        return outputCount;
+    }
+
+    @Override
+    public double steamCost() {
+        return steamCost;
+    }
+
+    @Override
+    public int timeTicks() {
+        return timeTicks;
     }
 
     @Override

@@ -164,5 +164,28 @@ public final class PressingRecipes {
                 new ItemStack(Material.BRICK, 5),
                 25.0,
                 160));
+
+        // ===== 石粉压制 =====
+        // 花岗岩粉、闪长岩粉、安山岩粉各 4 个压制成对应原版石块。
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_granite_dust_to_granite"),
+                RecipeInput.of(SteamworkItems.GRANITE_DUST, 4),
+                new ItemStack(Material.GRANITE),
+                30.0,
+                180));
+
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_diorite_dust_to_diorite"),
+                RecipeInput.of(SteamworkItems.DIORITE_DUST, 4),
+                new ItemStack(Material.DIORITE),
+                30.0,
+                180));
+
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_andesite_dust_to_andesite"),
+                RecipeInput.of(SteamworkItems.ANDESITE_DUST, 4),
+                new ItemStack(Material.ANDESITE),
+                30.0,
+                180));
     }
 }

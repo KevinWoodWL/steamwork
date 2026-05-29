@@ -52,20 +52,20 @@ public final class ForgingRecipes {
                 200));
 
         // ===== 锻造钢板（结构强化件） =====
-        // 热处理金属 → 锻造钢板（高强度结构件，比直接用锭密度高一倍）
-        SteamForgingRecipe.RECIPE_TYPE.addRecipe(new SteamForgingRecipe(
-                steamworkKey("forge_plate_from_heat_treated"),
-                RecipeInput.of(SteamworkItems.HEAT_TREATED_METAL, 1),
-                SteamworkItems.FORGED_PLATE.clone().asQuantity(2),
-                45.0,
-                220));
-
-        // 锰钢锭 → 锻造钢板（高产路径，给后期玩家用）
+        // 锰钢锭 → 锻造钢板（高强度结构件）
         SteamForgingRecipe.RECIPE_TYPE.addRecipe(new SteamForgingRecipe(
                 steamworkKey("forge_plate_from_manganese_steel"),
                 RecipeInput.of(SteamworkItems.MANGANESE_STEEL_INGOT, 1),
                 SteamworkItems.FORGED_PLATE.clone().asQuantity(4),
                 70.0,
                 300));
+
+        // 锻造钢板 → 强化高压法兰（锻造钢板的进阶产出，比因瓦锭路径产量更高）
+        SteamForgingRecipe.RECIPE_TYPE.addRecipe(new SteamForgingRecipe(
+                steamworkKey("forge_reinforced_flange"),
+                RecipeInput.of(SteamworkItems.FORGED_PLATE, 2),
+                SteamworkItems.HIGH_PRESSURE_FLANGE.clone().asQuantity(4),
+                60.0,
+                260));
     }
 }
