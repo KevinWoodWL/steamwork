@@ -974,25 +974,25 @@ item:
     name: "矿物分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的矿物标本
-      <arrow> 产出材料学研究点数
+      <arrow> 产出 <green>5</green> 点材料学研究点数
 
   organic_analysis_sample:
     name: "有机分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的有机标本
-      <arrow> 产出生物学研究点数
+      <arrow> 产出 <green>5</green> 点生物学研究点数
 
   metallurgical_analysis_sample:
     name: "冶金分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的高温合金标本
-      <arrow> 产出精密学研究点数
+      <arrow> 产出 <green>7</green> 点精密工程研究点数
 
   fluid_analysis_sample:
     name: "流体分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的封装流体标本
-      <arrow> 产出化学研究点数
+      <arrow> 产出 <green>6</green> 点化学研究点数
 
   refined_mineral_sample:
     name: "精制矿物样本"
@@ -1443,6 +1443,7 @@ gui:
     research_progress: "<gray>%bar% <white>%current%<gray>/<white>%cost%"
     research_already_unlocked: "<green>✓ 已解锁"
     research_unlockable: "<aqua>▶ 左键解锁（消耗点数）"
+    research_bonus_hint: "<gray>  奖励 <yellow>+%points%</yellow> 全局研究点数"
     research_insufficient: "<red>✗ 学科点数不足"
     status:
       active: "<green>运行中"
@@ -1902,7 +1903,9 @@ message:
     target_not_container: "<red>(%x%, %y%, %z%) 不是有效的容器方块"
     no_steam_arm_nearby: "<red>附近没有蒸汽动力臂在范围内"
   steam_science_interface:
-    claimed_disciplines: "<green>已领取学科点数 → <aqua>%summary%</aqua>"
+    claimed_discipline: "<green>已领取 <aqua>%points%</aqua> <light_purple>%discipline%</light_purple> 学科点数"
+    analysis_research_bonus: "<gray>分析研究奖励：获得 <yellow>+%points%</yellow> 全局研究点数"
+    discipline_unlock_bonus: "<yellow>学科研究奖励：额外获得 <white>%points%</white> 全局研究点数"
 
 line:
   unknown_creator: "未知"

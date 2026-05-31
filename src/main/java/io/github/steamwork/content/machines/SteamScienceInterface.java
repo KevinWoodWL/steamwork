@@ -83,6 +83,8 @@ public class SteamScienceInterface extends RebarBlock implements
     private static final NamespacedKey STORED_BIOLOGY_KEY   = steamworkKey("sci_stored_biology");
     private static final NamespacedKey STORED_PRECISION_KEY = steamworkKey("sci_stored_precision");
     private static final NamespacedKey STORED_CHEMISTRY_KEY = steamworkKey("sci_stored_chemistry");
+    /** 待领取的全局研究点奖励（每次样本分析完成时积累，领取学科点数时一并发放）。 */
+    private static final NamespacedKey PENDING_RESEARCH_KEY = steamworkKey("sci_pending_research");
 
     // ===== 配置 =====
     private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
@@ -99,6 +101,8 @@ public class SteamScienceInterface extends RebarBlock implements
     /** 各学科待领取点数（存储在机器 PDC，领取后转入玩家 PDC）。 */
     private final Map<SteamworkDiscipline, Integer> storedByDiscipline =
             new EnumMap<>(SteamworkDiscipline.class);
+    /** 待领取的全局研究点奖励（每次样本分析完成时积累：researchPoints / 5，最少 1）。 */
+    private int pendingResearchBonus = 0;
     private boolean lastActive = false;
     private StopReason currentReason = StopReason.READY;
 
@@ -166,6 +170,7 @@ public class SteamScienceInterface extends RebarBlock implements
                 pdc.getOrDefault(STORED_PRECISION_KEY, PersistentDataType.INTEGER, 0));
         storedByDiscipline.put(SteamworkDiscipline.CHEMISTRY,
                 pdc.getOrDefault(STORED_CHEMISTRY_KEY, PersistentDataType.INTEGER, 0));
+        pendingResearchBonus = pdc.getOrDefault(PENDING_RESEARCH_KEY, PersistentDataType.INTEGER, 0);
     }
 
     @Override
@@ -186,6 +191,7 @@ public class SteamScienceInterface extends RebarBlock implements
         pdc.set(STORED_BIOLOGY_KEY,   PersistentDataType.INTEGER, stored(SteamworkDiscipline.BIOLOGY));
         pdc.set(STORED_PRECISION_KEY, PersistentDataType.INTEGER, stored(SteamworkDiscipline.PRECISION));
         pdc.set(STORED_CHEMISTRY_KEY, PersistentDataType.INTEGER, stored(SteamworkDiscipline.CHEMISTRY));
+        pdc.set(PENDING_RESEARCH_KEY, PersistentDataType.INTEGER, pendingResearchBonus);
     }
 
     // ===== GUI =====
@@ -261,11 +267,12 @@ public class SteamScienceInterface extends RebarBlock implements
             spawnAnalyzeFx(4);
 
             if (recipeTicksRemaining <= 0) {
-                // 配方完成：将点数存入对应学科的待领取池
+                // 配方完成：将点数存入对应学科的待领取池，同时积累全局研究点奖励
                 SteamworkDiscipline disc = SteamworkDiscipline.fromKey(recipe.disciplineKey());
                 if (disc != null) {
                     storedByDiscipline.merge(disc, recipe.researchPoints(), Integer::sum);
                 }
+                pendingResearchBonus += Math.max(2, recipe.researchPoints() / 4);
                 outputInventory.addItem(new MachineUpdateReason(), recipe.residue().clone());
                 resetRecipe();
                 spawnAnalyzeFx(12);
@@ -370,22 +377,35 @@ public class SteamScienceInterface extends RebarBlock implements
     private void claimPoints(@NotNull Player player) {
         if (totalStored() <= 0) return;
 
-        StringBuilder sb = new StringBuilder();
+        boolean any = false;
         for (SteamworkDiscipline d : SteamworkDiscipline.values()) {
             int pts = stored(d);
             if (pts <= 0) continue;
             d.addPoints(player, pts);
             storedByDiscipline.put(d, 0);
-            if (sb.length() > 0) sb.append("  ");
-            sb.append(pts).append(" ").append(d.key);
+            // 每个学科单独发一条消息，学科名走翻译
+            player.sendMessage(Component.translatable(
+                    "steamwork.message.steam_science_interface.claimed_discipline",
+                    RebarArgument.of("points", pts),
+                    RebarArgument.of("discipline",
+                            Component.translatable("steamwork.research_type." + d.key))
+            ));
+            any = true;
         }
-        player.sendMessage(Component.translatable(
-                "steamwork.message.steam_science_interface.claimed_disciplines",
-                RebarArgument.of("summary", sb.toString())
-        ));
-        getBlock().getWorld().playSound(
-                player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.2f);
-        notifyGuiItems();
+        if (any) {
+            // 一并发放积累的全局研究点奖励
+            if (pendingResearchBonus > 0) {
+                Research.setResearchPoints(player,
+                        Research.getResearchPoints(player) + pendingResearchBonus);
+                player.sendMessage(Component.translatable(
+                        "steamwork.message.steam_science_interface.analysis_research_bonus",
+                        RebarArgument.of("points", pendingResearchBonus)));
+                pendingResearchBonus = 0;
+            }
+            getBlock().getWorld().playSound(
+                    player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.2f);
+            notifyGuiItems();
+        }
     }
 
     private void notifyGuiItems() {
@@ -752,6 +772,11 @@ public class SteamScienceInterface extends RebarBlock implements
             } else if (canUnlock) {
                 lore.add(noItalic(Component.translatable(
                         "steamwork.gui.steam_science_interface.research_unlockable")));
+                // 提前告知解锁后能获得的全局研究点奖励
+                long bonus = Math.max(1L, cost / 3L);
+                lore.add(noItalic(Component.translatable(
+                        "steamwork.gui.steam_science_interface.research_bonus_hint",
+                        RebarArgument.of("points", bonus))));
             } else {
                 lore.add(noItalic(Component.translatable(
                         "steamwork.gui.steam_science_interface.research_insufficient")));
@@ -794,6 +819,12 @@ public class SteamScienceInterface extends RebarBlock implements
             if (!clickType.isLeftClick()) return;
             boolean success = SteamworkDisciplineResearch.unlock(player, research);
             if (success) {
+                // 额外奖励全局研究点（约 1/3 学科消耗，最少 1 点）
+                long bonus = Math.max(1L, req.points() / 3L);
+                Research.setResearchPoints(player, Research.getResearchPoints(player) + bonus);
+                player.sendMessage(Component.translatable(
+                        "steamwork.message.steam_science_interface.discipline_unlock_bonus",
+                        RebarArgument.of("points", bonus)));
                 notifyWindows();
                 player.playSound(player.getLocation(),
                         Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.2f);

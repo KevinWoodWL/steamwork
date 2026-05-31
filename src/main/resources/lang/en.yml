@@ -969,25 +969,25 @@ item:
     name: "Mineral Analysis Sample"
     lore: |-
       <arrow> A prepared mineral specimen for the steam science interface
-      <arrow> Yields material discipline research points
+      <arrow> Yields <green>5</green> material discipline research points
 
   organic_analysis_sample:
     name: "Organic Analysis Sample"
     lore: |-
       <arrow> A bottled organic specimen for the steam science interface
-      <arrow> Yields biology discipline research points
+      <arrow> Yields <green>5</green> biology discipline research points
 
   metallurgical_analysis_sample:
     name: "Metallurgical Analysis Sample"
     lore: |-
       <arrow> A high-temperature alloy specimen for the steam science interface
-      <arrow> Yields precision discipline research points
+      <arrow> Yields <green>7</green> precision discipline research points
 
   fluid_analysis_sample:
     name: "Fluid Analysis Sample"
     lore: |-
       <arrow> A sealed fluid specimen for the steam science interface
-      <arrow> Yields chemistry discipline research points
+      <arrow> Yields <green>6</green> chemistry discipline research points
 
   refined_mineral_sample:
     name: "Refined Mineral Sample"
@@ -1437,6 +1437,7 @@ gui:
     research_progress: "<gray>%bar% <white>%current%<gray>/<white>%cost%"
     research_already_unlocked: "<green>✓ Already unlocked"
     research_unlockable: "<aqua>▶ LMB to unlock (spends points)"
+    research_bonus_hint: "<gray>  Bonus <yellow>+%points%</yellow> global research points"
     research_insufficient: "<red>✗ Insufficient discipline points"
     status:
       active: "<green>Active"
@@ -1895,7 +1896,9 @@ message:
     target_removed: "<yellow>Removed %type% target: <white>%location%"
     target_out_of_range: "<red>Target out of range (max %range% blocks)"
   steam_science_interface:
-    claimed_disciplines: "<green>Discipline points claimed → <aqua>%summary%</aqua>"
+    claimed_discipline: "<green>Claimed <aqua>%points%</aqua> <light_purple>%discipline%</light_purple> discipline points"
+    analysis_research_bonus: "<gray>Analysis bonus: gained <yellow>+%points%</yellow> global research points"
+    discipline_unlock_bonus: "<yellow>Research bonus: gained <white>%points%</white> global research points"
 
 line:
   unknown_creator: "Unknown"
