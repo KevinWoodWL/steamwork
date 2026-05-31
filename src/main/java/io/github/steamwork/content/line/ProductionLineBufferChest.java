@@ -510,7 +510,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
                 case FUEL       -> Material.ORANGE_STAINED_GLASS_PANE;
                 case OFF        -> Material.GRAY_STAINED_GLASS_PANE;
             };
-            String modeKey = pushMode.name().toLowerCase();
+            String modeKey = pushMode == PushMode.OFF ? "disabled" : pushMode.name().toLowerCase();
             List<Component> lore = pushMode == PushMode.AUTO
                     ? List.of(
                         ni(Component.translatable("steamwork.gui.production_line_buffer_chest.mode." + modeKey)),
@@ -580,7 +580,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
                 case WHITELIST -> Material.LIME_STAINED_GLASS_PANE;
                 case BLACKLIST -> Material.RED_STAINED_GLASS_PANE;
             };
-            String modeKey = filterMode.name().toLowerCase();
+            String modeKey = filterMode == FilterMode.OFF ? "disabled" : filterMode.name().toLowerCase();
             return ItemStackBuilder.of(mat)
                     .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.filter_mode.title")))
                     .lore(List.of(

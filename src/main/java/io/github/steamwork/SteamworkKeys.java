@@ -43,6 +43,11 @@ public final class SteamworkKeys {
     public static final NamespacedKey ORGANIC_ANALYSIS_SAMPLE = steamworkKey("organic_analysis_sample");
     public static final NamespacedKey METALLURGICAL_ANALYSIS_SAMPLE = steamworkKey("metallurgical_analysis_sample");
     public static final NamespacedKey FLUID_ANALYSIS_SAMPLE = steamworkKey("fluid_analysis_sample");
+    // 高级分析样本（压机 4× 基础 → 1 个高级，产出约 5× 学科点数）
+    public static final NamespacedKey REFINED_MINERAL_SAMPLE = steamworkKey("refined_mineral_sample");
+    public static final NamespacedKey CONCENTRATED_ORGANIC_SAMPLE = steamworkKey("concentrated_organic_sample");
+    public static final NamespacedKey REFINED_METALLURGICAL_SAMPLE = steamworkKey("refined_metallurgical_sample");
+    public static final NamespacedKey PURIFIED_FLUID_SAMPLE = steamworkKey("purified_fluid_sample");
 
     // Materials
     public static final NamespacedKey ZINC_INGOT = steamworkKey("zinc_ingot");
@@ -58,8 +63,13 @@ public final class SteamworkKeys {
     public static final NamespacedKey MANGANESE_STEEL_BOILER = steamworkKey("manganese_steel_boiler");
     public static final NamespacedKey TUNGSTEN_BOILER = steamworkKey("tungsten_boiler");
     public static final NamespacedKey STEAM_ARM = steamworkKey("steam_arm");
-    public static final NamespacedKey SIMPLE_STEAM_TURBINE = steamworkKey("simple_steam_turbine");
-    public static final NamespacedKey ADVANCED_STEAM_TURBINE = steamworkKey("advanced_steam_turbine");
+    public static final NamespacedKey SIMPLE_STEAM_TURBINE        = steamworkKey("simple_steam_turbine");
+    public static final NamespacedKey BASIC_PROCESSING_TURBINE    = steamworkKey("basic_processing_turbine");
+    public static final NamespacedKey HYDRAULIC_TURBINE           = steamworkKey("hydraulic_turbine");
+    public static final NamespacedKey PRECISION_STEAM_TURBINE     = steamworkKey("precision_steam_turbine");
+    public static final NamespacedKey PRECISION_PROCESSING_TURBINE = steamworkKey("precision_processing_turbine");
+    public static final NamespacedKey DIESEL_TURBINE              = steamworkKey("diesel_turbine");
+    public static final NamespacedKey PYLON_UNIVERSAL_TURBINE     = steamworkKey("pylon_universal_turbine");
     public static final NamespacedKey STEAM_STERILIZER = steamworkKey("steam_sterilizer");
     public static final NamespacedKey STEAM_STEEPING_VAT = steamworkKey("steam_steeping_vat");
     public static final NamespacedKey STEAM_WASHING_TROUGH = steamworkKey("steam_washing_trough");
@@ -144,6 +154,10 @@ public final class SteamworkKeys {
     public static final NamespacedKey PALLADIUM_ALLOY_INGOT = steamworkKey("palladium_alloy_ingot");
     public static final NamespacedKey HIGH_POLYMER = steamworkKey("high_polymer");
     public static final NamespacedKey SEQUENCED_WORKPIECE = steamworkKey("sequenced_workpiece");
+    // 钯合金工序链中间品：每步一个独立 key，让配方系统能按步骤区分（Rebar 配方匹配只看 item key）
+    public static final NamespacedKey PALLADIUM_WORKPIECE_1 = steamworkKey("palladium_workpiece_1");
+    public static final NamespacedKey PALLADIUM_WORKPIECE_2 = steamworkKey("palladium_workpiece_2");
+    public static final NamespacedKey PALLADIUM_WORKPIECE_3 = steamworkKey("palladium_workpiece_3");
 
     // Steam automation machines
     public static final NamespacedKey PRECISION_FOUNDRY = steamworkKey("precision_foundry");

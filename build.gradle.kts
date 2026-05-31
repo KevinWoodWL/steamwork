@@ -87,9 +87,13 @@ bukkit {
 }
 
 tasks.runServer {
+    // rebar 用本地构建版：含 ItemButton 对 null-cost 研究的 not-researched 文案修复
+    // （已提 PR 至 upstream pylonmc/rebar）。该修复合并进官方 release 前，运行时须用本地构建。
+    // pylon 用官方 GitHub release（未改动），tag/资产名带 -26.1 后缀。
     downloadPlugins {
-        github("pylonmc", "rebar", rebarVersion, "rebar-$rebarVersion.jar")
+        github("pylonmc", "pylon", pylonVersion, "pylon-$pylonVersion.jar")
     }
+    pluginJars(files("../rebar/rebar/build/libs/rebar-1.0.0-SNAPSHOT.jar"))
     maxHeapSize = "4G"
     minecraftVersion(minecraftVersion)
 }

@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
 import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarProcessor;
+import io.github.pylonmc.rebar.block.base.RebarRecipeProcessor;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
@@ -49,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * 蒸汽涡轮基类 —— 用蒸汽加速附近"在工作的机器"。
@@ -90,6 +92,25 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     private Map<Block, TargetType> cachedTargets = null;
     private int cachedEnvironmentHash = 0;
 
+    /**
+     * 跨涡轮叠加层数限制：同一 Block 在同一服务器 tick 内最多被加速的次数。
+     * 超过此上限的加速请求会被静默丢弃（蒸汽仍不消耗）。
+     */
+    private static final int MAX_BOOST_STACKS = 3;
+
+    /**
+     * 全局 tick 计数器，用于判断 {@link #boostStacksThisTick} 是否属于当前 tick。
+     * 每次任意涡轮 tick 时自增（实际上只需要与上次记录的值不同即可）。
+     */
+    private static long globalTickCounter = 0;
+
+    /**
+     * 记录本 tick 内每个 Block 已被加速的次数。
+     * 使用 WeakHashMap 避免持有 Block 强引用导致区块无法卸载。
+     * key = 目标方块，value = [tickCounter, stackCount]（用长整型打包：高32位=tick，低32位=count）
+     */
+    private static final Map<Block, long[]> boostStacksThisTick = new WeakHashMap<>();
+
     private final StatusItem statusItem = new StatusItem();
     private final SteamGaugeItem steamGaugeItem = new SteamGaugeItem();
     private final ScanItem scanItem = new ScanItem();
@@ -107,7 +128,46 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
         /** Steamwork 自家加工机器（实现 {@link SteamBoostable}）。 */
         STEAMWORK_BOOSTABLE,
         /** 任何实现 {@link RebarProcessor} 的 Rebar/Pylon 机器。 */
-        REBAR_PROCESSOR
+        REBAR_PROCESSOR,
+        /**
+         * 任何实现 {@link RebarRecipeProcessor} 的 Rebar/Pylon 机器。
+         * <p>这是与 {@link RebarProcessor} 并列的独立接口（不存在继承关系），
+         * 主要用于液压表锯、液压管道弯折机、柴油炉、柴油砂轮等配方型机器。
+         */
+        REBAR_RECIPE_PROCESSOR
+    }
+
+    /**
+     * 判断方块是否属于 Pylon 液压系列机器（按类名包路径识别）。
+     * <p>Pylon 的 {@code HydraulicRefuelable} 接口未被任何液压机器实现，
+     * 因此唯一可靠的识别方式是检查类所在包。</p>
+     */
+    protected static boolean isPylonHydraulicMachine(@NotNull Block block) {
+        RebarBlock rb = BlockStorage.get(block);
+        return rb != null && rb.getClass().getName()
+                .startsWith("io.github.pylonmc.pylon.content.machines.hydraulics.");
+    }
+
+    /**
+     * 判断方块是否属于 Pylon 柴油系列机器（按类名包路径识别）。
+     * <p>Pylon 的 {@code DieselRefuelable} 接口未被任何柴油机器实现，
+     * 因此唯一可靠的识别方式是检查类所在包。</p>
+     */
+    protected static boolean isPylonDieselMachine(@NotNull Block block) {
+        RebarBlock rb = BlockStorage.get(block);
+        return rb != null && rb.getClass().getName()
+                .startsWith("io.github.pylonmc.pylon.content.machines.diesel.");
+    }
+
+    /**
+     * 将一个已确认为处理机器的 {@link RebarBlock} 归类为
+     * {@link TargetType#REBAR_PROCESSOR} 或 {@link TargetType#REBAR_RECIPE_PROCESSOR}。
+     * 若两者都不实现则返回 {@code null}。
+     */
+    protected static @Nullable TargetType processorTargetType(@NotNull RebarBlock rb) {
+        if (rb instanceof RebarProcessor) return TargetType.REBAR_PROCESSOR;
+        if (rb instanceof RebarRecipeProcessor) return TargetType.REBAR_RECIPE_PROCESSOR;
+        return null;
     }
 
     /** 共享物品基类：相同的 placeholder 集合。 */
@@ -162,6 +222,21 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
                         && type != UpgradeType.RANGE
                         && type != UpgradeType.BOOST) {
                     event.setCancelled(true);
+                    return;
+                }
+                // 增幅模组（BOOST）不可叠加：同一涡轮只允许装 1 个。
+                if (type == UpgradeType.BOOST) {
+                    int currentSlot = event.getSlot();
+                    for (int i = 0; i < upgradeInventory.getSize(); i++) {
+                        if (i == currentSlot) continue;
+                        ItemStack existing = upgradeInventory.getItem(i);
+                        if (existing != null && !existing.isEmpty()
+                                && RebarItem.fromStack(existing) instanceof UpgradeModule em
+                                && em.getUpgradeType() == UpgradeType.BOOST) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
                 }
             });
         }
@@ -272,6 +347,26 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     @Override
     public int upgradeSlotCount() { return 0; }
 
+    /**
+     * 同时可加速的目标上限，0 = 无限制（向后兼容旧涡轮）。
+     * 子类覆盖此方法来启用上限约束。
+     */
+    protected int maxTargets() { return 0; }
+
+    /**
+     * 是否可以突破全局叠加层数上限（{@link #MAX_BOOST_STACKS}）。
+     * <p>普通涡轮返回 {@code false}，当一台机器本 tick 已被加速 MAX_BOOST_STACKS 次时，
+     * 后续涡轮的加速请求会被静默丢弃。覆盖为 {@code true} 后，该涡轮的加速始终生效，
+     * 不受叠加上限约束（但仍会增加叠加计数，用于其他涡轮的判断）。</p>
+     */
+    protected boolean canBypassBoostCap() { return false; }
+
+    /**
+     * 蒸汽消耗的协同折扣系数（基于上一 tick 实际加速的目标数量）。
+     * <p>默认返回 {@code 1.0}（无折扣）。子类可覆盖实现"机器越多越经济"的协同效率特性。</p>
+     */
+    protected double synergyMultiplier() { return 1.0; }
+
     /** vanilla 熔炉识别 helper，让子类的 {@link #identifyTarget} 复用。 */
     protected final boolean isVanillaFurnace(@NotNull Block block) {
         return VANILLA_FURNACES.contains(block.getType());
@@ -281,6 +376,9 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
 
     @Override
     public void tick() {
+        // 推进全局 tick 计数器，使本实例的 boost 记录与当前 tick 关联。
+        globalTickCounter++;
+
         if (scanCacheTicks > 0) scanCacheTicks--;
 
         lastTargetsFound = 0;
@@ -308,6 +406,9 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
                 case REBAR_PROCESSOR:
                     RebarBlock rb = BlockStorage.get(block);
                     return rb instanceof RebarProcessor processor && processor.isProcessing();
+                case REBAR_RECIPE_PROCESSOR:
+                    RebarBlock rb2 = BlockStorage.get(block);
+                    return rb2 instanceof RebarRecipeProcessor<?> rp && rp.isProcessingRecipe();
                 default:
                     return false;
             }
@@ -333,6 +434,12 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
                     RebarBlock rb = BlockStorage.get(block);
                     if (rb instanceof RebarProcessor processor) {
                         processor.progressProcess(boostTicks);
+                    }
+                    break;
+                case REBAR_RECIPE_PROCESSOR:
+                    RebarBlock rb2 = BlockStorage.get(block);
+                    if (rb2 instanceof RebarRecipeProcessor<?> rp) {
+                        rp.progressRecipe(boostTicks);
                     }
                     break;
             }
@@ -413,21 +520,48 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     }
 
     private void processCachedTargets(Map<Block, TargetType> targets) {
-        double steamCost = effectiveSteamCost();
+        // 协同效率折扣基于上一 tick 的实际加速数，本 tick 启动时已确定，全程保持不变。
+        double steamCost = effectiveSteamCost() * synergyMultiplier();
+        int limit = maxTargets();
+        boolean bypassCap = canBypassBoostCap();
         for (Map.Entry<Block, TargetType> entry : targets.entrySet()) {
             Block target = entry.getKey();
             TargetType type = entry.getValue();
 
             lastTargetsFound++;
+            // 达到本涡轮的目标上限后仍统计 found，但不再加速
+            if (limit > 0 && lastTargetsBoosted >= limit) continue;
             if (!canBoost(target, type) || fluidAmount(SteamworkFluids.STEAM) < steamCost) {
                 continue;
             }
+            // 检查全局叠加层数上限：同一 Block 本 tick 已被加速 MAX_BOOST_STACKS 次则跳过。
+            // 若 canBypassBoostCap() == true，仍增加计数（供其他涡轮判断）但不跳过。
+            int stackCount = getAndIncrementBoostStack(target);
+            if (!bypassCap && stackCount >= MAX_BOOST_STACKS) continue;
 
             removeFluid(SteamworkFluids.STEAM, steamCost);
             boost(target, type);
             lastTargetsBoosted++;
             lastSteamUsed += steamCost;
         }
+    }
+
+    /**
+     * 获取目标方块本 tick 已被加速的次数，并将计数加一。
+     * 若记录属于上一 tick，则重置为 0 再加一。
+     *
+     * @return 加一之前的叠加次数（即"这是第几层加速"，从 0 开始）
+     */
+    private static int getAndIncrementBoostStack(@NotNull Block block) {
+        long[] entry = boostStacksThisTick.get(block);
+        if (entry == null || entry[0] != globalTickCounter) {
+            // 新 tick 或首次记录：重置
+            boostStacksThisTick.put(block, new long[]{globalTickCounter, 1});
+            return 0;
+        }
+        int current = (int) entry[1];
+        entry[1] = current + 1;
+        return current;
     }
 
     // ===== 状态 / WAILA / GUI =====
@@ -589,23 +723,30 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
             int effectiveRadius = effectiveScanRadius();
             int effectiveTicks  = effectiveBoostTicks();
             double effectiveSteam = effectiveSteamCost();
+            int limit = maxTargets();
+            List<Component> lore = new ArrayList<>();
+            lore.add(noItalic(Component.translatable(
+                    translationPrefix() + ".scan_radius",
+                    RebarArgument.of("radius", UnitFormat.BLOCKS.format(effectiveRadius))
+            )));
+            if (limit > 0) {
+                lore.add(noItalic(Component.translatable(
+                        translationPrefix() + ".max_targets",
+                        RebarArgument.of("max", limit)
+                )));
+            }
+            lore.add(noItalic(Component.translatable(
+                    translationPrefix() + ".targets_found",
+                    RebarArgument.of("targets", lastTargetsFound)
+            )));
+            lore.add(noItalic(Component.translatable(
+                    translationPrefix() + ".boost",
+                    RebarArgument.of("ticks", effectiveTicks),
+                    RebarArgument.of("steam", UnitFormat.MILLIBUCKETS.format(effectiveSteam).decimalPlaces(0))
+            )));
             return ItemStackBuilder.of(Material.SPYGLASS)
                     .name(noItalic(Component.translatable(translationPrefix() + ".scan")))
-                    .lore(List.of(
-                            noItalic(Component.translatable(
-                                    translationPrefix() + ".scan_radius",
-                                    RebarArgument.of("radius", UnitFormat.BLOCKS.format(effectiveRadius))
-                            )),
-                            noItalic(Component.translatable(
-                                    translationPrefix() + ".targets_found",
-                                    RebarArgument.of("targets", lastTargetsFound)
-                            )),
-                            noItalic(Component.translatable(
-                                    translationPrefix() + ".boost",
-                                    RebarArgument.of("ticks", effectiveTicks),
-                                    RebarArgument.of("steam", UnitFormat.MILLIBUCKETS.format(effectiveSteam).decimalPlaces(0))
-                            ))
-                    ));
+                    .lore(lore);
         }
 
         @Override

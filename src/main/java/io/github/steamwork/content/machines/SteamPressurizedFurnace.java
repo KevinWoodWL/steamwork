@@ -10,8 +10,6 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
-import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder;
-import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
@@ -123,38 +121,6 @@ public class SteamPressurizedFurnace extends RebarBlock implements
     public void postInitialise() {
         super.postInitialise();
         outputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
-        
-        // 添加方块拼装外观 - 炉体（下界合金块）放在铜块上方
-        addEntity("body", new ItemDisplayBuilder()
-                .itemStack(ItemStackBuilder.of(Material.NETHERITE_BLOCK).build())
-                .transformation(new TransformBuilder()
-                        .translate(0, 0.3, 0)
-                        .scale(0.6)
-                )
-                .build(getBlock().getLocation().toCenterLocation())
-        );
-        
-        // 添加方块拼装外观 - 左侧压力表（时钟）平放
-        addEntity("gauge_left", new ItemDisplayBuilder()
-                .itemStack(ItemStackBuilder.of(Material.CLOCK).build())
-                .transformation(new TransformBuilder()
-                        .translate(0, -0.25, -0.5)
-                        .rotate(0, 0, 0)  // Z轴旋转90度，使时钟平放
-                        .scale(0.3)
-                )
-                .build(getBlock().getLocation().toCenterLocation())
-        );
-        
-        // 添加方块拼装外观 - 右侧压力表（时钟）平放
-        addEntity("gauge_right", new ItemDisplayBuilder()
-                .itemStack(ItemStackBuilder.of(Material.CLOCK).build())
-                .transformation(new TransformBuilder()
-                        .translate(0, -0.25, 0.5)
-                        .rotate(0, 0, 0)  // Z轴旋转90度，使时钟平放
-                        .scale(0.3)
-                )
-                .build(getBlock().getLocation().toCenterLocation())
-        );
     }
 
     @Override

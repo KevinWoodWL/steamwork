@@ -55,11 +55,17 @@ public record SteamCentrifugationRecipe(
         return List.of(ingredient, RecipeInput.of(SteamworkFluids.SUPERHEATED_STEAM, steamCost));
     }
 
+    /**
+     * 只返回权重最高的那个产物作为"代表产物"，让 Rebar 只把这条配方挂到主产物的指南页上。
+     * 若返回全部可能产物，每个可能输出物品的页面都会出现同一条配方（不符合预期）。
+     */
     @Override
     public @NotNull List<FluidOrItem> getResults() {
-        return results.getElements().stream()
-                .<FluidOrItem>map(FluidOrItem::of)
-                .toList();
+        ItemStack primary = results.stream()
+                .max(java.util.Comparator.comparingDouble(WeightedSet.Element::weight))
+                .map(WeightedSet.Element::element)
+                .orElseGet(() -> results.getElements().iterator().next());
+        return List.of(FluidOrItem.of(primary));
     }
 
     @Override

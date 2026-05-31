@@ -187,5 +187,35 @@ public final class PressingRecipes {
                 new ItemStack(Material.ANDESITE),
                 30.0,
                 180));
+
+        // ===== 高级分析样本：4 个基础样本压制为 1 个高级样本 =====
+        // 蒸汽压机可在 T1 获取；压制本身消耗少量蒸汽，分析时再消耗大头。
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_refined_mineral_sample"),
+                RecipeInput.of(SteamworkItems.MINERAL_ANALYSIS_SAMPLE, 4),
+                SteamworkItems.REFINED_MINERAL_SAMPLE.clone(),
+                60.0,
+                240));
+
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_concentrated_organic_sample"),
+                RecipeInput.of(SteamworkItems.ORGANIC_ANALYSIS_SAMPLE, 4),
+                SteamworkItems.CONCENTRATED_ORGANIC_SAMPLE.clone(),
+                60.0,
+                240));
+
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_refined_metallurgical_sample"),
+                RecipeInput.of(SteamworkItems.METALLURGICAL_ANALYSIS_SAMPLE, 4),
+                SteamworkItems.REFINED_METALLURGICAL_SAMPLE.clone(),
+                80.0,
+                280));
+
+        SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
+                steamworkKey("press_purified_fluid_sample"),
+                RecipeInput.of(SteamworkItems.FLUID_ANALYSIS_SAMPLE, 4),
+                SteamworkItems.PURIFIED_FLUID_SAMPLE.clone(),
+                70.0,
+                260));
     }
 }

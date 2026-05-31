@@ -41,7 +41,7 @@ import java.util.Set;
  * </p>
  */
 public class PrecisionCentrifuge extends AbstractSteamProcessor<SteamCentrifugationRecipe>
-        implements RebarGhostBlockHolder {
+        implements RebarGhostBlockHolder, PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

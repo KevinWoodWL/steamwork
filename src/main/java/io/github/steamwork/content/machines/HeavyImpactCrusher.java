@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
  * 与蒸汽研磨机互补：研磨机做细粉（锭/软矿→粉），破碎机做粗碎（硬矿/方块→碎块或粉混合料）。
  * 定位是"承接 Pylon 锤击 / 手动钻取的自动化替代"。
  */
-public class HeavyImpactCrusher extends AbstractSteamProcessor<SteamCrushingRecipe> {
+public class HeavyImpactCrusher extends AbstractSteamProcessor<SteamCrushingRecipe>
+        implements PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

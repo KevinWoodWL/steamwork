@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * 三个铁块未全部就位时机器停摆并以 ghost 块提示玩家。
  */
 public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecipe>
-        implements RebarGhostBlockHolder {
+        implements RebarGhostBlockHolder, PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

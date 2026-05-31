@@ -389,20 +389,78 @@ item:
     lore: |-
       <arrow> Scans nearby furnaces for steam boosting (Basic version)
       <arrow> Supports: Furnaces, Blast Furnaces, Smokers
+      <arrow> Max simultaneous targets: 3
       <arrow> <attr>Scan radius:</attr> %scan-radius%
       <arrow> <attr>Steam buffer:</attr> %steam-buffer%
       <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
     waila: "Simple Steam Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
 
-  advanced_steam_turbine:
-    name: "Advanced Steam Turbine"
+  basic_processing_turbine:
+    name: "Basic Processing Turbine"
     lore: |-
-      <arrow> Scans nearby furnaces and Pylon heat sources for steam boosting (Premium version)
-      <arrow> Supports: Furnaces, Blast Furnaces, Smokers, Refinery, Heat Line
+      <arrow> Accelerates basic Steamwork processing machines
+      <arrow> Supports: Sterilizer, Steeping Vat, Washing Trough, Press, Grinder, Pressurized Furnace, Distillation Tower, Heating Chamber
+      <arrow> Max simultaneous targets: 5
       <arrow> <attr>Scan radius:</attr> %scan-radius%
       <arrow> <attr>Steam buffer:</attr> %steam-buffer%
       <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
-    waila: "Advanced Steam Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+    waila: "Basic Processing Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  precision_processing_turbine:
+    name: "Precision Processing Turbine"
+    lore: |-
+      <arrow> Accelerates precision Steamwork machines
+      <arrow> Supports: Precision Mill, Foundry, Catalytic Reactor, Crystallizer, Centrifuge, Heavy Crusher, Hydraulic Forge
+      <arrow> Max simultaneous targets: 3
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Precision Processing Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  hydraulic_turbine:
+    name: "Hydraulic Turbine"
+    lore: |-
+      <arrow> Accelerates Pylon hydraulic series machines
+      <arrow> Supports: Hydraulic Breaker, Hammer Head, Mixing Attachment, etc.
+      <arrow> Max simultaneous targets: 4
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Hydraulic Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  diesel_turbine:
+    name: "Diesel Turbine"
+    lore: |-
+      <arrow> Accelerates Pylon diesel series machines
+      <arrow> Supports: Diesel Breaker, Hammer Head, Mixing Attachment, Palladium Condenser, Biorefinery, etc.
+      <arrow> Max simultaneous targets: 4
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Diesel Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  pylon_universal_turbine:
+    name: "Pylon Universal Turbine"
+    lore: |-
+      <arrow> Accelerates Pylon/Rebar non-hydraulic, non-diesel processing machines
+      <arrow> Supports: Manual Core Drill, Improved Core Drill, Collimator, Crude Alloy Furnace, Grindstone, Press, Shimmer Altar, Smeltery Burner, Kiln
+      <arrow> Max simultaneous targets: 3
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Pylon Universal Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+
+  precision_steam_turbine:
+    name: "Precision Steam Turbine"
+    lore: |-
+      <arrow> Accelerates all machine types — widest coverage
+      <arrow> Max simultaneous targets: 6, scan radius: 5 blocks
+      <arrow> <gold>Stack Override: </gold><gray>ignores boost stack cap — boosts always land
+      <arrow> <gold>Synergy Scaling: </gold><gray>-5% steam cost per extra target, down to 65% at full load
+      <arrow> <attr>Scan radius:</attr> %scan-radius%
+      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
+    waila: "Precision Steam Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
 
   steam_sterilizer:
     name: "Steam Sterilizer"
@@ -451,7 +509,6 @@ item:
     lore: |-
       <arrow> Compacts materials into advanced alloy dusts using high-pressure steam
       <arrow> Makes invar, duralumin, tungsten, manganese steel, and manganese bronze dusts
-      <arrow> Drop items on top, right-click or wait for auto-processing
       <arrow> <attr>Steam buffer:</attr> %steam-buffer%
     waila: "Pressurized Furnace | Steam %steam-bar% | %state%"
 
@@ -472,7 +529,7 @@ item:
       <arrow> Right-click to claim accumulated points
       <arrow> <attr>Steam buffer:</attr> %steam-buffer%
       <arrow> <attr>Stored points cap:</attr> %max-points%
-    waila: "Steam Science Interface | Steam %steam-bar% | Stored %points% | %state%"
+    waila: "Steam Science Interface | Steam %steam-bar% | Mat%material-pts% Bio%biology-pts% Pre%precision-pts% Chem%chemistry-pts% | %state%"
 
   steam_heating_chamber:
     name: "Steam Heating Chamber"
@@ -732,8 +789,8 @@ item:
   upgrade_module_boost:
     name: "<gold>Boost Module"
     lore: |-
-      <arrow> Turbine only: adds +1 boost tick per operation per module
-      <arrow> Stacks for stronger acceleration of nearby machines
+      <arrow> Turbine only: adds +1 boost tick per operation
+      <arrow> Only 1 allowed per turbine (non-stackable)
 
   upgrade_module_pylon_compat:
     name: "<aqua>Pylon Compat Module"
@@ -747,11 +804,15 @@ item:
 
   upgrade_module_auto_input:
     name: "<green>Auto-Input Module"
-    lore: <arrow> Automatically pulls items from all adjacent containers
+    lore: |-
+      <arrow> Automatically pulls items from all adjacent containers
+      <arrow> <red>Conflicts with Auto-Output Module — cannot be installed together
 
   upgrade_module_auto_output:
     name: "<red>Auto-Output Module"
-    lore: <arrow> Automatically pushes output items to all adjacent containers
+    lore: |-
+      <arrow> Automatically pushes output items to all adjacent containers
+      <arrow> <red>Conflicts with Auto-Input Module — cannot be installed together
 
   upgrade_module_bulk:
     name: "<gold>Bulk Processing Module"
@@ -833,13 +894,18 @@ item:
     palladium_alloy:
       line_name: "Palladium Alloy"
       step_1:
-        name: "<aqua>Activated Palladium Matrix"
+        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux → Rough Palladium Alloy Ingot"
       step_2:
-        name: "<gold>Rough Palladium Alloy Ingot"
+        next: "<dark_gray>Next: <gray>Precision Mill → Calibrated Palladium Alloy Blank"
       step_3:
-        name: "<yellow>Calibrated Palladium Alloy Blank"
-      step_4:
-        name: "<white>Sequenced Palladium Alloy Workpiece"
+        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux → Palladium Alloy Ingot (final)"
+
+  palladium_workpiece_1:
+    name: "<aqua>Activated Palladium Matrix"
+  palladium_workpiece_2:
+    name: "<gold>Rough Palladium Alloy Ingot"
+  palladium_workpiece_3:
+    name: "<yellow>Calibrated Palladium Alloy Blank"
 
   steam_distillation_tower:
     name: "Steam Distillation Tower"
@@ -923,6 +989,34 @@ item:
       <arrow> A sealed fluid specimen for the steam science interface
       <arrow> Yields chemistry discipline research points
 
+  refined_mineral_sample:
+    name: "Refined Mineral Sample"
+    lore: |-
+      <arrow> Four mineral samples compressed in a steam press
+      <arrow> Yields <green>25</green> material discipline points (~5× base efficiency)
+      <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
+
+  concentrated_organic_sample:
+    name: "Concentrated Organic Sample"
+    lore: |-
+      <arrow> Four organic samples compressed in a steam press
+      <arrow> Yields <green>25</green> biology discipline points (~5× base efficiency)
+      <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
+
+  refined_metallurgical_sample:
+    name: "Refined Metallurgical Sample"
+    lore: |-
+      <arrow> Four metallurgical samples refined in a steam press
+      <arrow> Yields <green>35</green> precision discipline points (~5× base efficiency)
+      <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
+
+  purified_fluid_sample:
+    name: "Purified Fluid Sample"
+    lore: |-
+      <arrow> Four fluid samples purified and compressed in a steam press
+      <arrow> Yields <green>30</green> chemistry discipline points (~5× base efficiency)
+      <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
+
   analysis_residue:
     name: "Analysis Residue"
     lore: <arrow> Spent material left over after a research analysis cycle
@@ -1003,14 +1097,96 @@ gui:
       active: "<green>Active"
       idle: "<gray>Idle"
 
-  advanced_steam_turbine:
-    title: "<dark_gray>Advanced Steam Turbine"
+
+  precision_steam_turbine:
+    title: "<dark_gray>Precision Steam Turbine"
     steam_gauge: "<aqua>Steam Storage"
     steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>Scan Range"
     scan_radius: "<gray>Radius: <reset><yellow>%radius%"
-    targets_found: "<gray>Heat sources detected: <reset><yellow>%targets%"
+    max_targets: "<gray>Max targets: <reset><yellow>%max%"
+    targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  basic_processing_turbine:
+    title: "<dark_gray>Basic Processing Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    max_targets: "<gray>Max targets: <reset><yellow>%max%"
+    targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  precision_processing_turbine:
+    title: "<dark_gray>Precision Processing Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    max_targets: "<gray>Max targets: <reset><yellow>%max%"
+    targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  hydraulic_turbine:
+    title: "<dark_gray>Hydraulic Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    max_targets: "<gray>Max targets: <reset><yellow>%max%"
+    targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  diesel_turbine:
+    title: "<dark_gray>Diesel Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    max_targets: "<gray>Max targets: <reset><yellow>%max%"
+    targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
+    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  pylon_universal_turbine:
+    title: "<dark_gray>Pylon Universal Turbine"
+    steam_gauge: "<aqua>Steam Storage"
+    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>Scan Range"
+    scan_radius: "<gray>Radius: <reset><yellow>%radius%"
+    max_targets: "<gray>Max targets: <reset><yellow>%max%"
+    targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
     boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
     last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
     last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
@@ -1238,9 +1414,30 @@ gui:
     progress_percent: "<reset>%bar% <gray>%percent%"
     time_remaining: "<gray>Time left: <yellow>%time%"
     points_pending: "<gray>Pending points: <aqua>%points%"
-    claim: "<yellow>Claim Research Points"
-    stored_points: "<gray>Stored: <aqua>%points% <gray>/ <aqua>%max%"
-    claim_hint: "<gray>LMB to credit points to your research"
+    discipline_tag: "<dark_gray>Discipline: <gray>%discipline%"
+    claim: "<yellow>Claim Discipline Points"
+    stored_header: "<gray>Pending discipline points:"
+    stored_discipline:
+      material:  "<yellow>  Material:  <white>%points% <gray>/ <white>%max%"
+      biology:   "<green>  Biology:   <white>%points% <gray>/ <white>%max%"
+      precision: "<light_purple>  Precision: <white>%points% <gray>/ <white>%max%"
+      chemistry: "<aqua>  Chemistry: <white>%points% <gray>/ <white>%max%"
+    claim_hint: "<gray>LMB to transfer points to your discipline pools"
+    discipline_research: "<light_purple>Discipline Research Terminal"
+    discipline_research_hint: "<gray>LMB to open — unlock ★ researches with discipline points"
+    discipline_research_title: "<dark_gray>Discipline Research"
+    discipline_sub_title: "<dark_gray>%discipline% — Research Unlock"
+    discipline_click_hint: "<gray>Left-click to view researches"
+    back: "<gray>Back to discipline selection"
+    discipline_pts: "<gray>Accumulated: <white>%points% pt"
+    disc_threshold: "<gray>  %name%: %bar% <white>%pts%<gray>/<white>%cost%"
+    disc_threshold_done: "<green>  ✓ %name%"
+    disc_no_research: "<dark_gray>  (No research in this discipline)"
+    research_cost: "<gray>Discipline: <light_purple>%discipline%  <gray>Requires <aqua>%cost% pt"
+    research_progress: "<gray>%bar% <white>%current%<gray>/<white>%cost%"
+    research_already_unlocked: "<green>✓ Already unlocked"
+    research_unlockable: "<aqua>▶ LMB to unlock (spends points)"
+    research_insufficient: "<red>✗ Insufficient discipline points"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
@@ -1412,11 +1609,11 @@ gui:
       auto: "<gray>Current: <aqua>Auto-route (template match → fuel slot, others → ingredient)"
       auto_hint: "<dark_gray>Set the fuel type in the fuel template slot to the right"
       fuel: "<gray>Current: <gold>Push all to fuel slot"
-      "off": "<gray>Current: <red>Disabled (buffer only)"
+      disabled: "<gray>Current: <red>Disabled (buffer only)"
       hint: "<dark_gray>Click to cycle modes"
     filter_mode:
       title: "<aqua>Filter Mode"
-      "off": "<gray>Filter: <white>Off — all items pass through"
+      disabled: "<gray>Filter: <white>Off — all items pass through"
       whitelist: "<gray>Filter: <green>Whitelist — only listed items pass through"
       blacklist: "<gray>Filter: <red>Blacklist — listed items are intercepted"
       left_hint: "<dark_gray>Left-click to cycle: Off → Whitelist → Blacklist"
@@ -1511,26 +1708,6 @@ gui:
 guide:
   button:
     chain_recipes: "View Production Chain"
-  recipe:
-    steam_pressurizing: "<gray>Steam pressurizing | %steam% steam | %time%"
-    steam_sterilizing: "<gray>Steam sterilizing | %steam% steam | %time%"
-    steam_steeping: "<gray>Steam steeping | %steam% steam | %time%"
-    steam_washing: "<gray>Steam washing | %steam% steam | %time%"
-    steam_pressing: "<gray>Steam pressing | %steam% steam | %time%"
-    steam_grinding: "<gray>Steam grinding | %steam% steam | %time%"
-    steam_crushing: "<gray>Heavy impact crushing | %steam% steam | %time%"
-    steam_forging: "<gray>Hydraulic forging | %steam% steam | %time%"
-    steam_crystallizing: "<gray>Precision crystallizing | %steam% steam | %time%"
-    steam_centrifugation: "<gray>Precision centrifuging | %steam% steam | %time%"
-    steam_milling: "<gray>Steam milling | %steam% steam | %time%"
-    steam_foundry: "<gray>Precision foundry | %steam% superheated | %time%"
-    steam_catalytic_reaction: "<gray>Catalytic reaction | %steam% superheated | %time%"
-    steam_research: "<gray>Steam research | %discipline% | %points% pts | %steam% steam | %time%"
-    steam_distillation: "<gray>Steam distillation | %sections% sections | %steam% superheated | %time%"
-    phosphor_bronze: "<gray>Phosphor Bronze - Pylon Tin synergy"
-    nitrided_steel: "<gray>Nitrided Steel - Pylon Steel synergy"
-    palladium_alloy: "<gray>Palladium Alloy - Pylon Palladium synergy"
-  button:
     root:
       name: "<white>Steamwork"
     metals:
@@ -1561,6 +1738,25 @@ guide:
       name: "Steam Calibration"
     steam_distillation:
       name: "Steam Distillation"
+  recipe:
+    steam_pressurizing: "<gray>Steam pressurizing | %steam% steam | %time%"
+    steam_sterilizing: "<gray>Steam sterilizing | %steam% steam | %time%"
+    steam_steeping: "<gray>Steam steeping | %steam% steam | %time%"
+    steam_washing: "<gray>Steam washing | %steam% steam | %time%"
+    steam_pressing: "<gray>Steam pressing | %steam% steam | %time%"
+    steam_grinding: "<gray>Steam grinding | %steam% steam | %time%"
+    steam_crushing: "<gray>Heavy impact crushing | %steam% steam | %time%"
+    steam_forging: "<gray>Hydraulic forging | %steam% steam | %time%"
+    steam_crystallizing: "<gray>Precision crystallizing | %steam% steam | %time%"
+    steam_centrifugation: "<gray>Precision centrifuging | %steam% steam | %time%"
+    steam_milling: "<gray>Steam milling | %steam% steam | %time%"
+    steam_foundry: "<gray>Precision foundry | %steam% superheated | %time%"
+    steam_catalytic_reaction: "<gray>Catalytic reaction | %steam% superheated | %time%"
+    steam_research: "<gray>Steam research | %discipline% | %points% pts | %steam% steam | %time%"
+    steam_distillation: "<gray>Steam distillation | %sections% sections | %steam% superheated | %time%"
+    phosphor_bronze: "<gray>Phosphor Bronze - Pylon Tin synergy"
+    nitrided_steel: "<gray>Nitrided Steel - Pylon Steel synergy"
+    palladium_alloy: "<gray>Palladium Alloy - Pylon Palladium synergy"
   page:
     root: "<white>Steamwork"
     metals: "Ingots & Metals"
@@ -1631,6 +1827,7 @@ research:
   material_basic_construction: "Basic Construction"
   # Tier 1 - early machinery & alloys
   material_basic_machines: "Basic Steam Machines"
+  precision_steam_calibration: "Steam Calibration System"
   # Tier 2 - mid-tier processing
   precision_steam_automation: "Steam Automation"
   precision_production_line: "Steam Production Line"
@@ -1647,6 +1844,21 @@ research:
   precision_turbines_2: "Steam Turbine II"
   precision_steam_equipment: "Steam Tools"
   material_steam_armor: "Steam Armor"
+
+# Unlock instructions for discipline-gated researches (cost=null; cannot be
+# unlocked with global research points — only via the Steam Science Interface's
+# discipline research terminal by spending the matching discipline points).
+researches:
+  material_advanced_ingots:
+    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>80 Material</light_purple> points"
+  material_advanced_boilers:
+    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>60 Material</light_purple> points"
+  chemistry_heating_chamber:
+    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>60 Chemistry</light_purple> points"
+  chemistry_distillation:
+    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>100 Chemistry</light_purple> points"
+  precision_advanced_automation_1:
+    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>150 Precision</light_purple> points"
 
 message:
   pneumatic_cargo_hub:
@@ -1683,7 +1895,7 @@ message:
     target_removed: "<yellow>Removed %type% target: <white>%location%"
     target_out_of_range: "<red>Target out of range (max %range% blocks)"
   steam_science_interface:
-    claimed: "<green>Claimed <aqua>%points%</aqua> research points (total <aqua>%total%</aqua>)"
+    claimed_disciplines: "<green>Discipline points claimed → <aqua>%summary%</aqua>"
 
 line:
   unknown_creator: "Unknown"

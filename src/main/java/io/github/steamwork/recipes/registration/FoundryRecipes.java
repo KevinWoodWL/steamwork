@@ -99,7 +99,7 @@ public final class FoundryRecipes {
                 List.of(
                         RecipeInput.of(new ItemStack(Material.NETHERITE_SCRAP)),
                         RecipeInput.of(PylonItems.CARBON),
-                        RecipeInput.of(new ItemStack(Material.BLAZE_ROD)),
+                        RecipeInput.of(new ItemStack(Material.BLAZE_POWDER), 2),
                         RecipeInput.of(SteamworkItems.MINERAL_FLUX, 2)
                 ),
                 SteamworkItems.TUNGSTEN_INGOT.clone(),

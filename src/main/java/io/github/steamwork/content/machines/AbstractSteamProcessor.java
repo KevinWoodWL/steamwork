@@ -337,6 +337,23 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
                 UpgradeType type = module.getUpgradeType();
                 if (type == UpgradeType.RANGE || type == UpgradeType.BOOST || type == UpgradeType.AUTO_PRODUCTION) {
                     event.setCancelled(true);
+                    return;
+                }
+                // 自动进料与自动出料互斥：已有其中一个时，拒绝装入另一个
+                if (type == UpgradeType.AUTO_INPUT || type == UpgradeType.AUTO_OUTPUT) {
+                    UpgradeType conflicting = (type == UpgradeType.AUTO_INPUT)
+                            ? UpgradeType.AUTO_OUTPUT : UpgradeType.AUTO_INPUT;
+                    int slot = event.getSlot();
+                    for (int i = 0; i < upgradeInventory.getSize(); i++) {
+                        if (i == slot) continue;
+                        ItemStack existing = upgradeInventory.getItem(i);
+                        if (existing != null && !existing.isEmpty()
+                                && RebarItem.fromStack(existing) instanceof UpgradeModule em
+                                && em.getUpgradeType() == conflicting) {
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
                 }
             });
         }
@@ -503,29 +520,17 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     }
 
     /**
-     * 处理加工中断（蒸汽不足）：
-     * <ul>
-     *   <li>累计 {@link #interruptionTicks}</li>
-     *   <li>未超过 {@link #interruptionGraceTicks}：什么也不做，等供汽恢复</li>
-     *   <li>超过宽限期：每 tick interval 反向回退 tickInterval 个 tick 的进度</li>
-     *   <li>进度完全回退到 0：reset + 喷烟 + 产 1 个机器废屑（"配方崩溃"）</li>
-     * </ul>
+     * 处理加工中断（蒸汽不足）。
+     *
+     * <p>新策略：纯暂停，不回退进度，不损失原料。
+     * 蒸汽恢复后机器从断点继续，进度和输入物料均完整保留。
+     * {@link #interruptionGraceTicks} 保留为"连续中断时长"的统计字段，
+     * 可在未来用于 WAILA 显示警告等功能，但不触发任何惩罚逻辑。</p>
      */
+    @SuppressWarnings("unused")
     private void handleInterruption(@NotNull SteamProcessRecipe recipe) {
-        if (interruptionGraceTicks <= 0) return; // yml 关闭该机制
+        // 仅统计中断时长，不做任何进度回退或原料销毁。
         interruptionTicks += tickInterval;
-        if (interruptionTicks <= interruptionGraceTicks) return;
-
-        // 反向推进 = 增加 recipeTicksRemaining（因为 remaining 越大代表越靠前）。
-        recipeTicksRemaining += tickInterval;
-        if (recipeTicksRemaining >= recipe.timeTicks()) {
-            // 完全回退：配方崩溃，损失原料，产出 1 个废屑作为"事故痕迹"。
-            spawnCrashEffects();
-            dropScrap();
-            resetRecipe();
-            currentReason = StopReason.READY;
-            interruptionTicks = 0;
-        }
     }
 
     /** 配方崩溃的视觉/音效：大烟 + 灭火嘶嘶声。 */

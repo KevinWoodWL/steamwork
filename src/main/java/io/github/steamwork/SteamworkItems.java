@@ -4,7 +4,12 @@ import io.github.steamwork.content.equipment.SteamCanister;
 import io.github.steamwork.content.equipment.SteamEquipment;
 import io.github.steamwork.content.machines.SimpleSteamTurbine;
 import io.github.steamwork.content.machines.SteamAssemblyBench;
-import io.github.steamwork.content.machines.AdvancedSteamTurbine;
+import io.github.steamwork.content.machines.BasicProcessingTurbine;
+import io.github.steamwork.content.machines.PrecisionProcessingTurbine;
+import io.github.steamwork.content.machines.HydraulicTurbine;
+import io.github.steamwork.content.machines.DieselTurbine;
+import io.github.steamwork.content.machines.PylonUniversalTurbine;
+import io.github.steamwork.content.machines.PrecisionSteamTurbine;
 import io.github.steamwork.content.machines.BronzeBoiler;
 import io.github.steamwork.content.machines.InvarBoiler;
 import io.github.steamwork.content.machines.ManganeseSteelBoiler;
@@ -109,6 +114,11 @@ public final class SteamworkItems {
     public static final ItemStack ORGANIC_ANALYSIS_SAMPLE = ItemStackBuilder.rebar(Material.FERMENTED_SPIDER_EYE, SteamworkKeys.ORGANIC_ANALYSIS_SAMPLE).build();
     public static final ItemStack METALLURGICAL_ANALYSIS_SAMPLE = ItemStackBuilder.rebar(Material.NETHERITE_SCRAP, SteamworkKeys.METALLURGICAL_ANALYSIS_SAMPLE).build();
     public static final ItemStack FLUID_ANALYSIS_SAMPLE = ItemStackBuilder.rebar(Material.EXPERIENCE_BOTTLE, SteamworkKeys.FLUID_ANALYSIS_SAMPLE).build();
+    // 高级分析样本
+    public static final ItemStack REFINED_MINERAL_SAMPLE = ItemStackBuilder.rebar(Material.PRISMARINE_CRYSTALS, SteamworkKeys.REFINED_MINERAL_SAMPLE).build();
+    public static final ItemStack CONCENTRATED_ORGANIC_SAMPLE = ItemStackBuilder.rebar(Material.GLOW_BERRIES, SteamworkKeys.CONCENTRATED_ORGANIC_SAMPLE).build();
+    public static final ItemStack REFINED_METALLURGICAL_SAMPLE = ItemStackBuilder.rebar(Material.NETHERITE_INGOT, SteamworkKeys.REFINED_METALLURGICAL_SAMPLE).build();
+    public static final ItemStack PURIFIED_FLUID_SAMPLE = ItemStackBuilder.rebar(Material.HEART_OF_THE_SEA, SteamworkKeys.PURIFIED_FLUID_SAMPLE).build();
 
     // Materials
     public static final ItemStack ZINC_INGOT = ItemStackBuilder.rebar(Material.IRON_INGOT, SteamworkKeys.ZINC_INGOT).build();
@@ -147,13 +157,18 @@ public final class SteamworkItems {
     public static final ItemStack TUNGSTEN_BOILER = ItemStackBuilder.rebar(Material.NETHERITE_BLOCK, SteamworkKeys.TUNGSTEN_BOILER).build();
     public static final ItemStack STEAM_ARM = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_ARM).build();
     public static final ItemStack SIMPLE_STEAM_TURBINE = ItemStackBuilder.rebar(Material.FURNACE, SteamworkKeys.SIMPLE_STEAM_TURBINE).build();
-    public static final ItemStack ADVANCED_STEAM_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.ADVANCED_STEAM_TURBINE).build();
+    public static final ItemStack PRECISION_STEAM_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.PRECISION_STEAM_TURBINE).build();
+    public static final ItemStack BASIC_PROCESSING_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.BASIC_PROCESSING_TURBINE).build();
+    public static final ItemStack PRECISION_PROCESSING_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.PRECISION_PROCESSING_TURBINE).build();
+    public static final ItemStack HYDRAULIC_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.HYDRAULIC_TURBINE).build();
+    public static final ItemStack DIESEL_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.DIESEL_TURBINE).build();
+    public static final ItemStack PYLON_UNIVERSAL_TURBINE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.PYLON_UNIVERSAL_TURBINE).build();
     public static final ItemStack STEAM_STERILIZER = ItemStackBuilder.rebar(Material.BARREL, SteamworkKeys.STEAM_STERILIZER).build();
     public static final ItemStack STEAM_STEEPING_VAT = ItemStackBuilder.rebar(Material.CAULDRON, SteamworkKeys.STEAM_STEEPING_VAT).build();
     public static final ItemStack STEAM_WASHING_TROUGH = ItemStackBuilder.rebar(Material.CAULDRON, SteamworkKeys.STEAM_WASHING_TROUGH).build();
     public static final ItemStack STEAM_PRESS = ItemStackBuilder.rebar(Material.IRON_BLOCK, SteamworkKeys.STEAM_PRESS).build();
     public static final ItemStack STEAM_GRINDER = ItemStackBuilder.rebar(Material.GRINDSTONE, SteamworkKeys.STEAM_GRINDER).build();
-    public static final ItemStack STEAM_PRESSURIZED_FURNACE = ItemStackBuilder.rebar(Material.CUT_COPPER_SLAB, SteamworkKeys.STEAM_PRESSURIZED_FURNACE).build();
+    public static final ItemStack STEAM_PRESSURIZED_FURNACE = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.STEAM_PRESSURIZED_FURNACE).build();
     public static final ItemStack STEAM_ASSEMBLY_BENCH = ItemStackBuilder.rebar(Material.SMITHING_TABLE, SteamworkKeys.STEAM_ASSEMBLY_BENCH).build();
     public static final ItemStack STEAM_SCIENCE_INTERFACE = ItemStackBuilder.rebar(Material.LECTERN, SteamworkKeys.STEAM_SCIENCE_INTERFACE).build();
     public static final ItemStack STEAM_HEATING_CHAMBER = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.STEAM_HEATING_CHAMBER).build();
@@ -195,7 +210,7 @@ public final class SteamworkItems {
     public static final ItemStack PRODUCTION_LINE_BUFFER_CHEST = ItemStackBuilder.rebar(Material.CHEST, SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST).build();
     public static final ItemStack PRODUCTION_LINE_OUTLET = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.PRODUCTION_LINE_OUTLET).build();
     public static final ItemStack PRODUCTION_LINE_BLUEPRINT = ItemStackBuilder.rebar(Material.PAPER, SteamworkKeys.PRODUCTION_LINE_BLUEPRINT).build();
-    public static final ItemStack AUTO_PRODUCTION_MODULE = ItemStackBuilder.rebar(Material.OBSERVER, SteamworkKeys.AUTO_PRODUCTION_MODULE).build();
+    public static final ItemStack AUTO_PRODUCTION_MODULE = ItemStackBuilder.rebar(Material.REDSTONE, SteamworkKeys.AUTO_PRODUCTION_MODULE).build();
 
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
@@ -230,8 +245,8 @@ public final class SteamworkItems {
 
     public static final ItemStack UPGRADE_MODULE_ENERGY_SAVE = ItemStackBuilder.rebar(Material.FEATHER, SteamworkKeys.UPGRADE_MODULE_ENERGY_SAVE).build();
     public static final ItemStack UPGRADE_MODULE_AUTO_INPUT = ItemStackBuilder.rebar(Material.HOPPER, SteamworkKeys.UPGRADE_MODULE_AUTO_INPUT).build();
-    public static final ItemStack UPGRADE_MODULE_AUTO_OUTPUT = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.UPGRADE_MODULE_AUTO_OUTPUT).build();
-    public static final ItemStack UPGRADE_MODULE_BULK = ItemStackBuilder.rebar(Material.BUNDLE, SteamworkKeys.UPGRADE_MODULE_BULK).build();
+    public static final ItemStack UPGRADE_MODULE_AUTO_OUTPUT = ItemStackBuilder.rebar(Material.ARROW, SteamworkKeys.UPGRADE_MODULE_AUTO_OUTPUT).build();
+    public static final ItemStack UPGRADE_MODULE_BULK = ItemStackBuilder.rebar(Material.MINECART, SteamworkKeys.UPGRADE_MODULE_BULK).build();
     public static final ItemStack UPGRADE_MODULE_RANGE = ItemStackBuilder.rebar(Material.SPYGLASS, SteamworkKeys.UPGRADE_MODULE_RANGE).build();
     public static final ItemStack UPGRADE_MODULE_BOOST = ItemStackBuilder.rebar(Material.SUGAR, SteamworkKeys.UPGRADE_MODULE_BOOST).build();
     public static final ItemStack UPGRADE_MODULE_PYLON_COMPAT = ItemStackBuilder.rebar(Material.NETHER_STAR, SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT).build();
@@ -323,6 +338,10 @@ public final class SteamworkItems {
         RebarItem.register(RebarItem.class, ORGANIC_ANALYSIS_SAMPLE);
         RebarItem.register(RebarItem.class, METALLURGICAL_ANALYSIS_SAMPLE);
         RebarItem.register(RebarItem.class, FLUID_ANALYSIS_SAMPLE);
+        RebarItem.register(RebarItem.class, REFINED_MINERAL_SAMPLE);
+        RebarItem.register(RebarItem.class, CONCENTRATED_ORGANIC_SAMPLE);
+        RebarItem.register(RebarItem.class, REFINED_METALLURGICAL_SAMPLE);
+        RebarItem.register(RebarItem.class, PURIFIED_FLUID_SAMPLE);
         RebarItem.register(RebarItem.class, ZINC_INGOT);
         RebarItem.register(RebarItem.class, NICHROME_DUST);
         RebarItem.register(RebarItem.class, NICHROME_INGOT);
@@ -357,7 +376,12 @@ public final class SteamworkItems {
         RebarItem.register(TungstenBoiler.Item.class, TUNGSTEN_BOILER, SteamworkKeys.TUNGSTEN_BOILER);
         RebarItem.register(SteamArm.Item.class, STEAM_ARM, SteamworkKeys.STEAM_ARM);
         RebarItem.register(SimpleSteamTurbine.Item.class, SIMPLE_STEAM_TURBINE, SteamworkKeys.SIMPLE_STEAM_TURBINE);
-        RebarItem.register(AdvancedSteamTurbine.Item.class, ADVANCED_STEAM_TURBINE, SteamworkKeys.ADVANCED_STEAM_TURBINE);
+        RebarItem.register(PrecisionSteamTurbine.Item.class, PRECISION_STEAM_TURBINE, SteamworkKeys.PRECISION_STEAM_TURBINE);
+        RebarItem.register(BasicProcessingTurbine.Item.class, BASIC_PROCESSING_TURBINE, SteamworkKeys.BASIC_PROCESSING_TURBINE);
+        RebarItem.register(PrecisionProcessingTurbine.Item.class, PRECISION_PROCESSING_TURBINE, SteamworkKeys.PRECISION_PROCESSING_TURBINE);
+        RebarItem.register(HydraulicTurbine.Item.class, HYDRAULIC_TURBINE, SteamworkKeys.HYDRAULIC_TURBINE);
+        RebarItem.register(DieselTurbine.Item.class, DIESEL_TURBINE, SteamworkKeys.DIESEL_TURBINE);
+        RebarItem.register(PylonUniversalTurbine.Item.class, PYLON_UNIVERSAL_TURBINE, SteamworkKeys.PYLON_UNIVERSAL_TURBINE);
         RebarItem.register(SteamSterilizer.Item.class, STEAM_STERILIZER, SteamworkKeys.STEAM_STERILIZER);
         RebarItem.register(SteamSteepingVat.Item.class, STEAM_STEEPING_VAT, SteamworkKeys.STEAM_STEEPING_VAT);
         RebarItem.register(SteamWashingTrough.Item.class, STEAM_WASHING_TROUGH, SteamworkKeys.STEAM_WASHING_TROUGH);
@@ -466,39 +490,121 @@ public final class SteamworkItems {
         simpleTurbinePage.addItem(new ItemStack(Material.BLAST_FURNACE));
         simpleTurbinePage.addItem(new ItemStack(Material.SMOKER));
 
-        // 高级蒸汽涡轮：原版熔炉 + Steamwork 加工机器 + 所有实现 RebarProcessor 的 Pylon 机器。
-        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage advancedTurbinePage =
-                RebarGuide.getOrCreateInfoPage(SteamworkKeys.ADVANCED_STEAM_TURBINE);
-        // 原版熔炉
-        advancedTurbinePage.addItem(new ItemStack(Material.FURNACE));
-        advancedTurbinePage.addItem(new ItemStack(Material.BLAST_FURNACE));
-        advancedTurbinePage.addItem(new ItemStack(Material.SMOKER));
-        // Steamwork 自家加工机器
-        advancedTurbinePage.addItem(STEAM_STERILIZER);
-        advancedTurbinePage.addItem(STEAM_STEEPING_VAT);
-        advancedTurbinePage.addItem(STEAM_WASHING_TROUGH);
-        advancedTurbinePage.addItem(STEAM_PRESS);
-        advancedTurbinePage.addItem(STEAM_GRINDER);
-        advancedTurbinePage.addItem(STEAM_PRECISION_MILL);
-        advancedTurbinePage.addItem(PRECISION_FOUNDRY);
-        advancedTurbinePage.addItem(PRECISION_CATALYTIC_REACTOR);
-        // Pylon 液压系列
-        addOptionalPylonGuideItem(advancedTurbinePage, "HYDRAULIC_BREAKER");
-        addOptionalPylonGuideItem(advancedTurbinePage, "HYDRAULIC_MINER");
-        addOptionalPylonGuideItem(advancedTurbinePage, "HYDRAULIC_HAMMER_HEAD");
-        addOptionalPylonGuideItem(advancedTurbinePage, "HYDRAULIC_MIXING_ATTACHMENT");
-        // Pylon 柴油系列
-        addOptionalPylonGuideItem(advancedTurbinePage, "DIESEL_BREAKER");
-        addOptionalPylonGuideItem(advancedTurbinePage, "DIESEL_HAMMER_HEAD");
-        addOptionalPylonGuideItem(advancedTurbinePage, "DIESEL_MIXING_ATTACHMENT");
-        addOptionalPylonGuideItem(advancedTurbinePage, "PALLADIUM_CONDENSER");
-        addOptionalPylonGuideItem(advancedTurbinePage, "BIOREFINERY");
-        // Pylon 简单机器
-        addOptionalPylonGuideItem(advancedTurbinePage, "MANUAL_CORE_DRILL");
-        addOptionalPylonGuideItem(advancedTurbinePage, "COLLIMATOR");
-        // Pylon 冶炼 / 纯化
-        addOptionalPylonGuideItem(advancedTurbinePage, "COAL_FIRED_PURIFICATION_TOWER");
-        addOptionalPylonGuideItem(advancedTurbinePage, "SMELTERY_BURNER");
+
+        // 基础加工涡轮：Steamwork 基础加工机器（非精密）。
+        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage basicProcessingTurbinePage =
+                RebarGuide.getOrCreateInfoPage(SteamworkKeys.BASIC_PROCESSING_TURBINE);
+        basicProcessingTurbinePage.addItem(STEAM_STERILIZER);
+        basicProcessingTurbinePage.addItem(STEAM_STEEPING_VAT);
+        basicProcessingTurbinePage.addItem(STEAM_WASHING_TROUGH);
+        basicProcessingTurbinePage.addItem(STEAM_PRESS);
+        basicProcessingTurbinePage.addItem(STEAM_GRINDER);
+        basicProcessingTurbinePage.addItem(STEAM_PRESSURIZED_FURNACE);
+        basicProcessingTurbinePage.addItem(STEAM_HEATING_CHAMBER);
+        basicProcessingTurbinePage.addItem(STEAM_DISTILLATION_TOWER);
+
+        // 精密加工涡轮：Steamwork 精密加工机器。
+        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage precisionProcessingTurbinePage =
+                RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_PROCESSING_TURBINE);
+        precisionProcessingTurbinePage.addItem(STEAM_PRECISION_MILL);
+        precisionProcessingTurbinePage.addItem(PRECISION_FOUNDRY);
+        precisionProcessingTurbinePage.addItem(PRECISION_CATALYTIC_REACTOR);
+        precisionProcessingTurbinePage.addItem(HEAVY_IMPACT_CRUSHER);
+        precisionProcessingTurbinePage.addItem(HYDRAULIC_FORGE);
+        precisionProcessingTurbinePage.addItem(PRECISION_CRYSTALLIZER);
+        precisionProcessingTurbinePage.addItem(PRECISION_CENTRIFUGE);
+
+        // 液压涡轮：Pylon 液压系列。
+        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage hydraulicTurbinePageNew =
+                RebarGuide.getOrCreateInfoPage(SteamworkKeys.HYDRAULIC_TURBINE);
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_BREAKER");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_MINER");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_HAMMER_HEAD");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_MIXING_ATTACHMENT");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_PIPE_BENDER");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_TABLE_SAW");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_CORE_DRILL");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_FARMER");
+        addOptionalPylonGuideItem(hydraulicTurbinePageNew, "HYDRAULIC_GRINDSTONE_TURNER");
+
+        // 柴油涡轮：Pylon 柴油系列。
+        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage dieselTurbinePage =
+                RebarGuide.getOrCreateInfoPage(SteamworkKeys.DIESEL_TURBINE);
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_BREAKER");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_HAMMER_HEAD");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_MIXING_ATTACHMENT");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_PIPE_BENDER");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_TABLE_SAW");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_CORE_DRILL");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_FURNACE");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_GRINDSTONE");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_PRESS");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_QUARRY");
+        addOptionalPylonGuideItem(dieselTurbinePage, "DIESEL_BRICK_MOLDER");
+        addOptionalPylonGuideItem(dieselTurbinePage, "PALLADIUM_CONDENSER");
+        addOptionalPylonGuideItem(dieselTurbinePage, "BIOREFINERY");
+        addOptionalPylonGuideItem(dieselTurbinePage, "FERMENTER");
+
+
+        // 通用 Pylon 涡轮：非液压非柴油的 Pylon/Rebar 处理机器。
+        // 支持列表来自 Pylon 源码确认（simple.* 和 smelting.* 包下实现 RebarProcessor/RebarRecipeProcessor 的机器）。
+        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage pylonUniversalTurbinePage =
+                RebarGuide.getOrCreateInfoPage(SteamworkKeys.PYLON_UNIVERSAL_TURBINE);
+        // simple 包 — RebarProcessor
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "MANUAL_CORE_DRILL");
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "IMPROVED_MANUAL_CORE_DRILL");
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "COLLIMATOR");
+        // simple 包 — RebarRecipeProcessor
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "CRUDE_ALLOY_FURNACE");
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "GRINDSTONE");
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "PRESS");
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "SHIMMER_ALTAR");
+        // smelting 包 — RebarProcessor
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "SMELTERY_BURNER");
+        // smelting 包 — RebarRecipeProcessor
+        addOptionalPylonGuideItem(pylonUniversalTurbinePage, "KILN");
+
+        // 精密全能涡轮：全部机器类型。
+        io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage precisionTurbinePage =
+                RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_STEAM_TURBINE);
+        precisionTurbinePage.addItem(new org.bukkit.inventory.ItemStack(Material.FURNACE));
+        precisionTurbinePage.addItem(new org.bukkit.inventory.ItemStack(Material.BLAST_FURNACE));
+        precisionTurbinePage.addItem(new org.bukkit.inventory.ItemStack(Material.SMOKER));
+        precisionTurbinePage.addItem(STEAM_STERILIZER);
+        precisionTurbinePage.addItem(STEAM_STEEPING_VAT);
+        precisionTurbinePage.addItem(STEAM_WASHING_TROUGH);
+        precisionTurbinePage.addItem(STEAM_PRESS);
+        precisionTurbinePage.addItem(STEAM_GRINDER);
+        precisionTurbinePage.addItem(STEAM_PRESSURIZED_FURNACE);
+        precisionTurbinePage.addItem(STEAM_HEATING_CHAMBER);
+        precisionTurbinePage.addItem(STEAM_DISTILLATION_TOWER);
+        precisionTurbinePage.addItem(STEAM_PRECISION_MILL);
+        precisionTurbinePage.addItem(PRECISION_FOUNDRY);
+        precisionTurbinePage.addItem(PRECISION_CATALYTIC_REACTOR);
+        precisionTurbinePage.addItem(HEAVY_IMPACT_CRUSHER);
+        precisionTurbinePage.addItem(HYDRAULIC_FORGE);
+        precisionTurbinePage.addItem(PRECISION_CRYSTALLIZER);
+        precisionTurbinePage.addItem(PRECISION_CENTRIFUGE);
+        addOptionalPylonGuideItem(precisionTurbinePage, "HYDRAULIC_BREAKER");
+        addOptionalPylonGuideItem(precisionTurbinePage, "HYDRAULIC_MINER");
+        addOptionalPylonGuideItem(precisionTurbinePage, "HYDRAULIC_HAMMER_HEAD");
+        addOptionalPylonGuideItem(precisionTurbinePage, "HYDRAULIC_MIXING_ATTACHMENT");
+        addOptionalPylonGuideItem(precisionTurbinePage, "DIESEL_BREAKER");
+        addOptionalPylonGuideItem(precisionTurbinePage, "DIESEL_HAMMER_HEAD");
+        addOptionalPylonGuideItem(precisionTurbinePage, "DIESEL_MIXING_ATTACHMENT");
+        addOptionalPylonGuideItem(precisionTurbinePage, "PALLADIUM_CONDENSER");
+        addOptionalPylonGuideItem(precisionTurbinePage, "BIOREFINERY");
+        addOptionalPylonGuideItem(precisionTurbinePage, "FERMENTER");
+        // 通用 Pylon 涡轮支持的机器（精密全能同样覆盖）
+        addOptionalPylonGuideItem(precisionTurbinePage, "MANUAL_CORE_DRILL");
+        addOptionalPylonGuideItem(precisionTurbinePage, "IMPROVED_MANUAL_CORE_DRILL");
+        addOptionalPylonGuideItem(precisionTurbinePage, "COLLIMATOR");
+        addOptionalPylonGuideItem(precisionTurbinePage, "CRUDE_ALLOY_FURNACE");
+        addOptionalPylonGuideItem(precisionTurbinePage, "GRINDSTONE");
+        addOptionalPylonGuideItem(precisionTurbinePage, "PRESS");
+        addOptionalPylonGuideItem(precisionTurbinePage, "SHIMMER_ALTAR");
+        addOptionalPylonGuideItem(precisionTurbinePage, "SMELTERY_BURNER");
+        addOptionalPylonGuideItem(precisionTurbinePage, "KILN");
 
         // Alloy blocks
         RebarItem.register(RebarItem.class, INVAR_BLOCK, SteamworkKeys.INVAR_BLOCK);
@@ -541,6 +647,8 @@ public final class SteamworkItems {
         RebarItem.register(RebarItem.class, PALLADIUM_ALLOY_INGOT);
         RebarItem.register(RebarItem.class, HIGH_POLYMER);
         RebarItem.register(RebarItem.class, SEQUENCED_WORKPIECE);
+        // 钯合金工序链三步中间品（各自独立 key，保证配方按步骤精确匹配 + 配方书逐步显示）
+        io.github.steamwork.util.SequencedWorkpiece.register();
 
         RebarItem.register(SteamEquipment.class, STEAM_SWORD, SteamworkKeys.STEAM_SWORD);
         RebarItem.register(SteamEquipment.class, STEAM_PICKAXE, SteamworkKeys.STEAM_PICKAXE);

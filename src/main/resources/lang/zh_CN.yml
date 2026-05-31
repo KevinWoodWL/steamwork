@@ -389,20 +389,78 @@ item:
     lore: |-
       <arrow> 在半径内扫描熔炉并注入蒸汽加速（基础版本）
       <arrow> 支持：熔炉、高炉、烟熏炉
+      <arrow> 同时驱动上限：3 台
       <arrow> <attr>扫描半径：</attr> %scan-radius%
       <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
       <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
     waila: "简易蒸汽涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
 
-  advanced_steam_turbine:
-    name: "高级蒸汽涡轮"
+  basic_processing_turbine:
+    name: "基础加工涡轮"
     lore: |-
-      <arrow> 在半径内扫描熔炉和Pylon热源并注入蒸汽加速（高级版本）
-      <arrow> 支持：熔炉、高炉、烟熏炉、冶炼炉、热源线
+      <arrow> 专门加速 Steamwork 基础加工机器
+      <arrow> 支持：灭菌箱、浸煮桶、洗选槽、冲压机、研磨机、压力炉、蒸馏塔、加热室
+      <arrow> 同时驱动上限：5 台
       <arrow> <attr>扫描半径：</attr> %scan-radius%
       <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
       <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
-    waila: "高级蒸汽涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+    waila: "基础加工涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  precision_processing_turbine:
+    name: "精密加工涡轮"
+    lore: |-
+      <arrow> 专门加速 Steamwork 精密加工机器
+      <arrow> 支持：精密磨坊、精密铸造炉、催化反应釜、结晶塔、离心机、破碎机、液压锻造机
+      <arrow> 同时驱动上限：3 台
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "精密加工涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  hydraulic_turbine:
+    name: "液压涡轮"
+    lore: |-
+      <arrow> 专门加速 Pylon 液压系列机器
+      <arrow> 支持：液压破碎机、液压锤头、液压混合附件等
+      <arrow> 同时驱动上限：4 台
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "液压涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  diesel_turbine:
+    name: "柴油涡轮"
+    lore: |-
+      <arrow> 专门加速 Pylon 柴油系列机器
+      <arrow> 支持：柴油破碎机、柴油锤头、柴油混合附件、钯凝结器、生物精炼厂等
+      <arrow> 同时驱动上限：4 台
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "柴油涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  pylon_universal_turbine:
+    name: "通用 Pylon 涡轮"
+    lore: |-
+      <arrow> 加速 Pylon/Rebar 所有非液压、非柴油的处理机器
+      <arrow> 支持：手动岩心钻、改良型岩心钻、校准仪、粗合金炉、砂轮、冲压机、微光祭坛、冶炼炉燃烧器、窑炉
+      <arrow> 同时驱动上限：3 台
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "通用 Pylon 涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+
+  precision_steam_turbine:
+    name: "精密全能涡轮"
+    lore: |-
+      <arrow> 加速所有类型机器，覆盖范围最广
+      <arrow> 同时驱动上限：6 台，扫描半径 5 格
+      <arrow> <gold>破顶叠加：</gold><gray>无视涡轮叠加上限，加速永远生效
+      <arrow> <gold>协同效率：</gold><gray>每多加速 1 台耗汽 -5%，满载时降至 65%
+      <arrow> <attr>扫描半径：</attr> %scan-radius%
+      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
+    waila: "精密全能涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
 
   steam_blower:
     name: "蒸汽鼓风器"
@@ -458,7 +516,6 @@ item:
     lore: |-
       <arrow> 利用高压蒸汽将多种材料压制成高级合金粉末
       <arrow> 可制作因瓦、硬铝、钨、锰钢和锰青铜粉末
-      <arrow> 将材料扔到方块上方，右键或等待自动处理
       <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
     waila: "蒸汽加压炉 | 蒸汽 %steam-bar% | %state%"
 
@@ -479,7 +536,7 @@ item:
       <arrow> 右键领取累计的研究点数
       <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
       <arrow> <attr>暂存上限:</attr> %max-points%
-    waila: "蒸汽科研接口 | 蒸汽 %steam-bar% | 暂存 %points% | %state%"
+    waila: "蒸汽科研接口 | 蒸汽 %steam-bar% | 材%material-pts% 生%biology-pts% 精%precision-pts% 化%chemistry-pts% | %state%"
 
   steam_heating_chamber:
     name: "蒸汽加热室"
@@ -738,8 +795,8 @@ item:
   upgrade_module_boost:
     name: "<gold>增幅模组"
     lore: |-
-      <arrow> 涡轮专用：每个模组每次操作 +1 加速 tick
-      <arrow> 叠加后大幅强化对邻近机器的加速
+      <arrow> 涡轮专用：每次操作额外 +1 加速 tick
+      <arrow> 每台涡轮仅可装配 1 个（不可叠加）
 
   upgrade_module_pylon_compat:
     name: "<aqua>Pylon 联动模组"
@@ -753,11 +810,15 @@ item:
 
   upgrade_module_auto_input:
     name: "<green>自动进料模组"
-    lore: <arrow> 自动从所有相邻容器中拉取物品到输入槽
+    lore: |-
+      <arrow> 自动从所有相邻容器中拉取物品到输入槽
+      <arrow> <red>与自动出料模组互斥，不可同时装配
 
   upgrade_module_auto_output:
     name: "<red>自动出料模组"
-    lore: <arrow> 自动将输出槽物品推送到所有相邻容器
+    lore: |-
+      <arrow> 自动将输出槽物品推送到所有相邻容器
+      <arrow> <red>与自动进料模组互斥，不可同时装配
 
   upgrade_module_bulk:
     name: "<gold>批量加工模组"
@@ -838,13 +899,18 @@ item:
     palladium_alloy:
       line_name: "钯合金"
       step_1:
-        name: "<aqua>活化钯合金基体"
+        next: "<dark_gray>下一步：<gray>精密熔炉 + 矿物熔剂 → 粗炼钯合金锭"
       step_2:
-        name: "<gold>粗炼钯合金锭"
+        next: "<dark_gray>下一步：<gray>精密铣床 → 校准钯合金毛坯"
       step_3:
-        name: "<yellow>校准钯合金毛坯"
-      step_4:
-        name: "<white>钯合金序列工件"
+        next: "<dark_gray>下一步：<gray>精密熔炉 + 矿物熔剂 → 钯合金锭（成品）"
+
+  palladium_workpiece_1:
+    name: "<aqua>活化钯合金基体"
+  palladium_workpiece_2:
+    name: "<gold>粗炼钯合金锭"
+  palladium_workpiece_3:
+    name: "<yellow>校准钯合金毛坯"
 
   steam_distillation_tower:
     name: "蒸汽精馏塔"
@@ -928,6 +994,34 @@ item:
       <arrow> 为蒸汽科研接口准备的封装流体标本
       <arrow> 产出化学研究点数
 
+  refined_mineral_sample:
+    name: "精制矿物样本"
+    lore: |-
+      <arrow> 4 个矿物分析样本经蒸汽压机压制浓缩而成
+      <arrow> 产出 <green>25</green> 点材料学研究点数（约 5× 基础效率）
+      <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
+
+  concentrated_organic_sample:
+    name: "浓缩有机样本"
+    lore: |-
+      <arrow> 4 个有机分析样本经蒸汽压机压制浓缩而成
+      <arrow> 产出 <green>25</green> 点生物学研究点数（约 5× 基础效率）
+      <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
+
+  refined_metallurgical_sample:
+    name: "精炼冶金样本"
+    lore: |-
+      <arrow> 4 个冶金分析样本经蒸汽压机精炼提纯而成
+      <arrow> 产出 <green>35</green> 点精密工程研究点数（约 5× 基础效率）
+      <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
+
+  purified_fluid_sample:
+    name: "提纯流体样本"
+    lore: |-
+      <arrow> 4 个流体分析样本经蒸汽压机提纯压缩而成
+      <arrow> 产出 <green>30</green> 点化学研究点数（约 5× 基础效率）
+      <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
+
   analysis_residue:
     name: "分析残渣"
     lore: <arrow> 一次研究分析后留下的废弃物
@@ -1009,14 +1103,96 @@ gui:
       active: "<green>运行中"
       idle: "<gray>待机"
 
-  advanced_steam_turbine:
-    title: "<dark_gray>高级蒸汽涡轮"
+
+  precision_steam_turbine:
+    title: "<dark_gray>精密全能涡轮"
     steam_gauge: "<aqua>蒸汽储量"
     steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>扫描范围"
     scan_radius: "<gray>半径：<reset><yellow>%radius%"
-    targets_found: "<gray>检测到热源：<reset><yellow>%targets%"
+    max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
+    targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  basic_processing_turbine:
+    title: "<dark_gray>基础加工涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
+    targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  precision_processing_turbine:
+    title: "<dark_gray>精密加工涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
+    targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  hydraulic_turbine:
+    title: "<dark_gray>液压涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
+    targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  diesel_turbine:
+    title: "<dark_gray>柴油涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
+    targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
+    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  pylon_universal_turbine:
+    title: "<dark_gray>通用 Pylon 涡轮"
+    steam_gauge: "<aqua>蒸汽储量"
+    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    progress_bar: "<reset>%bar% <gray>%percent%"
+    scan: "<green>扫描范围"
+    scan_radius: "<gray>半径：<reset><yellow>%radius%"
+    max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
+    targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
     boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
     last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
     last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
@@ -1244,9 +1420,30 @@ gui:
     progress_percent: "<reset>%bar% <gray>%percent%"
     time_remaining: "<gray>剩余时间: <yellow>%time%"
     points_pending: "<gray>待领取点数: <aqua>%points%"
-    claim: "<yellow>领取研究点数"
-    stored_points: "<gray>已暂存: <aqua>%points% <gray>/ <aqua>%max%"
-    claim_hint: "<gray>左键领取点数到你的研究中"
+    discipline_tag: "<dark_gray>学科: <gray>%discipline%"
+    claim: "<yellow>领取学科点数"
+    stored_header: "<gray>待领取学科点数："
+    stored_discipline:
+      material:  "<yellow>  材料学：<white>%points% <gray>/ <white>%max%"
+      biology:   "<green>  生物学：<white>%points% <gray>/ <white>%max%"
+      precision: "<light_purple>  精密工程：<white>%points% <gray>/ <white>%max%"
+      chemistry: "<aqua>  化学：<white>%points% <gray>/ <white>%max%"
+    claim_hint: "<gray>左键将点数领取到学科池"
+    discipline_research: "<light_purple>学科研究解锁台"
+    discipline_research_hint: "<gray>左键打开，用学科点数解锁★研究"
+    discipline_research_title: "<dark_gray>学科研究"
+    discipline_sub_title: "<dark_gray>%discipline% — 研究解锁"
+    discipline_click_hint: "<gray>左键进入该学科研究列表"
+    back: "<gray>返回学科选择"
+    discipline_pts: "<gray>已积累: <white>%points% pt"
+    disc_threshold: "<gray>  %name%: %bar% <white>%pts%<gray>/<white>%cost%"
+    disc_threshold_done: "<green>  ✓ %name%"
+    disc_no_research: "<dark_gray>  （暂无对应研究）"
+    research_cost: "<gray>学科: <light_purple>%discipline%  <gray>需要 <aqua>%cost% pt"
+    research_progress: "<gray>%bar% <white>%current%<gray>/<white>%cost%"
+    research_already_unlocked: "<green>✓ 已解锁"
+    research_unlockable: "<aqua>▶ 左键解锁（消耗点数）"
+    research_insufficient: "<red>✗ 学科点数不足"
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
@@ -1418,11 +1615,11 @@ gui:
       auto: "<gray>当前：<aqua>自动分流（模板物品 → 燃料槽，其余 → 原料槽）"
       auto_hint: "<dark_gray>在右侧燃料模板格设置燃料类型"
       fuel: "<gray>当前：<gold>全部推送到燃料槽"
-      "off": "<gray>当前：<red>不推送（仅缓存）"
+      disabled: "<gray>当前：<red>不推送（仅缓存）"
       hint: "<dark_gray>点击切换模式"
     filter_mode:
       title: "<aqua>过滤模式"
-      "off": "<gray>过滤：<white>关闭 — 所有物品均可通过"
+      disabled: "<gray>过滤：<white>关闭 — 所有物品均可通过"
       whitelist: "<gray>过滤：<green>白名单 — 仅名单内物品可通过"
       blacklist: "<gray>过滤：<red>黑名单 — 拦截名单内物品"
       left_hint: "<dark_gray>左键循环切换：关闭 → 白名单 → 黑名单"
@@ -1517,26 +1714,6 @@ gui:
 guide:
   button:
     chain_recipes: "查看生产工序链"
-  recipe:
-    steam_pressurizing: "<gray>蒸汽加压 | 消耗 %steam% 蒸汽 | %time%"
-    steam_sterilizing: "<gray>蒸汽灭菌 | 消耗 %steam% 蒸汽 | %time%"
-    steam_steeping: "<gray>蒸汽浸煮 | 消耗 %steam% 蒸汽 | %time%"
-    steam_washing: "<gray>蒸汽洗选 | 消耗 %steam% 蒸汽 | %time%"
-    steam_pressing: "<gray>蒸汽冲压 | 消耗 %steam% 蒸汽 | %time%"
-    steam_grinding: "<gray>蒸汽研磨 | 消耗 %steam% 蒸汽 | %time%"
-    steam_crushing: "<gray>重型冲击破碎 | 消耗 %steam% 蒸汽 | %time%"
-    steam_forging: "<gray>液压锻造 | 消耗 %steam% 蒸汽 | %time%"
-    steam_crystallizing: "<gray>精密结晶 | 消耗 %steam% 蒸汽 | %time%"
-    steam_centrifugation: "<gray>精密离心 | 消耗 %steam% 蒸汽 | %time%"
-    steam_milling: "<gray>蒸汽铣削 | 消耗 %steam% 蒸汽 | %time%"
-    steam_foundry: "<gray>精密铸造 | 消耗 %steam% 过热蒸汽 | %time%"
-    steam_catalytic_reaction: "<gray>催化反应 | 消耗 %steam% 过热蒸汽 | %time%"
-    steam_research: "<gray>蒸汽科研 | %discipline% | %points% 点 | %steam% 蒸汽 | %time%"
-    steam_distillation: "<gray>蒸汽精馏 | %sections% 段塔 | %steam% 过热蒸汽 | %time%"
-    phosphor_bronze: "<gray>磷青铜 — Pylon 锡协同"
-    nitrided_steel: "<gray>渗氮钢 — Pylon 钢协同"
-    palladium_alloy: "<gray>钯合金 — Pylon 钯协同"
-  button:
     root:
       name: "<white>蒸汽工坊"
     metals:
@@ -1567,6 +1744,25 @@ guide:
       name: "蒸汽调校"
     steam_distillation:
       name: "蒸汽蒸馏"
+  recipe:
+    steam_pressurizing: "<gray>蒸汽加压 | 消耗 %steam% 蒸汽 | %time%"
+    steam_sterilizing: "<gray>蒸汽灭菌 | 消耗 %steam% 蒸汽 | %time%"
+    steam_steeping: "<gray>蒸汽浸煮 | 消耗 %steam% 蒸汽 | %time%"
+    steam_washing: "<gray>蒸汽洗选 | 消耗 %steam% 蒸汽 | %time%"
+    steam_pressing: "<gray>蒸汽冲压 | 消耗 %steam% 蒸汽 | %time%"
+    steam_grinding: "<gray>蒸汽研磨 | 消耗 %steam% 蒸汽 | %time%"
+    steam_crushing: "<gray>重型冲击破碎 | 消耗 %steam% 蒸汽 | %time%"
+    steam_forging: "<gray>液压锻造 | 消耗 %steam% 蒸汽 | %time%"
+    steam_crystallizing: "<gray>精密结晶 | 消耗 %steam% 蒸汽 | %time%"
+    steam_centrifugation: "<gray>精密离心 | 消耗 %steam% 蒸汽 | %time%"
+    steam_milling: "<gray>蒸汽铣削 | 消耗 %steam% 蒸汽 | %time%"
+    steam_foundry: "<gray>精密铸造 | 消耗 %steam% 过热蒸汽 | %time%"
+    steam_catalytic_reaction: "<gray>催化反应 | 消耗 %steam% 过热蒸汽 | %time%"
+    steam_research: "<gray>蒸汽科研 | %discipline% | %points% 点 | %steam% 蒸汽 | %time%"
+    steam_distillation: "<gray>蒸汽精馏 | %sections% 段塔 | %steam% 过热蒸汽 | %time%"
+    phosphor_bronze: "<gray>磷青铜 — Pylon 锡协同"
+    nitrided_steel: "<gray>渗氮钢 — Pylon 钢协同"
+    palladium_alloy: "<gray>钯合金 — Pylon 钯协同"
   page:
     root: "<white>蒸汽工坊"
     metals: "锭材与金属"
@@ -1638,6 +1834,7 @@ research:
   # Tier 1 - 早期机械与合金
   material_basic_machines: "蒸汽基础机器"
   # Tier 2 - 中期加工
+  precision_steam_calibration: "蒸汽调校系统"
   precision_steam_automation: "蒸汽自动化"
   precision_production_line: "蒸汽自动化产线"
   chemistry_basic_research: "基础蒸汽科研"
@@ -1653,6 +1850,20 @@ research:
   precision_turbines_2: "蒸汽涡轮II"
   precision_steam_equipment: "蒸汽工具"
   material_steam_armor: "蒸汽护甲"
+
+# 学科门控研究的解锁说明（cost=null，无法用全局研究点解锁，
+# 仅能在蒸汽科研接口的「学科研究解锁台」消耗对应学科点数解锁）。
+researches:
+  material_advanced_ingots:
+    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>80 材料学</light_purple>点数解锁"
+  material_advanced_boilers:
+    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>60 材料学</light_purple>点数解锁"
+  chemistry_heating_chamber:
+    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>60 化学</light_purple>点数解锁"
+  chemistry_distillation:
+    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>100 化学</light_purple>点数解锁"
+  precision_advanced_automation_1:
+    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>150 精密工程</light_purple>点数解锁"
 
 message:
   pneumatic_cargo_hub:
@@ -1691,7 +1902,7 @@ message:
     target_not_container: "<red>(%x%, %y%, %z%) 不是有效的容器方块"
     no_steam_arm_nearby: "<red>附近没有蒸汽动力臂在范围内"
   steam_science_interface:
-    claimed: "<green>已领取 <aqua>%points%</aqua> 研究点数（累计 <aqua>%total%</aqua>）"
+    claimed_disciplines: "<green>已领取学科点数 → <aqua>%summary%</aqua>"
 
 line:
   unknown_creator: "未知"

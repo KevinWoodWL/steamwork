@@ -25,7 +25,8 @@ import java.util.stream.Collectors;
  * 利用锰青铜的耐磨与减震特性长时间承受高压循环，专门产出液压系统中间件：
  * 高压管件、法兰、活塞、密封件、锻造钢板等。是 Pylon 液压链接入 Steamwork 的主要桥梁。
  */
-public class HydraulicForge extends AbstractSteamProcessor<SteamForgingRecipe> {
+public class HydraulicForge extends AbstractSteamProcessor<SteamForgingRecipe>
+        implements PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

@@ -226,18 +226,82 @@ public final class CraftingRecipes {
         simpleSteamTurbine.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(simpleSteamTurbine);
 
-        // Advanced Steam Turbine - more expensive recipe with premium materials
-        // Uses FORGED_PLATE as structural base, BRASS_DISTILLATION_TUBE, and HEATING_COIL for enhanced performance
-        ShapedRecipe advancedSteamTurbine = new ShapedRecipe(
-                SteamworkKeys.ADVANCED_STEAM_TURBINE, SteamworkItems.ADVANCED_STEAM_TURBINE);
-        advancedSteamTurbine.shape("FDF", "CPC", "FGF");
-        advancedSteamTurbine.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
-        advancedSteamTurbine.setIngredient('D', rebarChoice(SteamworkItems.BRASS_DISTILLATION_TUBE));
-        advancedSteamTurbine.setIngredient('C', rebarChoice(SteamworkItems.HEATING_COIL));
-        advancedSteamTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
-        advancedSteamTurbine.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
-        advancedSteamTurbine.setCategory(CraftingBookCategory.MISC);
-        RecipeType.VANILLA_SHAPED.addRecipe(advancedSteamTurbine);
+
+
+        // Precision Steam Turbine - accelerates all machine types (max 2 targets)
+        // Requires basic + precision processing turbine + pylon universal turbine + palladium alloy
+        ShapedRecipe precisionSteamTurbine = new ShapedRecipe(
+                SteamworkKeys.PRECISION_STEAM_TURBINE, SteamworkItems.PRECISION_STEAM_TURBINE);
+        precisionSteamTurbine.shape("BPB", "UAU", "BPB");
+        precisionSteamTurbine.setIngredient('B', rebarChoice(SteamworkItems.BASIC_PROCESSING_TURBINE));
+        precisionSteamTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRECISION_PROCESSING_TURBINE));
+        precisionSteamTurbine.setIngredient('U', rebarChoice(SteamworkItems.PYLON_UNIVERSAL_TURBINE));
+        precisionSteamTurbine.setIngredient('A', rebarChoice(SteamworkItems.PALLADIUM_ALLOY_INGOT));
+        precisionSteamTurbine.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(precisionSteamTurbine);
+
+        // Basic Processing Turbine - accelerates basic Steamwork machines (max 5 targets)
+        // Brass fan blade + heating coil + pressure gauge + forged plate
+        ShapedRecipe basicProcessingTurbine = new ShapedRecipe(
+                SteamworkKeys.BASIC_PROCESSING_TURBINE, SteamworkItems.BASIC_PROCESSING_TURBINE);
+        basicProcessingTurbine.shape("FBF", "CPC", "FGF");
+        basicProcessingTurbine.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
+        basicProcessingTurbine.setIngredient('B', rebarChoice(SteamworkItems.BRASS_FAN_BLADE));
+        basicProcessingTurbine.setIngredient('C', rebarChoice(SteamworkItems.HEATING_COIL));
+        basicProcessingTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        basicProcessingTurbine.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
+        basicProcessingTurbine.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(basicProcessingTurbine);
+
+        // Precision Processing Turbine - accelerates precision Steamwork machines (max 3 targets)
+        // Precision gear + precision bearing + heating coil + forged plate
+        ShapedRecipe precisionProcessingTurbine = new ShapedRecipe(
+                SteamworkKeys.PRECISION_PROCESSING_TURBINE, SteamworkItems.PRECISION_PROCESSING_TURBINE);
+        precisionProcessingTurbine.shape("GPG", "CBC", "FDF");
+        precisionProcessingTurbine.setIngredient('G', rebarChoice(SteamworkItems.PRECISION_GEAR));
+        precisionProcessingTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        precisionProcessingTurbine.setIngredient('C', rebarChoice(SteamworkItems.HEATING_COIL));
+        precisionProcessingTurbine.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
+        precisionProcessingTurbine.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
+        precisionProcessingTurbine.setIngredient('D', rebarChoice(SteamworkItems.BRASS_DISTILLATION_TUBE));
+        precisionProcessingTurbine.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(precisionProcessingTurbine);
+
+        // Hydraulic Turbine - accelerates Pylon hydraulic machines (max 4 targets)
+        ShapedRecipe hydraulicTurbine = new ShapedRecipe(
+                SteamworkKeys.HYDRAULIC_TURBINE, SteamworkItems.HYDRAULIC_TURBINE);
+        hydraulicTurbine.shape("VBV", "PGP", "VFV");
+        hydraulicTurbine.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        hydraulicTurbine.setIngredient('B', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
+        hydraulicTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        hydraulicTurbine.setIngredient('G', rebarChoice(SteamworkItems.PRECISION_GEAR));
+        hydraulicTurbine.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
+        hydraulicTurbine.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(hydraulicTurbine);
+
+        // Diesel Turbine - accelerates Pylon diesel machines (max 4 targets)
+        ShapedRecipe dieselTurbine = new ShapedRecipe(
+                SteamworkKeys.DIESEL_TURBINE, SteamworkItems.DIESEL_TURBINE);
+        dieselTurbine.shape("HPH", "PGP", "HFH");
+        dieselTurbine.setIngredient('H', rebarChoice(SteamworkItems.HYDRAULIC_SEAL));
+        dieselTurbine.setIngredient('P', rebarChoice(SteamworkItems.HIGH_PRESSURE_PIPE));
+        dieselTurbine.setIngredient('G', rebarChoice(SteamworkItems.PRECISION_GEAR));
+        dieselTurbine.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
+        dieselTurbine.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(dieselTurbine);
+
+        // Pylon Universal Turbine - 前期通用 Pylon 涡轮，使用黄铜系基础材料
+        // 黄铜密封环（密封）+ 黄铜扇叶（转子）+ 锻造板（结构）+ 压力表（控制）+ 黄铜流量阀（流量控制）
+        ShapedRecipe pylonUniversalTurbine = new ShapedRecipe(
+                SteamworkKeys.PYLON_UNIVERSAL_TURBINE, SteamworkItems.PYLON_UNIVERSAL_TURBINE);
+        pylonUniversalTurbine.shape("SGS", "BPB", "SVS");
+        pylonUniversalTurbine.setIngredient('S', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
+        pylonUniversalTurbine.setIngredient('G', rebarChoice(SteamworkItems.BRASS_FAN_BLADE));
+        pylonUniversalTurbine.setIngredient('B', rebarChoice(SteamworkItems.FORGED_PLATE));
+        pylonUniversalTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        pylonUniversalTurbine.setIngredient('V', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
+        pylonUniversalTurbine.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pylonUniversalTurbine);
 
         ShapedRecipe steamSterilizer = new ShapedRecipe(
                 SteamworkKeys.STEAM_STERILIZER, SteamworkItems.STEAM_STERILIZER);
@@ -372,11 +436,12 @@ public final class CraftingRecipes {
         pressurizedFurnace.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pressurizedFurnace);
 
-        // 蒸汽科研接口：黄铜分析架 + 滤网（用于样品定位）+ 蒸汽气路 + 压力表读数。
+        // 蒸汽科研接口：镍铬合金侧壁（耐热分析仓）+ 滤网（样品定位）+ 蒸汽气路 + 压力表读数。
+        // 注意：不能使用钯合金，否则与 PRECISION_ADVANCED_AUTOMATION_1（需科研接口才能解锁）形成循环依赖。
         ShapedRecipe steamScienceInterface = new ShapedRecipe(
                 SteamworkKeys.STEAM_SCIENCE_INTERFACE, SteamworkItems.STEAM_SCIENCE_INTERFACE);
         steamScienceInterface.shape("APA", "FLF", "BRB");
-        steamScienceInterface.setIngredient('A', rebarChoice(SteamworkItems.PALLADIUM_ALLOY_INGOT));
+        steamScienceInterface.setIngredient('A', rebarChoice(SteamworkItems.NICHROME_INGOT));
         steamScienceInterface.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
         steamScienceInterface.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FILTER));
         steamScienceInterface.setIngredient('L', Material.LECTERN);
@@ -523,17 +588,45 @@ public final class CraftingRecipes {
         productionLineBufferChest.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(productionLineBufferChest);
 
+        // 产线入口：精密控制分发器。精密轴承（传动）+ 压力表（物料感测）居中上，
+        // 精密阀门（通断控制）夹住发射器核心，蒸汽马达（动力）+ 精密螺钉（精密安装）在底部。
         ShapedRecipe productionLineInlet = new ShapedRecipe(
                 SteamworkKeys.PRODUCTION_LINE_INLET, SteamworkItems.PRODUCTION_LINE_INLET);
-        productionLineInlet.shape("VHV", "SDS", "RMR");
+        productionLineInlet.shape("BGB", "VDV", "MSM");
+        productionLineInlet.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
+        productionLineInlet.setIngredient('G', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
         productionLineInlet.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
-        productionLineInlet.setIngredient('H', Material.HOPPER);
-        productionLineInlet.setIngredient('S', rebarChoice(SteamworkItems.BRASS_SEAL_RING));
         productionLineInlet.setIngredient('D', Material.DISPENSER);
-        productionLineInlet.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
         productionLineInlet.setIngredient('M', rebarChoice(SteamworkItems.STEAM_MOTOR));
+        productionLineInlet.setIngredient('S', rebarChoice(SteamworkItems.PRECISION_SCREW));
         productionLineInlet.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(productionLineInlet);
+
+        // 产线出口：精密排料机构。锻造板（坚固底座）+ 黄铜流量阀（排料控制）在外围，
+        // 精密轴承（滚轮传送）居上，投掷器为核心，橡皮垫圈（密封）+ 精密螺钉（安装）在底部。
+        ShapedRecipe productionLineOutlet = new ShapedRecipe(
+                SteamworkKeys.PRODUCTION_LINE_OUTLET, SteamworkItems.PRODUCTION_LINE_OUTLET);
+        productionLineOutlet.shape("BFB", "POP", "SRS");
+        productionLineOutlet.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
+        productionLineOutlet.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
+        productionLineOutlet.setIngredient('P', rebarChoice(SteamworkItems.FORGED_PLATE));
+        productionLineOutlet.setIngredient('O', Material.DROPPER);
+        productionLineOutlet.setIngredient('S', rebarChoice(SteamworkItems.PRECISION_SCREW));
+        productionLineOutlet.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        productionLineOutlet.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(productionLineOutlet);
+
+        // 产线蓝图：精密技术文件。十字型布局：因瓦锭（稳定基架）居上，
+        // 精密螺钉（左右，固定文件框）夹住纸（文件本体），压力表（技术参数印制）居下。
+        ShapedRecipe productionLineBlueprint = new ShapedRecipe(
+                SteamworkKeys.PRODUCTION_LINE_BLUEPRINT, SteamworkItems.PRODUCTION_LINE_BLUEPRINT);
+        productionLineBlueprint.shape(" I ", "SPS", " G ");
+        productionLineBlueprint.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        productionLineBlueprint.setIngredient('S', rebarChoice(SteamworkItems.PRECISION_SCREW));
+        productionLineBlueprint.setIngredient('P', Material.PAPER);
+        productionLineBlueprint.setIngredient('G', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        productionLineBlueprint.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(productionLineBlueprint);
 
         // 气动输入端（插入器）：无动力中继，接收网络推送后插入目标容器。
         // 因瓦合金（低膨胀管壁）+ 分流阀（单向止回）+ 原版漏斗（插入头）+ 黄铜密封环
@@ -720,34 +813,86 @@ public final class CraftingRecipes {
         machineCalibrator.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(machineCalibrator);
 
+        // 节能模组：加热线圈（热能回收）夹住调校仪，两侧橡皮垫圈（隔热密封），十字形。
+        ShapedRecipe energySaveModule = new ShapedRecipe(
+                SteamworkKeys.UPGRADE_MODULE_ENERGY_SAVE, SteamworkItems.UPGRADE_MODULE_ENERGY_SAVE);
+        energySaveModule.shape(" H ", "RCR", " H ");
+        energySaveModule.setIngredient('H', rebarChoice(SteamworkItems.HEATING_COIL));
+        energySaveModule.setIngredient('R', rebarChoice(SteamworkItems.RUBBER_GASKET));
+        energySaveModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
+        energySaveModule.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(energySaveModule);
+
+        // 范围模组（涡轮专用）：精密轴承（旋转感测）+ 精密齿轮（传动扩展）+ 调校仪，十字形。
+        ShapedRecipe rangeModule = new ShapedRecipe(
+                SteamworkKeys.UPGRADE_MODULE_RANGE, SteamworkItems.UPGRADE_MODULE_RANGE);
+        rangeModule.shape(" B ", "GCG", " B ");
+        rangeModule.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
+        rangeModule.setIngredient('G', rebarChoice(SteamworkItems.PRECISION_GEAR));
+        rangeModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
+        rangeModule.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(rangeModule);
+
+        // 增幅模组（涡轮专用，不可叠加）：蒸汽马达（动力源）+ 锻造板（承压结构）+ 调校仪，十字形。
+        ShapedRecipe boostModule = new ShapedRecipe(
+                SteamworkKeys.UPGRADE_MODULE_BOOST, SteamworkItems.UPGRADE_MODULE_BOOST);
+        boostModule.shape(" M ", "FCF", " M ");
+        boostModule.setIngredient('M', rebarChoice(SteamworkItems.STEAM_MOTOR));
+        boostModule.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
+        boostModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
+        boostModule.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(boostModule);
+
+        // 自动进料模组（与自动出料互斥）：精密轴承（传送机构）+ 漏斗（进料口）+ 黄铜流量阀（流量控制）+ 调校仪 + 精密螺钉
         ShapedRecipe autoInputModule = new ShapedRecipe(
                 SteamworkKeys.UPGRADE_MODULE_AUTO_INPUT, SteamworkItems.UPGRADE_MODULE_AUTO_INPUT);
-        autoInputModule.shape(" V ", "HCH", " S ");
-        autoInputModule.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
+        autoInputModule.shape("BHB", "FCF", " S ");
+        autoInputModule.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
         autoInputModule.setIngredient('H', Material.HOPPER);
+        autoInputModule.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
         autoInputModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
-        autoInputModule.setIngredient('S', rebarChoice(SteamworkItems.HEAT_SINK));
+        autoInputModule.setIngredient('S', rebarChoice(SteamworkItems.PRECISION_SCREW));
         autoInputModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(autoInputModule);
 
+        // 自动出料模组（与自动进料互斥）：精密轴承（传送机构）+ 投掷器（出料口）+ 精密阀门（排料控制）+ 调校仪 + 精密螺钉
         ShapedRecipe autoOutputModule = new ShapedRecipe(
                 SteamworkKeys.UPGRADE_MODULE_AUTO_OUTPUT, SteamworkItems.UPGRADE_MODULE_AUTO_OUTPUT);
-        autoOutputModule.shape(" V ", "DCD", " S ");
-        autoOutputModule.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
+        autoOutputModule.shape("BDB", "VCV", " S ");
+        autoOutputModule.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
         autoOutputModule.setIngredient('D', Material.DROPPER);
+        autoOutputModule.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
         autoOutputModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
-        autoOutputModule.setIngredient('S', rebarChoice(SteamworkItems.HEAT_SINK));
+        autoOutputModule.setIngredient('S', rebarChoice(SteamworkItems.PRECISION_SCREW));
         autoOutputModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(autoOutputModule);
 
+        // 批量加工模组：磨损板（耐久高吞吐）+ 桶（容量扩展）+ 漏斗（物料吞吐）+ 调校仪，满格。
         ShapedRecipe bulkModule = new ShapedRecipe(
                 SteamworkKeys.UPGRADE_MODULE_BULK, SteamworkItems.UPGRADE_MODULE_BULK);
-        bulkModule.shape(" W ", "BCB", " W ");
+        bulkModule.shape("WBW", "HCH", "WBW");
         bulkModule.setIngredient('W', rebarChoice(SteamworkItems.WEAR_PLATE));
         bulkModule.setIngredient('B', Material.BARREL);
+        bulkModule.setIngredient('H', Material.HOPPER);
         bulkModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
         bulkModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(bulkModule);
+
+        // 自动生产模组（产线入口专用，后期配方）：
+        // 高压管（蒸汽信号导管）+ 精密轴承（精密传动机构），上排；
+        // 压力表×2（双路感应监测）夹住调校仪核心，中排；
+        // 钨锭×2（高强度承压结构）夹住蒸汽马达（自动触发动力），下排。
+        ShapedRecipe autoProductionModule = new ShapedRecipe(
+                SteamworkKeys.AUTO_PRODUCTION_MODULE, SteamworkItems.AUTO_PRODUCTION_MODULE);
+        autoProductionModule.shape("SBS", "PCP", "TMT");
+        autoProductionModule.setIngredient('S', rebarChoice(SteamworkItems.HIGH_PRESSURE_PIPE));
+        autoProductionModule.setIngredient('B', rebarChoice(SteamworkItems.PRECISION_BEARING));
+        autoProductionModule.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        autoProductionModule.setIngredient('C', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
+        autoProductionModule.setIngredient('T', rebarChoice(SteamworkItems.TUNGSTEN_INGOT));
+        autoProductionModule.setIngredient('M', rebarChoice(SteamworkItems.STEAM_MOTOR));
+        autoProductionModule.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(autoProductionModule);
 
         // Pylon 联动模组：精密调校仪（中心）+ 催化剂核心 + 钯合金锭 + 精密阀门
         ShapedRecipe pylonCompatModule = new ShapedRecipe(

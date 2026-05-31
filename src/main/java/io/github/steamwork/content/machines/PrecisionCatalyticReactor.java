@@ -21,7 +21,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PrecisionCatalyticReactor extends AbstractSteamProcessor<SteamCatalyticReactionRecipe> {
+public class PrecisionCatalyticReactor extends AbstractSteamProcessor<SteamCatalyticReactionRecipe>
+        implements PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

@@ -1,8 +1,14 @@
 package io.github.steamwork.guide;
 
 import io.github.pylonmc.rebar.guide.pages.item.ItemUsagesPage;
+import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
+import io.github.pylonmc.rebar.item.research.Research;
 import io.github.steamwork.SteamworkItems;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -48,7 +54,22 @@ public class SequencedChainButton extends AbstractBoundItem {
     }
 
     @Override
+    @SuppressWarnings("UnstableApiUsage")
     public @NotNull ItemProvider getItemProvider(@NotNull Player player) {
+        RebarItem ritem = RebarItem.fromStack(displayStack);
+        if (ritem != null) {
+            Research research = ritem.getSchema().getResearch();
+            if (research != null && !research.isResearchedBy(player)) {
+                // 未解锁：BARRIER 外观 + unlock-instructions lore，与 ItemButton 行为对齐
+                String unlockKey = research.getKey().getNamespace()
+                        + ".researches." + research.getKey().getKey() + ".unlock-instructions";
+                return ItemStackBuilder.of(displayStack.clone())
+                        .set(DataComponentTypes.ITEM_MODEL, Material.BARRIER.getKey())
+                        .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
+                        .lore(Component.translatable(unlockKey)
+                                .decoration(TextDecoration.ITALIC, false));
+            }
+        }
         return ItemStackBuilder.of(displayStack);
     }
 

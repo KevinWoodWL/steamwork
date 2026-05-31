@@ -40,6 +40,7 @@ public final class SteamworkPages {
         METALS.addItem(SteamworkItems.BRASS_INGOT);
         METALS.addItem(SteamworkItems.NICHROME_DUST);
         METALS.addItem(SteamworkItems.NICHROME_INGOT);
+        // ★ MATERIAL_ADVANCED_INGOTS（学科门控）
         METALS.addItem(SteamworkItems.INVAR_DUST);
         METALS.addItem(SteamworkItems.INVAR_INGOT);
         METALS.addItem(SteamworkItems.INVAR_BLOCK);
@@ -91,7 +92,12 @@ public final class SteamworkPages {
         BASIC_MATERIALS.addItem(SteamworkItems.ORGANIC_ANALYSIS_SAMPLE);
         BASIC_MATERIALS.addItem(SteamworkItems.METALLURGICAL_ANALYSIS_SAMPLE);
         BASIC_MATERIALS.addItem(SteamworkItems.FLUID_ANALYSIS_SAMPLE);
+        BASIC_MATERIALS.addItem(SteamworkItems.REFINED_MINERAL_SAMPLE);
+        BASIC_MATERIALS.addItem(SteamworkItems.CONCENTRATED_ORGANIC_SAMPLE);
+        BASIC_MATERIALS.addItem(SteamworkItems.REFINED_METALLURGICAL_SAMPLE);
+        BASIC_MATERIALS.addItem(SteamworkItems.PURIFIED_FLUID_SAMPLE);
         BASIC_MATERIALS.addItem(SteamworkItems.ANALYSIS_RESIDUE);
+        // ★ CHEMISTRY_DISTILLATION / PRECISION_ADVANCED_AUTOMATION_1（学科门控）
         BASIC_MATERIALS.addItem(SteamworkItems.REFINED_RESIN);
         BASIC_MATERIALS.addItem(SteamworkItems.PLANT_ESSENCE);
         BASIC_MATERIALS.addItem(SteamworkItems.DISTILLED_WATER_VIAL);
@@ -111,6 +117,7 @@ public final class SteamworkPages {
         COMPONENTS.addItem(SteamworkItems.BRASS_VALVE_CORE);
         COMPONENTS.addItem(SteamworkItems.BRASS_SEAL_RING);
         COMPONENTS.addItem(SteamworkItems.STEAM_MOTOR);
+        // ★ PRECISION_ADVANCED_AUTOMATION_1 / MATERIAL_ADVANCED_INGOTS（学科门控）
         COMPONENTS.addItem(SteamworkItems.PRECISION_GEAR);
         COMPONENTS.addItem(SteamworkItems.PRECISION_SCREW);
         COMPONENTS.addItem(SteamworkItems.PRECISION_VALVE);
@@ -134,6 +141,7 @@ public final class SteamworkPages {
 
         ROOT.addPage(SteamworkItems.BRONZE_BOILER, STEAM_MACHINES);
         STEAM_MACHINES.addItem(SteamworkItems.BRONZE_BOILER);
+        // ★ MATERIAL_ADVANCED_BOILERS（学科门控）
         STEAM_MACHINES.addItem(SteamworkItems.INVAR_BOILER);
         STEAM_MACHINES.addItem(SteamworkItems.MANGANESE_STEEL_BOILER);
         STEAM_MACHINES.addItem(SteamworkItems.TUNGSTEN_BOILER);
@@ -146,7 +154,13 @@ public final class SteamworkPages {
         STEAM_MACHINES.addItem(SteamworkItems.STEAM_PRESSURIZED_FURNACE);
         STEAM_MACHINES.addItem(SteamworkItems.STEAM_ARM);
         STEAM_MACHINES.addItem(SteamworkItems.SIMPLE_STEAM_TURBINE);
-        STEAM_MACHINES.addItem(SteamworkItems.ADVANCED_STEAM_TURBINE);
+        STEAM_MACHINES.addItem(SteamworkItems.BASIC_PROCESSING_TURBINE);
+        STEAM_MACHINES.addItem(SteamworkItems.PYLON_UNIVERSAL_TURBINE);
+        STEAM_MACHINES.addItem(SteamworkItems.PRECISION_PROCESSING_TURBINE);
+        STEAM_MACHINES.addItem(SteamworkItems.HYDRAULIC_TURBINE);
+        STEAM_MACHINES.addItem(SteamworkItems.DIESEL_TURBINE);
+        STEAM_MACHINES.addItem(SteamworkItems.PRECISION_STEAM_TURBINE);
+        // ★ CHEMISTRY_HEATING_CHAMBER（学科门控）
         STEAM_MACHINES.addItem(SteamworkItems.STEAM_HEATING_CHAMBER);
 
         ROOT.addPage(SteamworkItems.STEAM_SWORD, EQUIPMENT);
@@ -178,6 +192,7 @@ public final class SteamworkPages {
         ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_ARM);
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_ASSEMBLY_BENCH);
+        // ★ PRECISION_ADVANCED_AUTOMATION_1（学科门控）
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_PRECISION_MILL);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_FOUNDRY);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_CATALYTIC_REACTOR);
@@ -203,6 +218,7 @@ public final class SteamworkPages {
         STEAM_CALIBRATION.addItem(SteamworkItems.AUTO_PRODUCTION_MODULE);
 
         ROOT.addPage(SteamworkItems.STEAM_DISTILLATION_TOWER, STEAM_DISTILLATION);
+        // ★ CHEMISTRY_DISTILLATION（学科门控）
         STEAM_DISTILLATION.addItem(SteamworkItems.STEAM_DISTILLATION_TOWER);
         STEAM_DISTILLATION.addItem(SteamworkItems.DISTILLATION_TOWER_SECTION);
         STEAM_DISTILLATION.addItem(SteamworkItems.DISTILLATION_CONDENSER);

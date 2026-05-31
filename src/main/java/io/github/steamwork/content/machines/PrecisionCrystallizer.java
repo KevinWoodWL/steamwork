@@ -19,7 +19,8 @@ import org.jetbrains.annotations.NotNull;
  * 利用因瓦的零热膨胀特性维持稳定温度，把低品矿物 / 粗矿 / 边角料慢速结晶成高纯产物。
  * 招牌特性：慢、稳、不复制。投入产出严格按"提纯比"，纯转化定位。
  */
-public class PrecisionCrystallizer extends AbstractSteamProcessor<SteamCrystallizingRecipe> {
+public class PrecisionCrystallizer extends AbstractSteamProcessor<SteamCrystallizingRecipe>
+        implements PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

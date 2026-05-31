@@ -22,7 +22,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrecisionFoundry extends AbstractSteamProcessor<SteamFoundryRecipe> {
+public class PrecisionFoundry extends AbstractSteamProcessor<SteamFoundryRecipe>
+        implements PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }

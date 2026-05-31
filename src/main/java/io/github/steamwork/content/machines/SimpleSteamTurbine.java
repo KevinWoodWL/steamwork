@@ -1,6 +1,7 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -9,9 +10,10 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * 简易蒸汽涡轮 —— 只能加速原版熔炉 / 高炉 / 烟熏炉。
- * 比 {@link AdvancedSteamTurbine} 廉价但兼容性窄。
  */
 public class SimpleSteamTurbine extends AbstractSteamBooster {
+
+    private final int maxTargetsConfig = getSettings().getOrThrow("max-targets", ConfigAdapter.INTEGER);
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }
@@ -40,6 +42,11 @@ public class SimpleSteamTurbine extends AbstractSteamBooster {
     @Override
     public int upgradeSlotCount() {
         return 2;
+    }
+
+    @Override
+    protected int maxTargets() {
+        return maxTargetsConfig;
     }
 
     /** 简易涡轮只识别原版熔炉系列。 */

@@ -52,5 +52,46 @@ public final class ResearchRecipes {
                 SteamworkItems.ANALYSIS_RESIDUE.clone(),
                 "chemistry"
         ));
+
+        // ===== 高级分析样本（约 5× 基础点数，蒸汽效率翻倍）=====
+        SteamResearchRecipe.RECIPE_TYPE.addRecipe(new SteamResearchRecipe(
+                steamworkKey("research_refined_mineral"),
+                RecipeInput.of(SteamworkItems.REFINED_MINERAL_SAMPLE),
+                25,
+                500.0,
+                600,
+                SteamworkItems.ANALYSIS_RESIDUE.clone().asQuantity(2),
+                "material"
+        ));
+
+        SteamResearchRecipe.RECIPE_TYPE.addRecipe(new SteamResearchRecipe(
+                steamworkKey("research_concentrated_organic"),
+                RecipeInput.of(SteamworkItems.CONCENTRATED_ORGANIC_SAMPLE),
+                25,
+                500.0,
+                600,
+                SteamworkItems.ANALYSIS_RESIDUE.clone().asQuantity(2),
+                "biology"
+        ));
+
+        SteamResearchRecipe.RECIPE_TYPE.addRecipe(new SteamResearchRecipe(
+                steamworkKey("research_refined_metallurgical"),
+                RecipeInput.of(SteamworkItems.REFINED_METALLURGICAL_SAMPLE),
+                35,
+                650.0,
+                740,
+                SteamworkItems.ANALYSIS_RESIDUE.clone().asQuantity(2),
+                "precision"
+        ));
+
+        SteamResearchRecipe.RECIPE_TYPE.addRecipe(new SteamResearchRecipe(
+                steamworkKey("research_purified_fluid"),
+                RecipeInput.of(SteamworkItems.PURIFIED_FLUID_SAMPLE),
+                30,
+                560.0,
+                660,
+                SteamworkItems.ANALYSIS_RESIDUE.clone().asQuantity(2),
+                "chemistry"
+        ));
     }
 }

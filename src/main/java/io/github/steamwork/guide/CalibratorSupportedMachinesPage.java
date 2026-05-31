@@ -25,9 +25,14 @@ public class CalibratorSupportedMachinesPage extends SimpleStaticGuidePage {
         addItem(SteamworkItems.PRECISION_CRYSTALLIZER);
         addItem(SteamworkItems.PRECISION_CENTRIFUGE);
 
-        // 蒸汽涡轮（AbstractSteamBooster 子类）
+        // 蒸汽涡轮（AbstractSteamBooster 子类，从入门到全能排序）
         addItem(SteamworkItems.SIMPLE_STEAM_TURBINE);
-        addItem(SteamworkItems.ADVANCED_STEAM_TURBINE);
+        addItem(SteamworkItems.BASIC_PROCESSING_TURBINE);
+        addItem(SteamworkItems.PYLON_UNIVERSAL_TURBINE);
+        addItem(SteamworkItems.PRECISION_PROCESSING_TURBINE);
+        addItem(SteamworkItems.HYDRAULIC_TURBINE);
+        addItem(SteamworkItems.DIESEL_TURBINE);
+        addItem(SteamworkItems.PRECISION_STEAM_TURBINE);
 
         // 产线入口
         addItem(SteamworkItems.PRODUCTION_LINE_INLET);
