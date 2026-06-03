@@ -77,6 +77,8 @@ public final class SteamworkKeys {
     public static final NamespacedKey STEAM_GRINDER = steamworkKey("steam_grinder");
     public static final NamespacedKey STEAM_SCIENCE_INTERFACE = steamworkKey("steam_science_interface");
     public static final NamespacedKey STEAM_HEATING_CHAMBER = steamworkKey("steam_heating_chamber");
+    public static final NamespacedKey STEAM_CANISTER_BENCH = steamworkKey("steam_canister_bench");
+    public static final NamespacedKey STEAM_CHARGING_CHAMBER = steamworkKey("steam_charging_chamber");
     public static final NamespacedKey STEAM_DISTILLATION_TOWER = steamworkKey("steam_distillation_tower");
     public static final NamespacedKey DISTILLATION_TOWER_SECTION = steamworkKey("distillation_tower_section");
     public static final NamespacedKey DISTILLATION_CONDENSER = steamworkKey("distillation_condenser");
@@ -93,6 +95,37 @@ public final class SteamworkKeys {
     public static final NamespacedKey STEAM_CHESTPLATE = steamworkKey("steam_chestplate");
     public static final NamespacedKey STEAM_LEGGINGS = steamworkKey("steam_leggings");
     public static final NamespacedKey STEAM_BOOTS = steamworkKey("steam_boots");
+
+    // Material-specialized steam tools and weapons
+    public static final NamespacedKey STEAM_BRONZE_SWORD = steamworkKey("steam_bronze_sword");
+    public static final NamespacedKey STEAM_BRONZE_PICKAXE = steamworkKey("steam_bronze_pickaxe");
+    public static final NamespacedKey STEAM_BRONZE_AXE = steamworkKey("steam_bronze_axe");
+    public static final NamespacedKey STEAM_BRONZE_SHOVEL = steamworkKey("steam_bronze_shovel");
+    public static final NamespacedKey STEAM_BRONZE_HOE = steamworkKey("steam_bronze_hoe");
+    public static final NamespacedKey STEAM_INVAR_SWORD = steamworkKey("steam_invar_sword");
+    public static final NamespacedKey STEAM_INVAR_PICKAXE = steamworkKey("steam_invar_pickaxe");
+    public static final NamespacedKey STEAM_INVAR_AXE = steamworkKey("steam_invar_axe");
+    public static final NamespacedKey STEAM_INVAR_SHOVEL = steamworkKey("steam_invar_shovel");
+    public static final NamespacedKey STEAM_INVAR_HOE = steamworkKey("steam_invar_hoe");
+    public static final NamespacedKey STEAM_TUNGSTEN_SWORD = steamworkKey("steam_tungsten_sword");
+    public static final NamespacedKey STEAM_TUNGSTEN_PICKAXE = steamworkKey("steam_tungsten_pickaxe");
+    public static final NamespacedKey STEAM_TUNGSTEN_AXE = steamworkKey("steam_tungsten_axe");
+    public static final NamespacedKey STEAM_TUNGSTEN_SHOVEL = steamworkKey("steam_tungsten_shovel");
+    public static final NamespacedKey STEAM_TUNGSTEN_HOE = steamworkKey("steam_tungsten_hoe");
+
+    // Material-specialized steam armor
+    public static final NamespacedKey STEAM_BRONZE_HELMET = steamworkKey("steam_bronze_helmet");
+    public static final NamespacedKey STEAM_BRONZE_CHESTPLATE = steamworkKey("steam_bronze_chestplate");
+    public static final NamespacedKey STEAM_BRONZE_LEGGINGS = steamworkKey("steam_bronze_leggings");
+    public static final NamespacedKey STEAM_BRONZE_BOOTS = steamworkKey("steam_bronze_boots");
+    public static final NamespacedKey STEAM_INVAR_HELMET = steamworkKey("steam_invar_helmet");
+    public static final NamespacedKey STEAM_INVAR_CHESTPLATE = steamworkKey("steam_invar_chestplate");
+    public static final NamespacedKey STEAM_INVAR_LEGGINGS = steamworkKey("steam_invar_leggings");
+    public static final NamespacedKey STEAM_INVAR_BOOTS = steamworkKey("steam_invar_boots");
+    public static final NamespacedKey STEAM_TUNGSTEN_HELMET = steamworkKey("steam_tungsten_helmet");
+    public static final NamespacedKey STEAM_TUNGSTEN_CHESTPLATE = steamworkKey("steam_tungsten_chestplate");
+    public static final NamespacedKey STEAM_TUNGSTEN_LEGGINGS = steamworkKey("steam_tungsten_leggings");
+    public static final NamespacedKey STEAM_TUNGSTEN_BOOTS = steamworkKey("steam_tungsten_boots");
 
     // Portable steam energy (canisters): 3 tiers, capacity scales with alloy.
     public static final NamespacedKey STEAM_CANISTER_BRASS = steamworkKey("steam_canister_brass");
@@ -158,6 +191,16 @@ public final class SteamworkKeys {
     public static final NamespacedKey PALLADIUM_WORKPIECE_1 = steamworkKey("palladium_workpiece_1");
     public static final NamespacedKey PALLADIUM_WORKPIECE_2 = steamworkKey("palladium_workpiece_2");
     public static final NamespacedKey PALLADIUM_WORKPIECE_3 = steamworkKey("palladium_workpiece_3");
+
+    // 蒸汽飞行核心：喷射喷嘴部件 + 多工序成品 + 三步工序链中间品
+    public static final NamespacedKey JET_NOZZLE = steamworkKey("jet_nozzle");
+    public static final NamespacedKey STEAM_FLIGHT_CORE = steamworkKey("steam_flight_core");
+    public static final NamespacedKey FLIGHT_CORE_WORKPIECE_1 = steamworkKey("flight_core_workpiece_1");
+    public static final NamespacedKey FLIGHT_CORE_WORKPIECE_2 = steamworkKey("flight_core_workpiece_2");
+    public static final NamespacedKey FLIGHT_CORE_WORKPIECE_3 = steamworkKey("flight_core_workpiece_3");
+
+    // 涡轮转子：精密蒸汽涡轮的核心多工序部件
+    public static final NamespacedKey TURBINE_ROTOR = steamworkKey("turbine_rotor");
 
     // Steam automation machines
     public static final NamespacedKey PRECISION_FOUNDRY = steamworkKey("precision_foundry");

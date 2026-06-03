@@ -47,6 +47,20 @@ public final class FoundryRecipes {
         // 不影响序列工件的展示（输出是钯合金锭而非工件），但让钯合金锭页签优先
         RebarRecipe.setPriority(finalIngot, 30.0);
 
+        // 蒸汽飞行核心工序链第 2 步：活化基体 + 矿物熔剂 + 加热线圈 → 粗炼飞行核心
+        SteamFoundryRecipe flightCoreMatrix = new SteamFoundryRecipe(
+                steamworkKey("foundry_flight_core_matrix"),
+                List.of(
+                        RecipeInput.of(SequencedWorkpiece.flightCore(1)),
+                        RecipeInput.of(SteamworkItems.MINERAL_FLUX),
+                        RecipeInput.of(SteamworkItems.HEATING_COIL)
+                ),
+                SequencedWorkpiece.flightCore(2),
+                280.0,
+                260);
+        SteamFoundryRecipe.RECIPE_TYPE.addRecipe(flightCoreMatrix);
+        RebarRecipe.setPriority(flightCoreMatrix, 20.0);
+
         SteamFoundryRecipe.RECIPE_TYPE.addRecipe(new SteamFoundryRecipe(
                 steamworkKey("foundry_invar"),
                 List.of(

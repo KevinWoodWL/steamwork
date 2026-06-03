@@ -1,11 +1,9 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.PylonKeys;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
 import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
 import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock.MultiblockComponent;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
@@ -15,31 +13,38 @@ import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
+import io.github.pylonmc.rebar.guide.button.ItemButton;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
+import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
-import io.github.pylonmc.rebar.util.RebarUtils;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
+import io.github.steamwork.SteamworkItems;
+import io.github.steamwork.SteamworkKeys;
+import io.github.steamwork.recipes.SteamAssemblyRecipe;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.RecipeChoice;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Transformation;
+import org.bukkit.util.Vector;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
@@ -50,59 +55,442 @@ import xyz.xenondevs.invui.item.AbstractItem;
 import xyz.xenondevs.invui.item.ItemProvider;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
 
 /**
- * Automatic steam crafting table. The template inventory defines a vanilla crafting recipe,
- * while the exposed input/output inventories let the pneumatic network feed and extract items.
+ * 蒸汽装配祭坛。竖直 3×3 多方块：中心是装配台，四周 8 个锰钢块作为底座。
+ *
+ * <p>玩家右键底座放入/取出物品，物品像展示框那样悬浮显示；右键中央装配台时，
+ * 若 8 个底座上的物品凑成一条 {@link SteamAssemblyRecipe}，便播放白色粒子动画，
+ * 数秒后消耗原料并产出成品。</p>
  */
 public class SteamAssemblyBench extends RebarBlock implements
         RebarDirectionalBlock,
         RebarFluidBufferBlock,
-        RebarInventoryBlock,
         RebarSimpleMultiblock,
         RebarTickingBlock,
-        RebarVirtualInventoryBlock {
+        RebarVirtualInventoryBlock,
+        RebarInventoryBlock {
 
-    private static final int TEMPLATE_SIZE = 9;
-    private static final int STORAGE_SIZE = 9;
+    /** 8 个底座相对中心（装配台）的位置：竖直平面（北向默认），物品朝 facing 方向展示。
+     *  X 顺序按"玩家视角从左到右"排列（+1→-1），使底座物理顺序与 GUI 槽位顺序一致。 */
+    private static final List<Vector3i> PEDESTALS = List.of(
+            new Vector3i(1, 1, 0), new Vector3i(0, 1, 0), new Vector3i(-1, 1, 0),
+            new Vector3i(1, 0, 0), new Vector3i(-1, 0, 0),
+            new Vector3i(1, -1, 0), new Vector3i(0, -1, 0), new Vector3i(-1, -1, 0)
+    );
+
+    private static final int CRAFT_TICKS = 50; // 合成动画时长（真实 tick，2.5s）
 
     private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     private final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
     private final double steamPerCraft = getSettings().getOrThrow("steam-per-craft", ConfigAdapter.DOUBLE);
 
-    private final VirtualInventory templateInventory = new VirtualInventory(TEMPLATE_SIZE);
-    private final VirtualInventory inputInventory = new VirtualInventory(STORAGE_SIZE);
-    private final VirtualInventory outputInventory = new VirtualInventory(1);
+    /** 8 个底座上的物品（slot 序号对应 {@link #PEDESTALS} 序号），由 Rebar 持久化。 */
+    private final VirtualInventory pedestals = new VirtualInventory(PEDESTALS.size());
 
+    /** 当前每个底座的悬浮展示实体（瞬时，跨重载由 tick 依据库存重建）。 */
+    private final Map<Integer, UUID> displays = new HashMap<>();
+
+    private final CraftButton craftButton = new CraftButton();
+    private final ResultItem resultItem = new ResultItem();
     private final StatusItem statusItem = new StatusItem();
     private final SteamGaugeItem steamGaugeItem = new SteamGaugeItem();
 
-    private boolean lastActive = false;
-    private StopReason currentReason = StopReason.READY;
+    private volatile boolean crafting = false;
+    /** 当多条配方匹配同一组底座物品时，玩家选中的配方序号（点击成品预览循环切换）。 */
+    private int selectedRecipe = 0;
 
-    public enum StopReason {
-        READY("ready"),
-        STRUCTURE_MISSING("structure_missing"),
-        NO_TEMPLATE("no_template"),
-        NO_RECIPE("no_recipe"),
-        NO_INGREDIENTS("no_ingredients"),
-        NO_STEAM("no_steam"),
-        OUTPUT_FULL("output_full"),
-        PROCESSING("processing");
+    @SuppressWarnings("unused")
+    public SteamAssemblyBench(@NotNull Block block, @NotNull BlockCreateContext context) {
+        super(block, context);
+        setFacing(context.getFacing());
+        setMultiblockDirection(context.getFacing());
+        setTickInterval(tickInterval);
+        // 管道接口放在装配台背后（SOUTH = facing 的反面），既不挡正面物品展示又更隐蔽美观
+        createFluidPoint(FluidPointType.INPUT, BlockFace.SOUTH, context, false);
+        createFluidBuffer(SteamworkFluids.SUPERHEATED_STEAM, steamBuffer, true, false);
+    }
 
-        private final String key;
+    @SuppressWarnings("unused")
+    public SteamAssemblyBench(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
+        super(block, pdc);
+        try {
+            getFacing();
+        } catch (IllegalStateException e) {
+            setFacing(BlockFace.SOUTH);
+        }
+        setMultiblockDirection(getFacing());
+        setTickInterval(tickInterval);
+    }
 
-        StopReason(String key) {
-            this.key = key;
+    @Override
+    public @NotNull Map<@NotNull Vector3i, @NotNull MultiblockComponent> getComponents() {
+        MultiblockComponent pedestal = MultiblockComponent.of(SteamworkKeys.MANGANESE_STEEL_BLOCK);
+        Map<Vector3i, MultiblockComponent> map = new HashMap<>();
+        for (Vector3i pos : PEDESTALS) {
+            map.put(pos, pedestal);
+        }
+        return map;
+    }
+
+    @Override
+    public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
+        return Map.of("pedestals", pedestals);
+    }
+
+    // ── 底座归属 / 交互 ────────────────────────────────────────────────────────
+
+    /** 该装配祭坛（已成型）是否拥有给定底座方块。 */
+    public boolean ownsPedestal(@NotNull Block block) {
+        if (!isFormedAndFullyLoaded()) return false;
+        return pedestalIndex(block) >= 0;
+    }
+
+    private int pedestalIndex(@NotNull Block block) {
+        for (int i = 0; i < PEDESTALS.size(); i++) {
+            if (getMultiblockBlock(PEDESTALS.get(i)).equals(block)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 由底座方块（AssemblyPedestal）转发的交互：
+     * <ul>
+     *   <li>空手右键 → 取回该底座整组物品；</li>
+     *   <li>手持物品右键 → 放入 1 个；</li>
+     *   <li>手持物品潜行+右键 → 全放（同类型可叠加，最多一组）。</li>
+     * </ul>
+     */
+    public void handlePedestalInteract(@NotNull Block pedestal, @NotNull Player player, boolean sneaking) {
+        int index = pedestalIndex(pedestal);
+        if (index < 0) return;
+
+        ItemStack onPedestal = pedestals.getItem(index);
+        ItemStack held = player.getInventory().getItemInMainHand();
+        MachineUpdateReason reason = new MachineUpdateReason();
+
+        // 空手 → 取回整组
+        if (held == null || held.getType().isAir()) {
+            if (onPedestal != null && !onPedestal.getType().isAir()) {
+                pedestals.setItem(reason, index, null);
+                returnToPlayer(player, onPedestal);
+                player.playSound(pedestal.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_BREAK, 0.6f, 1.2f);
+                refreshDisplays();
+            }
+            return;
         }
 
-        public @NotNull String key() {
-            return key;
+        // 手持物品 → 放入。底座为空或与手上同类型才可放
+        boolean empty = onPedestal == null || onPedestal.getType().isAir();
+        if (!empty && !onPedestal.isSimilar(held)) return;
+
+        int current = empty ? 0 : onPedestal.getAmount();
+        int space = held.getMaxStackSize() - current;
+        if (space <= 0) return; // 已满一组
+
+        int toPlace = Math.min(sneaking ? held.getAmount() : 1, space);
+        if (toPlace <= 0) return;
+
+        ItemStack placed = held.clone();
+        placed.setAmount(current + toPlace);
+        pedestals.setItem(reason, index, placed);
+
+        held.setAmount(held.getAmount() - toPlace);
+        player.getInventory().setItemInMainHand(held.getAmount() <= 0 ? null : held);
+
+        player.playSound(pedestal.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_PLACE, 0.6f, 1.4f);
+        refreshDisplays();
+    }
+
+    private void returnToPlayer(@NotNull Player player, @NotNull ItemStack stack) {
+        Map<Integer, ItemStack> leftover = player.getInventory().addItem(stack);
+        for (ItemStack rest : leftover.values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), rest);
         }
+    }
+
+    // ── 右键装配台：尝试合成 ──────────────────────────────────────────────────
+
+    @Override
+    public @NotNull Gui createGui() {
+        // 8 个底座槽镜像祭坛 3×3 布局（中心是装配台），右侧蒸汽/状态/合成按钮/成品预览
+        return Gui.builder()
+                .setStructure(
+                        "# # # # # # # # #",
+                        "# p p p # g s # #",
+                        "# p . p # # # # #",
+                        "# p p p # c o # #",
+                        "# # # # # # # # #")
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('.', ItemButton.of(SteamworkItems.STEAM_ASSEMBLY_BENCH))
+                .addIngredient('p', pedestals)
+                .addIngredient('g', steamGaugeItem)
+                .addIngredient('s', statusItem)
+                .addIngredient('c', craftButton)
+                .addIngredient('o', resultItem)
+                .build();
+    }
+
+    @Override
+    public @NotNull Component getGuiTitle() {
+        return noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.title"));
+    }
+
+    private void tryStartCraft(@NotNull Player player) {
+        if (crafting) {
+            player.sendActionBar(Component.text("装配进行中…", NamedTextColor.GRAY));
+            return;
+        }
+        if (!isFormedAndFullyLoaded()) {
+            player.sendActionBar(Component.text("祭坛结构不完整", NamedTextColor.RED));
+            return;
+        }
+        SteamAssemblyRecipe recipe = findMatch();
+        if (recipe == null) {
+            player.sendActionBar(Component.text("底座物品未匹配任何装配配方", NamedTextColor.RED));
+            return;
+        }
+        if (fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) < steamPerCraft) {
+            player.sendActionBar(Component.text("过热蒸汽不足（需从背后管道供给）", NamedTextColor.RED));
+            return;
+        }
+        startCraftAnimation(recipe, player);
+    }
+
+    private void startCraftAnimation(@NotNull SteamAssemblyRecipe recipe, @NotNull Player player) {
+        crafting = true;
+        Location center = centerFront();
+        center.getWorld().playSound(center, Sound.BLOCK_BEACON_ACTIVATE, 0.7f, 1.2f);
+        player.sendActionBar(Component.text("开始装配…", NamedTextColor.AQUA));
+
+        new BukkitRunnable() {
+            int tick = 0;
+
+            @Override
+            public void run() {
+                // 祭坛被破坏 / 卸载 → 中止
+                if (!isFormedAndFullyLoaded()) {
+                    crafting = false;
+                    cancel();
+                    return;
+                }
+                tick++;
+                Location c = centerFront();
+                c.getWorld().spawnParticle(Particle.CLOUD, c, 3, 0.35, 0.35, 0.35, 0.01);
+                c.getWorld().spawnParticle(Particle.WHITE_ASH, c, 6, 0.45, 0.45, 0.45, 0.02);
+                if (tick % 10 == 0) {
+                    c.getWorld().playSound(c, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.5f, 1.0f + tick / 100f);
+                }
+
+                if (tick >= CRAFT_TICKS) {
+                    cancel();
+                    try {
+                        completeCraft(recipe);
+                    } catch (Exception ex) {
+                        io.github.steamwork.Steamwork.getInstance().getLogger()
+                                .warning("装配台合成失败: " + ex);
+                    } finally {
+                        crafting = false; // 无论成败都复位，避免卡在"装配中"
+                    }
+                }
+            }
+        }.runTaskTimer(io.github.steamwork.Steamwork.getInstance(), 1L, 1L);
+    }
+
+    private void completeCraft(@NotNull SteamAssemblyRecipe recipe) {
+        // 动画期间物品/蒸汽可能被取走，完成时重新校验并消耗
+        int[] assign = assign(recipe);
+        if (assign == null) return;
+        if (fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) < steamPerCraft) return;
+        removeFluid(SteamworkFluids.SUPERHEATED_STEAM, steamPerCraft);
+
+        MachineUpdateReason reason = new MachineUpdateReason();
+        List<RecipeInput.Item> ingredients = recipe.ingredients();
+        for (int i = 0; i < ingredients.size(); i++) {
+            int slot = assign[i];
+            ItemStack stack = pedestals.getItem(slot);
+            if (stack == null) continue;
+            pedestals.setItem(reason, slot, stack.subtract(ingredients.get(i).getAmount()));
+        }
+        refreshDisplays();
+
+        Location out = centerFront();
+        out.getWorld().dropItem(out, recipe.producedStack());
+        out.getWorld().spawnParticle(Particle.CLOUD, out, 12, 0.25, 0.25, 0.25, 0.06);
+        out.getWorld().spawnParticle(Particle.WHITE_ASH, out, 16, 0.30, 0.30, 0.30, 0.05);
+        out.getWorld().playSound(out, Sound.BLOCK_ANVIL_USE, 0.6f, 1.4f);
+    }
+
+    // ── 配方匹配 ──────────────────────────────────────────────────────────────
+
+    /** 当前底座物品能匹配的所有配方（多条工序产物可能用同一组原料，如钨头盔/靴子）。 */
+    private @NotNull List<SteamAssemblyRecipe> findAllMatches() {
+        List<SteamAssemblyRecipe> matches = new ArrayList<>();
+        for (SteamAssemblyRecipe recipe : SteamAssemblyRecipe.RECIPE_TYPE) {
+            if (assign(recipe) != null) matches.add(recipe);
+        }
+        return matches;
+    }
+
+    /** 当前选中的匹配配方（多条匹配时由玩家点击成品预览切换）。 */
+    private @Nullable SteamAssemblyRecipe findMatch() {
+        List<SteamAssemblyRecipe> matches = findAllMatches();
+        if (matches.isEmpty()) return null;
+        return matches.get(Math.floorMod(selectedRecipe, matches.size()));
+    }
+
+    /**
+     * 把配方各原料分配到底座 slot：每项原料找一个类型匹配且数量足够的底座即可，
+     * 允许底座上有多余的无关物品（不参与、也不消耗）。返回 ingredient→slot 映射，或 null。
+     */
+    private int @Nullable [] assign(@NotNull SteamAssemblyRecipe recipe) {
+        List<RecipeInput.Item> ingredients = recipe.ingredients();
+
+        int[] assign = new int[ingredients.size()];
+        boolean[] used = new boolean[PEDESTALS.size()];
+        for (int i = 0; i < ingredients.size(); i++) {
+            RecipeInput.Item ing = ingredients.get(i);
+            int found = -1;
+            for (int slot = 0; slot < PEDESTALS.size(); slot++) {
+                if (used[slot]) continue;
+                ItemStack s = pedestals.getItem(slot);
+                if (s == null || s.getType().isAir()) continue;
+                if (ing.matches(s)) {
+                    found = slot;
+                    break;
+                }
+            }
+            if (found < 0) return null;
+            used[found] = true;
+            assign[i] = found;
+        }
+        return assign;
+    }
+
+    // ── 悬浮展示实体 ──────────────────────────────────────────────────────────
+
+    @Override
+    public void tick() {
+        refreshDisplays();
+        craftButton.notifyWindows();
+        resultItem.notifyWindows();
+        statusItem.notifyWindows();
+        steamGaugeItem.notifyWindows();
+    }
+
+    /** 依据底座库存，确保每个底座前方悬浮一个展示实体；空底座则移除。 */
+    private void refreshDisplays() {
+        if (!isFormedAndFullyLoaded()) {
+            clearDisplays();
+            return;
+        }
+        for (int i = 0; i < PEDESTALS.size(); i++) {
+            ItemStack item = pedestals.getItem(i);
+            ItemDisplay display = currentDisplay(i);
+            if (item == null || item.getType().isAir()) {
+                if (display != null) display.remove();
+                displays.remove(i);
+                continue;
+            }
+            if (display == null) {
+                display = spawnDisplay(i, item);
+                if (display != null) displays.put(i, display.getUniqueId());
+            } else {
+                display.setItemStack(item.asQuantity(1));
+            }
+        }
+    }
+
+    private @Nullable ItemDisplay currentDisplay(int index) {
+        UUID id = displays.get(index);
+        if (id == null) return null;
+        if (org.bukkit.Bukkit.getEntity(id) instanceof ItemDisplay d && d.isValid()) return d;
+        return null;
+    }
+
+    private @Nullable ItemDisplay spawnDisplay(int index, @NotNull ItemStack item) {
+        Block pedestal = getMultiblockBlock(PEDESTALS.get(index));
+        Vector face = getFacing().getDirection();
+        Location loc = pedestal.getLocation().add(0.5, 0.5, 0.5).add(face.clone().multiply(0.52));
+        loc.setYaw(yawFor(getFacing()));
+        return loc.getWorld().spawn(loc, ItemDisplay.class, d -> {
+            d.setItemStack(item.asQuantity(1));
+            d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+            // 缩到展示框大小（约半格）
+            d.setTransformation(new Transformation(
+                    new Vector3f(0f, 0f, 0f),
+                    new Quaternionf(),
+                    new Vector3f(0.5f, 0.5f, 0.5f),
+                    new Quaternionf()));
+            d.setGravity(false);
+            d.setInvulnerable(true);
+            d.setPersistent(false);
+            d.setGlowing(true); // 发光描边，便于看清
+            d.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
+        });
+    }
+
+    private static float yawFor(@NotNull BlockFace facing) {
+        return switch (facing) {
+            case NORTH -> 180f;
+            case EAST -> 270f;
+            case WEST -> 90f;
+            default -> 0f; // SOUTH
+        };
+    }
+
+    private void clearDisplays() {
+        for (UUID id : displays.values()) {
+            if (org.bukkit.Bukkit.getEntity(id) instanceof ItemDisplay d) d.remove();
+        }
+        displays.clear();
+    }
+
+    private @NotNull Location centerFront() {
+        Vector face = getFacing().getDirection();
+        return getBlock().getLocation().add(0.5, 0.5, 0.5).add(face.clone().multiply(0.6));
+    }
+
+    @Override
+    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        // 归还底座上的物品
+        for (int i = 0; i < PEDESTALS.size(); i++) {
+            ItemStack s = pedestals.getItem(i);
+            if (s != null && !s.getType().isAir()) drops.add(s.clone());
+        }
+        clearDisplays();
+        RebarFluidBufferBlock.super.onBreak(drops, context);
+        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    }
+
+    @Override
+    public @Nullable WailaDisplay getWaila(@NotNull Player player) {
+        SteamAssemblyRecipe match = isFormedAndFullyLoaded() ? findMatch() : null;
+        Component state = crafting
+                ? Component.text("装配中…", NamedTextColor.AQUA)
+                : match != null
+                        ? Component.text("可装配 → ", NamedTextColor.GREEN)
+                                .append(match.producedStack().effectiveName())
+                        : Component.text(isFormedAndFullyLoaded() ? "右键打开界面装配" : "结构不完整",
+                                NamedTextColor.GRAY);
+        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+                RebarArgument.of("structure", Component.translatable("steamwork.structure."
+                        + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
+                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                        fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
+                        fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
+                        12,
+                        TextColor.fromHexString("#ff8c00"))),
+                RebarArgument.of("state", state)
+        ));
     }
 
     public static class Item extends RebarItem {
@@ -122,314 +510,98 @@ public class SteamAssemblyBench extends RebarBlock implements
         }
     }
 
-    @SuppressWarnings("unused")
-    public SteamAssemblyBench(@NotNull Block block, @NotNull BlockCreateContext context) {
-        super(block, context);
-        setFacing(context.getFacing());
-        setMultiblockDirection(context.getFacing());
-        setTickInterval(tickInterval);
-        createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
-        createFluidBuffer(SteamworkFluids.SUPERHEATED_STEAM, steamBuffer, true, false);
-    }
+    // ── GUI 元素 ──────────────────────────────────────────────────────────────
 
-    @SuppressWarnings("unused")
-    public SteamAssemblyBench(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
-        super(block, pdc);
-        try {
-            getFacing();
-        } catch (IllegalStateException e) {
-            setFacing(BlockFace.SOUTH);
+    /** 合成按钮：点击尝试装配。 */
+    private final class CraftButton extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            boolean ready = !crafting && isFormedAndFullyLoaded() && findMatch() != null
+                    && fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) >= steamPerCraft;
+            Material mat = crafting ? Material.CLOCK
+                    : ready ? Material.LIME_DYE : Material.GRAY_DYE;
+            return ItemStackBuilder.of(mat)
+                    .name(noItalic(Component.text(crafting ? "装配中…" : "开始装配",
+                            crafting ? NamedTextColor.AQUA : ready ? NamedTextColor.GREEN : NamedTextColor.GRAY)))
+                    .lore(List.of(noItalic(Component.text(
+                            String.format("需要过热蒸汽 %.0f mB", steamPerCraft), NamedTextColor.GRAY))));
         }
-        setTickInterval(tickInterval);
-    }
 
-    @Override
-    public void postInitialise() {
-        outputInventory.addPreUpdateHandler(RebarUtils.DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER);
-    }
-
-    @Override
-    public @NotNull Map<@NotNull Vector3i, @NotNull MultiblockComponent> getComponents() {
-        MultiblockComponent corner = MultiblockComponent.of(PylonKeys.BRONZE_BLOCK);
-        return Map.of(
-                new Vector3i(-1, 0, -1), corner,
-                new Vector3i(-1, 0, 1), corner,
-                new Vector3i(1, 0, -1), corner,
-                new Vector3i(1, 0, 1), corner
-        );
-    }
-
-    @Override
-    public @NotNull Map<String, VirtualInventory> getVirtualInventories() {
-        return Map.of(
-                "template", templateInventory,
-                "input", inputInventory,
-                "output", outputInventory
-        );
-    }
-
-    @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarFluidBufferBlock.super.onBreak(drops, context);
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
-    }
-
-    @Override
-    public void tick() {
-        StopReason nextReason = tryCraftOneCycle();
-        setActive(nextReason == StopReason.PROCESSING);
-        currentReason = nextReason == StopReason.PROCESSING ? StopReason.READY : nextReason;
-        statusItem.notifyWindows();
-        steamGaugeItem.notifyWindows();
-    }
-
-    private @NotNull StopReason tryCraftOneCycle() {
-        if (!isFormedAndFullyLoaded()) return StopReason.STRUCTURE_MISSING;
-        if (isTemplateEmpty()) return StopReason.NO_TEMPLATE;
-        if (fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) < steamPerCraft) return StopReason.NO_STEAM;
-
-        RecipeMatch match = findMatchingRecipe();
-        if (match == null) return StopReason.NO_RECIPE;
-        if (!outputInventory.canHold(match.result())) return StopReason.OUTPUT_FULL;
-
-        Map<Integer, Integer> plan = planIngredientConsumption(match.choices());
-        if (plan == null) return StopReason.NO_INGREDIENTS;
-
-        consumePlannedIngredients(plan);
-        outputInventory.addItem(new MachineUpdateReason(), match.result().clone());
-        removeFluid(SteamworkFluids.SUPERHEATED_STEAM, steamPerCraft);
-        spawnAssembleFx();
-        return StopReason.PROCESSING;
-    }
-
-    private boolean isTemplateEmpty() {
-        for (ItemStack stack : templateInventory.getItems()) {
-            if (stack != null && !stack.getType().isAir()) return false;
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            tryStartCraft(player);
         }
-        return true;
     }
 
-    private @Nullable RecipeMatch findMatchingRecipe() {
-        Iterator<Recipe> recipes = Bukkit.recipeIterator();
-        while (recipes.hasNext()) {
-            Recipe recipe = recipes.next();
-            RecipeMatch match = matchRecipe(recipe);
-            if (match != null) return match;
+    /** 成品预览：显示当前底座物品匹配出的成品；多条匹配时点击可循环切换。 */
+    private final class ResultItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            List<SteamAssemblyRecipe> matches = isFormedAndFullyLoaded() ? findAllMatches() : List.of();
+            if (matches.isEmpty()) {
+                return ItemStackBuilder.of(Material.BARRIER)
+                        .name(noItalic(Component.text("无匹配配方", NamedTextColor.RED)));
+            }
+            int idx = Math.floorMod(selectedRecipe, matches.size());
+            ItemStack preview = matches.get(idx).producedStack();
+            if (matches.size() > 1) {
+                var meta = preview.getItemMeta();
+                List<Component> lore = meta.lore() != null
+                        ? new ArrayList<>(meta.lore()) : new ArrayList<>();
+                lore.add(noItalic(Component.text(
+                        "▸ 点击切换配方 (" + (idx + 1) + "/" + matches.size() + ")",
+                        NamedTextColor.YELLOW)));
+                meta.lore(lore);
+                preview.setItemMeta(meta);
+            }
+            return new xyz.xenondevs.invui.item.ItemWrapper(preview);
         }
-        return null;
-    }
 
-    private @Nullable RecipeMatch matchRecipe(@NotNull Recipe recipe) {
-        if (recipe instanceof ShapedRecipe shaped) {
-            return matchShapedRecipe(shaped);
-        }
-        if (recipe instanceof ShapelessRecipe shapeless) {
-            return matchShapelessRecipe(shapeless);
-        }
-        return null;
-    }
-
-    private @Nullable RecipeMatch matchShapedRecipe(@NotNull ShapedRecipe recipe) {
-        String[] shape = recipe.getShape();
-        Map<Character, RecipeChoice> choiceMap = recipe.getChoiceMap();
-
-        for (int yOffset = 0; yOffset <= 3 - shape.length; yOffset++) {
-            int width = shapeWidth(shape);
-            for (int xOffset = 0; xOffset <= 3 - width; xOffset++) {
-                List<RecipeChoice> choices = new ArrayList<>();
-                boolean matches = true;
-                for (int y = 0; y < 3 && matches; y++) {
-                    for (int x = 0; x < 3; x++) {
-                        RecipeChoice choice = choiceAt(shape, choiceMap, x - xOffset, y - yOffset);
-                        ItemStack template = templateInventory.getItem(y * 3 + x);
-                        if (!templateMatchesChoice(template, choice)) {
-                            matches = false;
-                            break;
-                        }
-                        if (choice != null) choices.add(choice.clone());
-                    }
-                }
-                if (matches) return new RecipeMatch(recipe.getResult(), choices);
+        @Override
+        public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
+            int count = findAllMatches().size();
+            if (count > 1) {
+                selectedRecipe = Math.floorMod(selectedRecipe + 1, count);
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.2f);
+                resultItem.notifyWindows();
+                craftButton.notifyWindows();
+                statusItem.notifyWindows();
             }
         }
-        return null;
     }
 
-    private int shapeWidth(@NotNull String[] shape) {
-        int width = 0;
-        for (String row : shape) {
-            width = Math.max(width, row.length());
-        }
-        return width;
-    }
-
-    private @Nullable RecipeChoice choiceAt(
-            @NotNull String[] shape,
-            @NotNull Map<Character, RecipeChoice> choiceMap,
-            int x,
-            int y) {
-        if (y < 0 || y >= shape.length) return null;
-        String row = shape[y];
-        if (x < 0 || x >= row.length()) return null;
-        char symbol = row.charAt(x);
-        if (symbol == ' ') return null;
-        return choiceMap.get(symbol);
-    }
-
-    private @Nullable RecipeMatch matchShapelessRecipe(@NotNull ShapelessRecipe recipe) {
-        List<RecipeChoice> remaining = new ArrayList<>();
-        for (RecipeChoice choice : recipe.getChoiceList()) {
-            remaining.add(choice.clone());
-        }
-
-        for (ItemStack template : templateInventory.getItems()) {
-            if (template == null || template.getType().isAir()) continue;
-            boolean matched = false;
-            for (int i = 0; i < remaining.size(); i++) {
-                if (remaining.get(i).test(template)) {
-                    remaining.remove(i);
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) return null;
-        }
-
-        if (!remaining.isEmpty()) return null;
-        List<RecipeChoice> choices = new ArrayList<>();
-        for (RecipeChoice choice : recipe.getChoiceList()) {
-            choices.add(choice.clone());
-        }
-        return new RecipeMatch(recipe.getResult(), choices);
-    }
-
-    private boolean templateMatchesChoice(@Nullable ItemStack template, @Nullable RecipeChoice choice) {
-        boolean empty = template == null || template.getType().isAir();
-        if (choice == null) return empty;
-        return !empty && choice.test(template);
-    }
-
-    private @Nullable Map<Integer, Integer> planIngredientConsumption(@NotNull List<RecipeChoice> choices) {
-        Map<Integer, Integer> reserved = new LinkedHashMap<>();
-        for (RecipeChoice choice : choices) {
-            boolean found = false;
-            for (int slot = 0; slot < inputInventory.getSize(); slot++) {
-                ItemStack stack = inputInventory.getItem(slot);
-                int alreadyReserved = reserved.getOrDefault(slot, 0);
-                if (stack == null || stack.getType().isAir() || stack.getAmount() <= alreadyReserved) continue;
-                if (!choice.test(stack)) continue;
-                reserved.merge(slot, 1, Integer::sum);
-                found = true;
-                break;
-            }
-            if (!found) return null;
-        }
-        return reserved;
-    }
-
-    private void consumePlannedIngredients(@NotNull Map<Integer, Integer> plan) {
-        MachineUpdateReason reason = new MachineUpdateReason();
-        for (Map.Entry<Integer, Integer> entry : plan.entrySet()) {
-            ItemStack stack = inputInventory.getItem(entry.getKey());
-            if (stack == null || stack.getType().isAir()) continue;
-            inputInventory.setItem(reason, entry.getKey(), stack.subtract(entry.getValue()));
-        }
-    }
-
-    private void spawnAssembleFx() {
-        Block block = getBlock();
-        block.getWorld().spawnParticle(
-                Particle.CRIT,
-                block.getLocation().add(0.5, 1.1, 0.5),
-                12, 0.3, 0.2, 0.3, 0.05);
-        if (Math.random() < 0.35) {
-            block.getWorld().playSound(block.getLocation(), Sound.BLOCK_ANVIL_USE, 0.45f, 1.6f);
-        }
-    }
-
-    private void setActive(boolean active) {
-        if (lastActive != active) {
-            lastActive = active;
-            scheduleBlockTextureItemRefresh();
-        }
-    }
-
-    @Override
-    public @NotNull Map<String, kotlin.Pair<String, Integer>> getBlockTextureProperties() {
-        var props = super.getBlockTextureProperties();
-        props.put("active", new kotlin.Pair<>(Boolean.toString(lastActive), 2));
-        return props;
-    }
-
-    @Override
-    public @NotNull Gui createGui() {
-        return Gui.builder()
-                .setStructure(
-                        "# t t t # g # o #",
-                        "# t t t # s # o #",
-                        "# t t t # # # # #",
-                        "# i i i i i i i #",
-                        "# # i i i i # # #"
-                )
-                .addIngredient('#', GuiItems.background())
-                .addIngredient('t', templateInventory)
-                .addIngredient('i', inputInventory)
-                .addIngredient('o', outputInventory)
-                .addIngredient('g', steamGaugeItem)
-                .addIngredient('s', statusItem)
-                .build();
-    }
-
-    @Override
-    public @NotNull Component getGuiTitle() {
-        return noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.title"));
-    }
-
-    @Override
-    public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("structure", Component.translatable("steamwork.structure."
-                        + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
-                        fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
-                        12,
-                        TextColor.fromHexString("#ff8c00")
-                )),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + currentReason.key()))
-        ));
-    }
-
+    /** 状态指示。 */
     private final class StatusItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            Material material = switch (currentReason) {
-                case READY, PROCESSING -> Material.GREEN_STAINED_GLASS_PANE;
-                case NO_STEAM, STRUCTURE_MISSING -> Material.RED_STAINED_GLASS_PANE;
-                case OUTPUT_FULL -> Material.YELLOW_STAINED_GLASS_PANE;
-                case NO_TEMPLATE, NO_RECIPE, NO_INGREDIENTS -> Material.GRAY_STAINED_GLASS_PANE;
-            };
-
-            return ItemStackBuilder.of(material)
-                    .name(noItalic(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle"))))
-                    .lore(List.of(
-                            noItalic(reasonComponent(currentReason)),
-                            noItalic(Component.text(String.format("%.0f mB/craft", steamPerCraft)))
-                    ));
+            boolean formed = isFormedAndFullyLoaded();
+            boolean hasSteam = fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) >= steamPerCraft;
+            Material mat;
+            Component text;
+            if (crafting) {
+                mat = Material.GREEN_STAINED_GLASS_PANE;
+                text = Component.text("装配中…", NamedTextColor.AQUA);
+            } else if (!formed) {
+                mat = Material.RED_STAINED_GLASS_PANE;
+                text = Component.text("结构不完整", NamedTextColor.RED);
+            } else if (!hasSteam) {
+                mat = Material.ORANGE_STAINED_GLASS_PANE;
+                text = Component.text("过热蒸汽不足", NamedTextColor.GOLD);
+            } else if (findMatch() == null) {
+                mat = Material.GRAY_STAINED_GLASS_PANE;
+                text = Component.text("放入正确原料", NamedTextColor.GRAY);
+            } else {
+                mat = Material.GREEN_STAINED_GLASS_PANE;
+                text = Component.text("就绪，可装配", NamedTextColor.GREEN);
+            }
+            return ItemStackBuilder.of(mat).name(noItalic(text));
         }
 
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
     }
 
-    private @NotNull Component reasonComponent(@NotNull StopReason reason) {
-        return switch (reason) {
-            case NO_TEMPLATE -> Component.translatable("steamwork.state.ready");
-            case NO_RECIPE, NO_INGREDIENTS -> Component.translatable("steamwork.state.no_ingredients");
-            default -> Component.translatable("steamwork.state." + reason.key());
-        };
-    }
-
+    /** 过热蒸汽量表。 */
     private final class SteamGaugeItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
@@ -438,17 +610,12 @@ public class SteamAssemblyBench extends RebarBlock implements
             return ItemStackBuilder.of(Material.ORANGE_STAINED_GLASS)
                     .name(noItalic(Component.translatable("steamwork.fluid.superheated_steam")))
                     .lore(List.of(noItalic(Component.text(
-                            UnitFormat.MILLIBUCKETS.format(steam).decimalPlaces(0)
-                                    + " / "
-                                    + UnitFormat.MILLIBUCKETS.format(capacity).decimalPlaces(0)
-                    ))));
+                            String.format("%.0f / %.0f mB", steam, capacity), NamedTextColor.AQUA))));
         }
 
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {}
     }
-
-    private record RecipeMatch(@NotNull ItemStack result, @NotNull List<RecipeChoice> choices) {}
 
     private static @NotNull Component noItalic(@NotNull Component component) {
         return component.decoration(TextDecoration.ITALIC, false);

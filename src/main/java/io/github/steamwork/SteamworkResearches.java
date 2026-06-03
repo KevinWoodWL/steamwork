@@ -78,7 +78,8 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_ASSEMBLY_BENCH,
             SteamworkKeys.STEAM_MOTOR,
             SteamworkKeys.STEAM_CANISTER_BRASS, SteamworkKeys.STEAM_CANISTER_INVAR,
-            SteamworkKeys.STEAM_CANISTER_TUNGSTEN);
+            SteamworkKeys.STEAM_CANISTER_TUNGSTEN, SteamworkKeys.STEAM_CANISTER_BENCH,
+            SteamworkKeys.STEAM_CHARGING_CHAMBER);
 
     public static final Research PRECISION_PRODUCTION_LINE = new Research(
             steamworkKey("precision_production_line"), SteamworkItems.PRODUCTION_LINE_INLET, 130L,
@@ -165,6 +166,9 @@ public final class SteamworkResearches {
             SteamworkKeys.HIGH_POLYMER,
             SteamworkKeys.PALLADIUM_WORKPIECE_1, SteamworkKeys.PALLADIUM_WORKPIECE_2,
             SteamworkKeys.PALLADIUM_WORKPIECE_3, SteamworkKeys.PALLADIUM_ALLOY_INGOT,
+            SteamworkKeys.JET_NOZZLE, SteamworkKeys.STEAM_FLIGHT_CORE,
+            SteamworkKeys.FLIGHT_CORE_WORKPIECE_1, SteamworkKeys.FLIGHT_CORE_WORKPIECE_2,
+            SteamworkKeys.FLIGHT_CORE_WORKPIECE_3, SteamworkKeys.TURBINE_ROTOR,
             SteamworkKeys.PRECISION_CRYSTALLIZER,
             SteamworkKeys.PRECISION_CENTRIFUGE,
             SteamworkKeys.PRECISION_FOUNDRY);
@@ -187,12 +191,27 @@ public final class SteamworkResearches {
     public static final Research PRECISION_STEAM_EQUIPMENT = new Research(
             steamworkKey("precision_steam_equipment"), SteamworkItems.STEAM_SWORD, 450L,
             SteamworkKeys.STEAM_SWORD, SteamworkKeys.STEAM_PICKAXE, SteamworkKeys.STEAM_AXE,
-            SteamworkKeys.STEAM_SHOVEL, SteamworkKeys.STEAM_HOE);
+            SteamworkKeys.STEAM_SHOVEL, SteamworkKeys.STEAM_HOE,
+            SteamworkKeys.STEAM_BRONZE_SWORD, SteamworkKeys.STEAM_BRONZE_PICKAXE,
+            SteamworkKeys.STEAM_BRONZE_AXE, SteamworkKeys.STEAM_BRONZE_SHOVEL,
+            SteamworkKeys.STEAM_BRONZE_HOE,
+            SteamworkKeys.STEAM_INVAR_SWORD, SteamworkKeys.STEAM_INVAR_PICKAXE,
+            SteamworkKeys.STEAM_INVAR_AXE, SteamworkKeys.STEAM_INVAR_SHOVEL,
+            SteamworkKeys.STEAM_INVAR_HOE,
+            SteamworkKeys.STEAM_TUNGSTEN_SWORD, SteamworkKeys.STEAM_TUNGSTEN_PICKAXE,
+            SteamworkKeys.STEAM_TUNGSTEN_AXE, SteamworkKeys.STEAM_TUNGSTEN_SHOVEL,
+            SteamworkKeys.STEAM_TUNGSTEN_HOE);
 
     public static final Research MATERIAL_STEAM_ARMOR = new Research(
             steamworkKey("material_steam_armor"), SteamworkItems.STEAM_CHESTPLATE, 600L,
             SteamworkKeys.STEAM_HELMET, SteamworkKeys.STEAM_CHESTPLATE,
-            SteamworkKeys.STEAM_LEGGINGS, SteamworkKeys.STEAM_BOOTS);
+            SteamworkKeys.STEAM_LEGGINGS, SteamworkKeys.STEAM_BOOTS,
+            SteamworkKeys.STEAM_BRONZE_HELMET, SteamworkKeys.STEAM_BRONZE_CHESTPLATE,
+            SteamworkKeys.STEAM_BRONZE_LEGGINGS, SteamworkKeys.STEAM_BRONZE_BOOTS,
+            SteamworkKeys.STEAM_INVAR_HELMET, SteamworkKeys.STEAM_INVAR_CHESTPLATE,
+            SteamworkKeys.STEAM_INVAR_LEGGINGS, SteamworkKeys.STEAM_INVAR_BOOTS,
+            SteamworkKeys.STEAM_TUNGSTEN_HELMET, SteamworkKeys.STEAM_TUNGSTEN_CHESTPLATE,
+            SteamworkKeys.STEAM_TUNGSTEN_LEGGINGS, SteamworkKeys.STEAM_TUNGSTEN_BOOTS);
 
     public static void initialize() {
         MATERIAL_BASIC_METALS.register();

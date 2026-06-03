@@ -3,4 +3,7 @@ contributors:
     minecraft-uuid: "0138be6f-d04e-4412-a7b3-581913200ac5"
     description: "<white><!i>Creator and lead developer of Steamwork. | 蒸汽工坊的创建者和主要开发者。"
     github: "KevinWoodWL"
-    link: "https://github.com/KevinWoodWL/steamwork"
+    link: "https://github.com/KevinWoodWL"
+  - display-name: "Takuya_Dongji"
+    minecraft-uuid: "33c6283d-0544-4988-ac07-227c888c5490"
+    description: "<white><!i>The main creators of Steamwork resourcespack. | 蒸汽工坊材质包的主要绘制者。"

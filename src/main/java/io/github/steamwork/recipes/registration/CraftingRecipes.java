@@ -229,14 +229,14 @@ public final class CraftingRecipes {
 
 
         // Precision Steam Turbine - accelerates all machine types (max 2 targets)
-        // Requires basic + precision processing turbine + pylon universal turbine + palladium alloy
+        // Requires basic + precision processing turbine + pylon universal turbine + turbine rotor (multi-step core part)
         ShapedRecipe precisionSteamTurbine = new ShapedRecipe(
                 SteamworkKeys.PRECISION_STEAM_TURBINE, SteamworkItems.PRECISION_STEAM_TURBINE);
-        precisionSteamTurbine.shape("BPB", "UAU", "BPB");
+        precisionSteamTurbine.shape("BPB", "URU", "BPB");
         precisionSteamTurbine.setIngredient('B', rebarChoice(SteamworkItems.BASIC_PROCESSING_TURBINE));
         precisionSteamTurbine.setIngredient('P', rebarChoice(SteamworkItems.PRECISION_PROCESSING_TURBINE));
         precisionSteamTurbine.setIngredient('U', rebarChoice(SteamworkItems.PYLON_UNIVERSAL_TURBINE));
-        precisionSteamTurbine.setIngredient('A', rebarChoice(SteamworkItems.PALLADIUM_ALLOY_INGOT));
+        precisionSteamTurbine.setIngredient('R', rebarChoice(SteamworkItems.TURBINE_ROTOR));
         precisionSteamTurbine.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(precisionSteamTurbine);
 

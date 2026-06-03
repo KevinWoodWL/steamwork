@@ -18,6 +18,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
+import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.content.machines.upgrade.UpgradeModule;
 import io.github.steamwork.content.machines.upgrade.UpgradeType;
@@ -197,7 +198,7 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
         setFacing(context.getFacing());
         setTickInterval(tickInterval);
         createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
-        createFluidBuffer(SteamworkFluids.STEAM, steamBuffer, true, false);
+        createFluidBuffer(boosterFluid(), steamBuffer, true, false);
     }
 
     protected AbstractSteamBooster(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
@@ -367,6 +368,17 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
      */
     protected double synergyMultiplier() { return 1.0; }
 
+    /**
+     * 本涡轮消耗的流体类型。默认为普通蒸汽；子类可覆盖以使用过热蒸汽或加压蒸汽。
+     *
+     * <p>注意：此方法会在父类构造器中被调用（用于初始化流体缓冲区），
+     * 因此实现必须只返回静态常量，不得引用子类实例字段。</p>
+     */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+    protected @NotNull RebarFluid boosterFluid() {
+        return SteamworkFluids.STEAM;
+    }
+
     /** vanilla 熔炉识别 helper，让子类的 {@link #identifyTarget} 复用。 */
     protected final boolean isVanillaFurnace(@NotNull Block block) {
         return VANILLA_FURNACES.contains(block.getType());
@@ -531,7 +543,7 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
             lastTargetsFound++;
             // 达到本涡轮的目标上限后仍统计 found，但不再加速
             if (limit > 0 && lastTargetsBoosted >= limit) continue;
-            if (!canBoost(target, type) || fluidAmount(SteamworkFluids.STEAM) < steamCost) {
+            if (!canBoost(target, type) || fluidAmount(boosterFluid()) < steamCost) {
                 continue;
             }
             // 检查全局叠加层数上限：同一 Block 本 tick 已被加速 MAX_BOOST_STACKS 次则跳过。
@@ -539,7 +551,7 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
             int stackCount = getAndIncrementBoostStack(target);
             if (!bypassCap && stackCount >= MAX_BOOST_STACKS) continue;
 
-            removeFluid(SteamworkFluids.STEAM, steamCost);
+            removeFluid(boosterFluid(), steamCost);
             boost(target, type);
             lastTargetsBoosted++;
             lastSteamUsed += steamCost;
@@ -604,8 +616,8 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     }
 
     private String createSteamBar() {
-        double amount = fluidAmount(SteamworkFluids.STEAM);
-        double capacity = fluidCapacity(SteamworkFluids.STEAM);
+        double amount = fluidAmount(boosterFluid());
+        double capacity = fluidCapacity(boosterFluid());
         int filled = (int) Math.round(16.0 * amount / Math.max(1.0, capacity));
         StringBuilder bar = new StringBuilder();
         for (int i = 0; i < 16; i++) {
@@ -690,8 +702,8 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     private final class SteamGaugeItem extends AbstractItem {
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
-            double steam = fluidAmount(SteamworkFluids.STEAM);
-            double cap = fluidCapacity(SteamworkFluids.STEAM);
+            double steam = fluidAmount(boosterFluid());
+            double cap = fluidCapacity(boosterFluid());
             int pct = (int) Math.round(100.0 * steam / Math.max(1.0, cap));
 
             Material mat = pct >= 75 ? Material.LIGHT_BLUE_STAINED_GLASS

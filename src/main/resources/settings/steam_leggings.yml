@@ -2,5 +2,3 @@ armor: 6
 armor-toughness: 2
 durability: 300
 
-# 内置蒸汽罐容量（mB）。主动能力（4e）将从这里扣汽。
-steam-capacity: 1500.0

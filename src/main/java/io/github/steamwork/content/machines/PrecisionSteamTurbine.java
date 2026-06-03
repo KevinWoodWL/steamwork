@@ -4,6 +4,8 @@ import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
+import io.github.pylonmc.rebar.fluid.RebarFluid;
+import io.github.steamwork.SteamworkFluids;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -57,6 +59,12 @@ public class PrecisionSteamTurbine extends AbstractSteamBooster {
     @Override
     protected int maxTargets() {
         return maxTargetsConfig;
+    }
+
+    /** 精密全能涡轮消耗过热蒸汽，是全套精密机器体系的顶端驱动力。 */
+    @Override
+    protected @NotNull RebarFluid boosterFluid() {
+        return SteamworkFluids.SUPERHEATED_STEAM;
     }
 
     /**

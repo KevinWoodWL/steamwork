@@ -21,6 +21,8 @@ import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.PneumaticDuct;
 import io.github.steamwork.content.machines.SteamSorter;
 import io.github.steamwork.content.machines.SteamGrinder;
+import io.github.steamwork.content.machines.SteamCanisterBench;
+import io.github.steamwork.content.machines.SteamChargingChamber;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
 import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamPress;
@@ -78,6 +80,8 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.STEAM_ASSEMBLY_BENCH, Material.SMITHING_TABLE, SteamAssemblyBench.class);
         RebarBlock.register(SteamworkKeys.STEAM_SCIENCE_INTERFACE, Material.LECTERN, SteamScienceInterface.class);
         RebarBlock.register(SteamworkKeys.STEAM_HEATING_CHAMBER, Material.BLAST_FURNACE, SteamHeatingChamber.class);
+        RebarBlock.register(SteamworkKeys.STEAM_CANISTER_BENCH, Material.GRINDSTONE, SteamCanisterBench.class);
+        RebarBlock.register(SteamworkKeys.STEAM_CHARGING_CHAMBER, Material.LODESTONE, SteamChargingChamber.class);
         RebarBlock.register(SteamworkKeys.STEAM_COMPRESSOR, Material.BLAST_FURNACE, SteamCompressor.class);
         RebarBlock.register(SteamworkKeys.PNEUMATIC_CARGO_HUB, Material.DISPENSER, PneumaticCargoHub.class);
         RebarBlock.register(SteamworkKeys.STEAM_CATAPULT, Material.CUT_COPPER_SLAB, SteamCatapult.class);
@@ -95,7 +99,8 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.INVAR_BLOCK, Material.IRON_BLOCK, RebarBlock.class);
         RebarBlock.register(SteamworkKeys.DURALUMIN_BLOCK, Material.COPPER_BLOCK, RebarBlock.class);
         RebarBlock.register(SteamworkKeys.TUNGSTEN_BLOCK, Material.NETHERITE_BLOCK, RebarBlock.class);
-        RebarBlock.register(SteamworkKeys.MANGANESE_STEEL_BLOCK, Material.IRON_BLOCK, RebarBlock.class);
+        RebarBlock.register(SteamworkKeys.MANGANESE_STEEL_BLOCK, Material.IRON_BLOCK,
+                io.github.steamwork.content.machines.AssemblyPedestal.class);
         RebarBlock.register(SteamworkKeys.MANGANESE_BRONZE_BLOCK, Material.COPPER_BLOCK, RebarBlock.class);
     }
 }

@@ -1,7 +1,8 @@
 package io.github.steamwork;
 
+import io.github.steamwork.content.equipment.SteamArmorItem;
 import io.github.steamwork.content.equipment.SteamCanister;
-import io.github.steamwork.content.equipment.SteamEquipment;
+import io.github.steamwork.content.equipment.SteamToolItem;
 import io.github.steamwork.content.machines.SimpleSteamTurbine;
 import io.github.steamwork.content.machines.SteamAssemblyBench;
 import io.github.steamwork.content.machines.BasicProcessingTurbine;
@@ -21,6 +22,8 @@ import io.github.steamwork.content.machines.PrecisionCrystallizer;
 import io.github.steamwork.content.machines.PrecisionCentrifuge;
 import io.github.steamwork.content.machines.SteamArm;
 import io.github.steamwork.content.machines.SteamGrinder;
+import io.github.steamwork.content.machines.SteamCanisterBench;
+import io.github.steamwork.content.machines.SteamChargingChamber;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
@@ -172,6 +175,8 @@ public final class SteamworkItems {
     public static final ItemStack STEAM_ASSEMBLY_BENCH = ItemStackBuilder.rebar(Material.SMITHING_TABLE, SteamworkKeys.STEAM_ASSEMBLY_BENCH).build();
     public static final ItemStack STEAM_SCIENCE_INTERFACE = ItemStackBuilder.rebar(Material.LECTERN, SteamworkKeys.STEAM_SCIENCE_INTERFACE).build();
     public static final ItemStack STEAM_HEATING_CHAMBER = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.STEAM_HEATING_CHAMBER).build();
+    public static final ItemStack STEAM_CANISTER_BENCH = ItemStackBuilder.rebar(Material.GRINDSTONE, SteamworkKeys.STEAM_CANISTER_BENCH).build();
+    public static final ItemStack STEAM_CHARGING_CHAMBER = ItemStackBuilder.rebar(Material.LODESTONE, SteamworkKeys.STEAM_CHARGING_CHAMBER).build();
     public static final ItemStack STEAM_DISTILLATION_TOWER = ItemStackBuilder.rebar(Material.CAULDRON, SteamworkKeys.STEAM_DISTILLATION_TOWER).build();
     public static final ItemStack DISTILLATION_TOWER_SECTION = ItemStackBuilder.rebar(Material.LIGHT_GRAY_STAINED_GLASS, SteamworkKeys.DISTILLATION_TOWER_SECTION).build();
     public static final ItemStack DISTILLATION_CONDENSER = ItemStackBuilder.rebar(Material.CUT_COPPER, SteamworkKeys.DISTILLATION_CONDENSER).build();
@@ -225,6 +230,11 @@ public final class SteamworkItems {
     public static final ItemStack HIGH_POLYMER = ItemStackBuilder.rebar(Material.PHANTOM_MEMBRANE, SteamworkKeys.HIGH_POLYMER).build();
     public static final ItemStack SEQUENCED_WORKPIECE = ItemStackBuilder.rebar(Material.RAW_IRON, SteamworkKeys.SEQUENCED_WORKPIECE).build();
 
+    // 蒸汽飞行核心相关
+    public static final ItemStack JET_NOZZLE = ItemStackBuilder.rebar(Material.LIGHTNING_ROD, SteamworkKeys.JET_NOZZLE).build();
+    public static final ItemStack STEAM_FLIGHT_CORE = ItemStackBuilder.rebar(Material.HEAVY_CORE, SteamworkKeys.STEAM_FLIGHT_CORE).build();
+    public static final ItemStack TURBINE_ROTOR = ItemStackBuilder.rebar(Material.PISTON, SteamworkKeys.TURBINE_ROTOR).build();
+
     // Steam automation machines
     public static final ItemStack PRECISION_FOUNDRY = ItemStackBuilder.rebar(Material.BLAST_FURNACE, SteamworkKeys.PRECISION_FOUNDRY).build();
     public static final ItemStack PRECISION_CATALYTIC_REACTOR = ItemStackBuilder.rebar(Material.BREWING_STAND, SteamworkKeys.PRECISION_CATALYTIC_REACTOR).build();
@@ -251,40 +261,104 @@ public final class SteamworkItems {
     public static final ItemStack UPGRADE_MODULE_BOOST = ItemStackBuilder.rebar(Material.SUGAR, SteamworkKeys.UPGRADE_MODULE_BOOST).build();
     public static final ItemStack UPGRADE_MODULE_PYLON_COMPAT = ItemStackBuilder.rebar(Material.NETHER_STAR, SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT).build();
 
-    // Steam weapons / tools / armor — each carries a steam buffer in PDC (see SteamCharge).
-    // Capacity baked in template so crafting copies it; main-thread runtime can read amount/capacity uniformly.
-    public static final ItemStack STEAM_SWORD = withSteamCapacity(ItemStackBuilder
-            .rebarWeapon(Material.IRON_SWORD, SteamworkKeys.STEAM_SWORD, true, false, false).build(), 2000.0);
+    // Steam weapons / tools / armor — NO baked capacity. They start "uncanistered" (socket=none,
+    // capacity=0) and only gain a steam buffer once a canister is installed at the Canister Bench
+    // (see SteamCharge socket API). Crafting copies a fresh, empty template.
+    public static final ItemStack STEAM_SWORD = ItemStackBuilder
+            .rebarWeapon(Material.IRON_SWORD, SteamworkKeys.STEAM_SWORD, true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
 
-    public static final ItemStack STEAM_PICKAXE = withSteamCapacity(ItemStackBuilder
-            .rebarToolWeapon(Material.IRON_PICKAXE, SteamworkKeys.STEAM_PICKAXE, RebarUtils.pickaxeMineable(), true, false, false).build(), 2500.0);
-    public static final ItemStack STEAM_AXE = withSteamCapacity(ItemStackBuilder
-            .rebarToolWeapon(Material.IRON_AXE, SteamworkKeys.STEAM_AXE, RebarUtils.axeMineable(), true, false, false).build(), 2500.0);
-    public static final ItemStack STEAM_SHOVEL = withSteamCapacity(ItemStackBuilder
-            .rebarToolWeapon(Material.IRON_SHOVEL, SteamworkKeys.STEAM_SHOVEL, RebarUtils.shovelMineable(), true, false, false).build(), 1800.0);
-    public static final ItemStack STEAM_HOE = withSteamCapacity(ItemStackBuilder
-            .rebarToolWeapon(Material.IRON_HOE, SteamworkKeys.STEAM_HOE, RebarUtils.hoeMineable(), true, false, false).build(), 1500.0);
+    public static final ItemStack STEAM_PICKAXE = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_PICKAXE, SteamworkKeys.STEAM_PICKAXE, RebarUtils.pickaxeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_AXE = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_AXE, SteamworkKeys.STEAM_AXE, RebarUtils.axeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_SHOVEL = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_SHOVEL, SteamworkKeys.STEAM_SHOVEL, RebarUtils.shovelMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_HOE = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_HOE, SteamworkKeys.STEAM_HOE, RebarUtils.hoeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
 
-    public static final ItemStack STEAM_HELMET = withSteamCapacity(
-            ItemStackBuilder.rebarHelmet(Material.IRON_HELMET, SteamworkKeys.STEAM_HELMET, true).build(), 1500.0);
-    public static final ItemStack STEAM_CHESTPLATE = withSteamCapacity(
-            ItemStackBuilder.rebarChestplate(Material.IRON_CHESTPLATE, SteamworkKeys.STEAM_CHESTPLATE, true).build(), 2500.0);
-    public static final ItemStack STEAM_LEGGINGS = withSteamCapacity(
-            ItemStackBuilder.rebarLeggings(Material.IRON_LEGGINGS, SteamworkKeys.STEAM_LEGGINGS, true).build(), 1500.0);
-    public static final ItemStack STEAM_BOOTS = withSteamCapacity(
-            ItemStackBuilder.rebarBoots(Material.IRON_BOOTS, SteamworkKeys.STEAM_BOOTS, true).build(), 2000.0);
+    public static final ItemStack STEAM_HELMET =
+            ItemStackBuilder.rebarHelmet(Material.IRON_HELMET, SteamworkKeys.STEAM_HELMET, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_CHESTPLATE =
+            ItemStackBuilder.rebarChestplate(Material.IRON_CHESTPLATE, SteamworkKeys.STEAM_CHESTPLATE, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_LEGGINGS =
+            ItemStackBuilder.rebarLeggings(Material.IRON_LEGGINGS, SteamworkKeys.STEAM_LEGGINGS, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BOOTS =
+            ItemStackBuilder.rebarBoots(Material.IRON_BOOTS, SteamworkKeys.STEAM_BOOTS, true).set(DataComponentTypes.UNBREAKABLE).build();
 
-    // Portable steam energy. Each canister's capacity is baked into the template PDC via
+    public static final ItemStack STEAM_BRONZE_SWORD = ItemStackBuilder
+            .rebarWeapon(Material.GOLDEN_SWORD, SteamworkKeys.STEAM_BRONZE_SWORD, true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_PICKAXE = ItemStackBuilder
+            .rebarToolWeapon(Material.GOLDEN_PICKAXE, SteamworkKeys.STEAM_BRONZE_PICKAXE, RebarUtils.pickaxeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_AXE = ItemStackBuilder
+            .rebarToolWeapon(Material.GOLDEN_AXE, SteamworkKeys.STEAM_BRONZE_AXE, RebarUtils.axeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_SHOVEL = ItemStackBuilder
+            .rebarToolWeapon(Material.GOLDEN_SHOVEL, SteamworkKeys.STEAM_BRONZE_SHOVEL, RebarUtils.shovelMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_HOE = ItemStackBuilder
+            .rebarToolWeapon(Material.GOLDEN_HOE, SteamworkKeys.STEAM_BRONZE_HOE, RebarUtils.hoeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_HELMET =
+            ItemStackBuilder.rebarHelmet(Material.GOLDEN_HELMET, SteamworkKeys.STEAM_BRONZE_HELMET, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_CHESTPLATE =
+            ItemStackBuilder.rebarChestplate(Material.GOLDEN_CHESTPLATE, SteamworkKeys.STEAM_BRONZE_CHESTPLATE, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_LEGGINGS =
+            ItemStackBuilder.rebarLeggings(Material.GOLDEN_LEGGINGS, SteamworkKeys.STEAM_BRONZE_LEGGINGS, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_BRONZE_BOOTS =
+            ItemStackBuilder.rebarBoots(Material.GOLDEN_BOOTS, SteamworkKeys.STEAM_BRONZE_BOOTS, true).set(DataComponentTypes.UNBREAKABLE).build();
+
+    public static final ItemStack STEAM_INVAR_SWORD = ItemStackBuilder
+            .rebarWeapon(Material.IRON_SWORD, SteamworkKeys.STEAM_INVAR_SWORD, true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_PICKAXE = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_PICKAXE, SteamworkKeys.STEAM_INVAR_PICKAXE, RebarUtils.pickaxeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_AXE = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_AXE, SteamworkKeys.STEAM_INVAR_AXE, RebarUtils.axeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_SHOVEL = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_SHOVEL, SteamworkKeys.STEAM_INVAR_SHOVEL, RebarUtils.shovelMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_HOE = ItemStackBuilder
+            .rebarToolWeapon(Material.IRON_HOE, SteamworkKeys.STEAM_INVAR_HOE, RebarUtils.hoeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_HELMET =
+            ItemStackBuilder.rebarHelmet(Material.CHAINMAIL_HELMET, SteamworkKeys.STEAM_INVAR_HELMET, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_CHESTPLATE =
+            ItemStackBuilder.rebarChestplate(Material.CHAINMAIL_CHESTPLATE, SteamworkKeys.STEAM_INVAR_CHESTPLATE, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_LEGGINGS =
+            ItemStackBuilder.rebarLeggings(Material.CHAINMAIL_LEGGINGS, SteamworkKeys.STEAM_INVAR_LEGGINGS, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_INVAR_BOOTS =
+            ItemStackBuilder.rebarBoots(Material.CHAINMAIL_BOOTS, SteamworkKeys.STEAM_INVAR_BOOTS, true).set(DataComponentTypes.UNBREAKABLE).build();
+
+    public static final ItemStack STEAM_TUNGSTEN_SWORD = ItemStackBuilder
+            .rebarWeapon(Material.NETHERITE_SWORD, SteamworkKeys.STEAM_TUNGSTEN_SWORD, true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_PICKAXE = ItemStackBuilder
+            .rebarToolWeapon(Material.NETHERITE_PICKAXE, SteamworkKeys.STEAM_TUNGSTEN_PICKAXE, RebarUtils.pickaxeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_AXE = ItemStackBuilder
+            .rebarToolWeapon(Material.NETHERITE_AXE, SteamworkKeys.STEAM_TUNGSTEN_AXE, RebarUtils.axeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_SHOVEL = ItemStackBuilder
+            .rebarToolWeapon(Material.NETHERITE_SHOVEL, SteamworkKeys.STEAM_TUNGSTEN_SHOVEL, RebarUtils.shovelMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_HOE = ItemStackBuilder
+            .rebarToolWeapon(Material.NETHERITE_HOE, SteamworkKeys.STEAM_TUNGSTEN_HOE, RebarUtils.hoeMineable(), true, false, false).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_HELMET =
+            ItemStackBuilder.rebarHelmet(Material.NETHERITE_HELMET, SteamworkKeys.STEAM_TUNGSTEN_HELMET, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_CHESTPLATE =
+            ItemStackBuilder.rebarChestplate(Material.NETHERITE_CHESTPLATE, SteamworkKeys.STEAM_TUNGSTEN_CHESTPLATE, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_LEGGINGS =
+            ItemStackBuilder.rebarLeggings(Material.NETHERITE_LEGGINGS, SteamworkKeys.STEAM_TUNGSTEN_LEGGINGS, true).set(DataComponentTypes.UNBREAKABLE).build();
+    public static final ItemStack STEAM_TUNGSTEN_BOOTS =
+            ItemStackBuilder.rebarBoots(Material.NETHERITE_BOOTS, SteamworkKeys.STEAM_TUNGSTEN_BOOTS, true).set(DataComponentTypes.UNBREAKABLE).build();
+
+    // Portable steam canisters (the "battery"). Capacity baked into the template PDC via
     // SteamCharge.initIfMissing — crafting copies the PDC, so each crafted stack starts at 0/capacity.
+    // All three use music disc materials: non-stackable (max 1), and SteamCanister implements
+    // RebarBlockInteractor to cancel any attempt to insert them into a jukebox.
     public static final ItemStack STEAM_CANISTER_BRASS = withSteamCapacity(
-            ItemStackBuilder.rebar(Material.HONEY_BOTTLE, SteamworkKeys.STEAM_CANISTER_BRASS).build(), 2000.0);
+            ItemStackBuilder.rebar(Material.MUSIC_DISC_13, SteamworkKeys.STEAM_CANISTER_BRASS).build(), 2000.0);
     public static final ItemStack STEAM_CANISTER_INVAR = withSteamCapacity(
-            ItemStackBuilder.rebar(Material.GLASS_BOTTLE, SteamworkKeys.STEAM_CANISTER_INVAR).build(), 5000.0);
+            ItemStackBuilder.rebar(Material.MUSIC_DISC_CAT, SteamworkKeys.STEAM_CANISTER_INVAR).build(), 5000.0);
     public static final ItemStack STEAM_CANISTER_TUNGSTEN = withSteamCapacity(
-            ItemStackBuilder.rebar(Material.EXPERIENCE_BOTTLE, SteamworkKeys.STEAM_CANISTER_TUNGSTEN).build(), 12000.0);
+            ItemStackBuilder.rebar(Material.MUSIC_DISC_BLOCKS, SteamworkKeys.STEAM_CANISTER_TUNGSTEN).build(), 12000.0);
 
     private static ItemStack withSteamCapacity(ItemStack stack, double capacity) {
         SteamCharge.initIfMissing(stack, capacity);
+        // 蒸汽罐底层材质为音乐唱片；用 unsetData 将 JUKEBOX_PLAYABLE 组件显式标记为缺失，
+        // 彻底阻止唱片机识别（setJukeboxPlayable(null) 只是撤销覆盖，会退回物品类型默认值；
+        // unsetData 则在 patch 中写入"显式不存在"，覆盖类型默认）。
+        stack.unsetData(DataComponentTypes.JUKEBOX_PLAYABLE);
         return stack;
     }
 
@@ -412,6 +486,8 @@ public final class SteamworkItems {
         RebarItem.register(io.github.steamwork.content.machines.upgrade.PylonCompatUpgradeModule.class, UPGRADE_MODULE_PYLON_COMPAT, SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT);
         RebarItem.register(SteamScienceInterface.Item.class, STEAM_SCIENCE_INTERFACE, SteamworkKeys.STEAM_SCIENCE_INTERFACE);
         RebarItem.register(SteamHeatingChamber.Item.class, STEAM_HEATING_CHAMBER, SteamworkKeys.STEAM_HEATING_CHAMBER);
+        RebarItem.register(SteamCanisterBench.Item.class, STEAM_CANISTER_BENCH, SteamworkKeys.STEAM_CANISTER_BENCH);
+        RebarItem.register(SteamChargingChamber.Item.class, STEAM_CHARGING_CHAMBER, SteamworkKeys.STEAM_CHARGING_CHAMBER);
         RebarItem.register(SteamDistillationTower.Item.class, STEAM_DISTILLATION_TOWER, SteamworkKeys.STEAM_DISTILLATION_TOWER);
         RebarItem.register(RebarItem.class, DISTILLATION_TOWER_SECTION, SteamworkKeys.DISTILLATION_TOWER_SECTION);
         RebarItem.register(RebarItem.class, DISTILLATION_CONDENSER, SteamworkKeys.DISTILLATION_CONDENSER);
@@ -647,18 +723,51 @@ public final class SteamworkItems {
         RebarItem.register(RebarItem.class, PALLADIUM_ALLOY_INGOT);
         RebarItem.register(RebarItem.class, HIGH_POLYMER);
         RebarItem.register(RebarItem.class, SEQUENCED_WORKPIECE);
-        // 钯合金工序链三步中间品（各自独立 key，保证配方按步骤精确匹配 + 配方书逐步显示）
+        RebarItem.register(RebarItem.class, JET_NOZZLE);
+        RebarItem.register(RebarItem.class, STEAM_FLIGHT_CORE);
+        RebarItem.register(RebarItem.class, TURBINE_ROTOR);
+        // 钯合金 / 飞行核心工序链三步中间品（各自独立 key，保证配方按步骤精确匹配 + 配方书逐步显示）
         io.github.steamwork.util.SequencedWorkpiece.register();
 
-        RebarItem.register(SteamEquipment.class, STEAM_SWORD, SteamworkKeys.STEAM_SWORD);
-        RebarItem.register(SteamEquipment.class, STEAM_PICKAXE, SteamworkKeys.STEAM_PICKAXE);
-        RebarItem.register(SteamEquipment.class, STEAM_AXE, SteamworkKeys.STEAM_AXE);
-        RebarItem.register(SteamEquipment.class, STEAM_SHOVEL, SteamworkKeys.STEAM_SHOVEL);
-        RebarItem.register(SteamEquipment.class, STEAM_HOE, SteamworkKeys.STEAM_HOE);
-        RebarItem.register(SteamEquipment.class, STEAM_HELMET, SteamworkKeys.STEAM_HELMET);
-        RebarItem.register(SteamEquipment.class, STEAM_CHESTPLATE, SteamworkKeys.STEAM_CHESTPLATE);
-        RebarItem.register(SteamEquipment.class, STEAM_LEGGINGS, SteamworkKeys.STEAM_LEGGINGS);
-        RebarItem.register(SteamEquipment.class, STEAM_BOOTS, SteamworkKeys.STEAM_BOOTS);
+        RebarItem.register(SteamToolItem.class, STEAM_SWORD, SteamworkKeys.STEAM_SWORD);
+        RebarItem.register(SteamToolItem.class, STEAM_PICKAXE, SteamworkKeys.STEAM_PICKAXE);
+        RebarItem.register(SteamToolItem.class, STEAM_AXE, SteamworkKeys.STEAM_AXE);
+        RebarItem.register(SteamToolItem.class, STEAM_SHOVEL, SteamworkKeys.STEAM_SHOVEL);
+        RebarItem.register(SteamToolItem.class, STEAM_HOE, SteamworkKeys.STEAM_HOE);
+        RebarItem.register(SteamArmorItem.class, STEAM_HELMET, SteamworkKeys.STEAM_HELMET);
+        RebarItem.register(SteamArmorItem.class, STEAM_CHESTPLATE, SteamworkKeys.STEAM_CHESTPLATE);
+        RebarItem.register(SteamArmorItem.class, STEAM_LEGGINGS, SteamworkKeys.STEAM_LEGGINGS);
+        RebarItem.register(SteamArmorItem.class, STEAM_BOOTS, SteamworkKeys.STEAM_BOOTS);
+
+        RebarItem.register(SteamToolItem.class, STEAM_BRONZE_SWORD, SteamworkKeys.STEAM_BRONZE_SWORD);
+        RebarItem.register(SteamToolItem.class, STEAM_BRONZE_PICKAXE, SteamworkKeys.STEAM_BRONZE_PICKAXE);
+        RebarItem.register(SteamToolItem.class, STEAM_BRONZE_AXE, SteamworkKeys.STEAM_BRONZE_AXE);
+        RebarItem.register(SteamToolItem.class, STEAM_BRONZE_SHOVEL, SteamworkKeys.STEAM_BRONZE_SHOVEL);
+        RebarItem.register(SteamToolItem.class, STEAM_BRONZE_HOE, SteamworkKeys.STEAM_BRONZE_HOE);
+        RebarItem.register(SteamArmorItem.class, STEAM_BRONZE_HELMET, SteamworkKeys.STEAM_BRONZE_HELMET);
+        RebarItem.register(SteamArmorItem.class, STEAM_BRONZE_CHESTPLATE, SteamworkKeys.STEAM_BRONZE_CHESTPLATE);
+        RebarItem.register(SteamArmorItem.class, STEAM_BRONZE_LEGGINGS, SteamworkKeys.STEAM_BRONZE_LEGGINGS);
+        RebarItem.register(SteamArmorItem.class, STEAM_BRONZE_BOOTS, SteamworkKeys.STEAM_BRONZE_BOOTS);
+
+        RebarItem.register(SteamToolItem.class, STEAM_INVAR_SWORD, SteamworkKeys.STEAM_INVAR_SWORD);
+        RebarItem.register(SteamToolItem.class, STEAM_INVAR_PICKAXE, SteamworkKeys.STEAM_INVAR_PICKAXE);
+        RebarItem.register(SteamToolItem.class, STEAM_INVAR_AXE, SteamworkKeys.STEAM_INVAR_AXE);
+        RebarItem.register(SteamToolItem.class, STEAM_INVAR_SHOVEL, SteamworkKeys.STEAM_INVAR_SHOVEL);
+        RebarItem.register(SteamToolItem.class, STEAM_INVAR_HOE, SteamworkKeys.STEAM_INVAR_HOE);
+        RebarItem.register(SteamArmorItem.class, STEAM_INVAR_HELMET, SteamworkKeys.STEAM_INVAR_HELMET);
+        RebarItem.register(SteamArmorItem.class, STEAM_INVAR_CHESTPLATE, SteamworkKeys.STEAM_INVAR_CHESTPLATE);
+        RebarItem.register(SteamArmorItem.class, STEAM_INVAR_LEGGINGS, SteamworkKeys.STEAM_INVAR_LEGGINGS);
+        RebarItem.register(SteamArmorItem.class, STEAM_INVAR_BOOTS, SteamworkKeys.STEAM_INVAR_BOOTS);
+
+        RebarItem.register(SteamToolItem.class, STEAM_TUNGSTEN_SWORD, SteamworkKeys.STEAM_TUNGSTEN_SWORD);
+        RebarItem.register(SteamToolItem.class, STEAM_TUNGSTEN_PICKAXE, SteamworkKeys.STEAM_TUNGSTEN_PICKAXE);
+        RebarItem.register(SteamToolItem.class, STEAM_TUNGSTEN_AXE, SteamworkKeys.STEAM_TUNGSTEN_AXE);
+        RebarItem.register(SteamToolItem.class, STEAM_TUNGSTEN_SHOVEL, SteamworkKeys.STEAM_TUNGSTEN_SHOVEL);
+        RebarItem.register(SteamToolItem.class, STEAM_TUNGSTEN_HOE, SteamworkKeys.STEAM_TUNGSTEN_HOE);
+        RebarItem.register(SteamArmorItem.class, STEAM_TUNGSTEN_HELMET, SteamworkKeys.STEAM_TUNGSTEN_HELMET);
+        RebarItem.register(SteamArmorItem.class, STEAM_TUNGSTEN_CHESTPLATE, SteamworkKeys.STEAM_TUNGSTEN_CHESTPLATE);
+        RebarItem.register(SteamArmorItem.class, STEAM_TUNGSTEN_LEGGINGS, SteamworkKeys.STEAM_TUNGSTEN_LEGGINGS);
+        RebarItem.register(SteamArmorItem.class, STEAM_TUNGSTEN_BOOTS, SteamworkKeys.STEAM_TUNGSTEN_BOOTS);
 
         RebarItem.register(SteamCanister.class, STEAM_CANISTER_BRASS, SteamworkKeys.STEAM_CANISTER_BRASS);
         RebarItem.register(SteamCanister.class, STEAM_CANISTER_INVAR, SteamworkKeys.STEAM_CANISTER_INVAR);

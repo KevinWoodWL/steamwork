@@ -231,9 +231,14 @@ public class PneumaticOutput extends RebarBlock implements
         return PneumaticEndpointSupport.pneumaticConnectionFace(getBlock(), getFacing());
     }
 
-    /** 来源侧：导管侧的反面，即物品从外部容器流入存储仓的方向。 */
+    /**
+     * 来源侧：Output 朝向（{@link #getFacing()}）始终指向需要抽取物品的容器。
+     *
+     * <p>注意：不要从 {@link #pneumaticConnectionFace()} 反推来源侧——后者现在会
+     * 优先识别直连的 {@link PneumaticInput}，导致在直连场景下来源侧被反转。</p>
+     */
     private @NotNull BlockFace sourceFace() {
-        return pneumaticConnectionFace().getOppositeFace();
+        return getFacing();
     }
 
     // ── tick ─────────────────────────────────────────────────────────────────

@@ -1,12 +1,15 @@
 package io.github.steamwork.util;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
+import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder;
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.steamwork.content.machines.PneumaticDuct;
+import io.github.steamwork.content.machines.PneumaticInput;
+import io.github.steamwork.content.machines.PneumaticOutput;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -41,17 +44,30 @@ public final class PneumaticEndpointSupport {
     }
 
     /**
-     * Returns the face currently used by the pneumatic network. If no adjacent duct
-     * exists yet, fall back to the back side of the endpoint body.
+     * Returns the face currently used by the pneumatic network.
+     *
+     * <p>Priority:
+     * <ol>
+     *   <li>Adjacent {@link PneumaticDuct} — normal networked setup.</li>
+     *   <li>Adjacent {@link PneumaticInput} or {@link PneumaticOutput} — direct
+     *       endpoint-to-endpoint connection without a duct in between.</li>
+     *   <li>Fallback: the back side of the endpoint body ({@code facing.getOppositeFace()}).</li>
+     * </ol>
+     * </p>
      */
     public static @NotNull BlockFace pneumaticConnectionFace(@NotNull Block block, @NotNull BlockFace facing) {
+        BlockFace directEndpointFace = null;
         for (BlockFace face : ALL_FACES) {
-            var rb = BlockStorage.get(block.getRelative(face));
+            RebarBlock rb = BlockStorage.get(block.getRelative(face));
             if (rb instanceof PneumaticDuct) {
-                return face;
+                return face;          // duct always takes priority
+            }
+            if (directEndpointFace == null
+                    && (rb instanceof PneumaticInput || rb instanceof PneumaticOutput)) {
+                directEndpointFace = face;   // remember first direct endpoint hit
             }
         }
-        return facing.getOppositeFace();
+        return directEndpointFace != null ? directEndpointFace : facing.getOppositeFace();
     }
 
     /**
@@ -75,10 +91,24 @@ public final class PneumaticEndpointSupport {
     /**
      * Pylon cargo-extractor style endpoint duct: the endpoint owns only the short
      * body connector, while the duct block draws the network segment into it.
+     *
+     * <p>Special case: when the endpoint is directly adjacent to another endpoint
+     * (no duct in between), neither side has a duct to draw the connecting arm.
+     * In that case both endpoints draw their own arms pointing toward each other,
+     * using the same proportions as a duct-connected arm.</p>
      */
     public static @NotNull TransformBuilder ductTransform(@NotNull Block block,
                                                           @NotNull BlockFace face,
                                                           @NotNull BlockFace endpointFacing) {
+        RebarBlock neighbor = BlockStorage.get(block.getRelative(face));
+        if (neighbor instanceof PneumaticInput || neighbor instanceof PneumaticOutput) {
+            // Direct endpoint-to-endpoint: draw arm pointing toward the other endpoint,
+            // mirroring the arm a duct would have drawn on its connected face.
+            return new TransformBuilder()
+                    .lookAlong(face)
+                    .translate(0, 0, 0.1)
+                    .scale(0.35, 0.35, 0.80);
+        }
         return new TransformBuilder()
                 .lookAlong(endpointFacing)
                 .translate(0, 0, -0.0625)

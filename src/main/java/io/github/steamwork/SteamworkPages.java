@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.guide.button.AddonPageButton;
 import io.github.pylonmc.rebar.guide.pages.base.SimpleStaticGuidePage;
 import io.github.steamwork.guide.SequencedChainButton;
 import io.github.steamwork.guide.SequencedChainPage;
+import io.github.steamwork.recipes.SteamAssemblyRecipe;
 import io.github.steamwork.recipes.SteamCatalyticReactionRecipe;
 import io.github.steamwork.recipes.SteamFoundryRecipe;
 import io.github.steamwork.recipes.SteamMillingRecipe;
@@ -132,6 +133,19 @@ public final class SteamworkPages {
         COMPONENTS.addItem(SteamworkItems.HYDRAULIC_PISTON);
         COMPONENTS.addItem(SteamworkItems.HYDRAULIC_SEAL);
         COMPONENTS.addItem(SteamworkItems.FORGED_PLATE);
+        COMPONENTS.addItem(SteamworkItems.JET_NOZZLE);
+        COMPONENTS.addItem(SteamworkItems.TURBINE_ROTOR);
+        // 蒸汽飞行核心通过完整的四步工序链制造，左键直接展示全流程
+        COMPONENTS.addButton(new SequencedChainButton(SteamworkItems.STEAM_FLIGHT_CORE, java.util.List.of(
+                new SequencedChainPage.Step(SteamCatalyticReactionRecipe.RECIPE_TYPE,
+                        steamworkKey("react_flight_core")),
+                new SequencedChainPage.Step(SteamFoundryRecipe.RECIPE_TYPE,
+                        steamworkKey("foundry_flight_core_matrix")),
+                new SequencedChainPage.Step(SteamMillingRecipe.RECIPE_TYPE,
+                        steamworkKey("mill_flight_core_blank")),
+                new SequencedChainPage.Step(SteamAssemblyRecipe.RECIPE_TYPE,
+                        steamworkKey("assemble_flight_core"))
+        )));
 
         ROOT.addPage(new ItemStack(Material.CAMPFIRE), HEAT_SOURCES);
         HEAT_SOURCES.addItem(new ItemStack(Material.CAMPFIRE));
@@ -164,6 +178,8 @@ public final class SteamworkPages {
         STEAM_MACHINES.addItem(SteamworkItems.STEAM_HEATING_CHAMBER);
 
         ROOT.addPage(SteamworkItems.STEAM_SWORD, EQUIPMENT);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_CANISTER_BENCH);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_CHARGING_CHAMBER);
         EQUIPMENT.addItem(SteamworkItems.STEAM_CANISTER_BRASS);
         EQUIPMENT.addItem(SteamworkItems.STEAM_CANISTER_INVAR);
         EQUIPMENT.addItem(SteamworkItems.STEAM_CANISTER_TUNGSTEN);
@@ -172,12 +188,39 @@ public final class SteamworkPages {
         EQUIPMENT.addItem(SteamworkItems.STEAM_AXE);
         EQUIPMENT.addItem(SteamworkItems.STEAM_SHOVEL);
         EQUIPMENT.addItem(SteamworkItems.STEAM_HOE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_BRONZE_SWORD);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_BRONZE_PICKAXE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_BRONZE_AXE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_BRONZE_SHOVEL);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_BRONZE_HOE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_INVAR_SWORD);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_INVAR_PICKAXE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_INVAR_AXE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_INVAR_SHOVEL);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_INVAR_HOE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_TUNGSTEN_SWORD);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_TUNGSTEN_PICKAXE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_TUNGSTEN_AXE);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_TUNGSTEN_SHOVEL);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_TUNGSTEN_HOE);
 
         ROOT.addPage(SteamworkItems.STEAM_CHESTPLATE, ARMOR);
         ARMOR.addItem(SteamworkItems.STEAM_HELMET);
         ARMOR.addItem(SteamworkItems.STEAM_CHESTPLATE);
         ARMOR.addItem(SteamworkItems.STEAM_LEGGINGS);
         ARMOR.addItem(SteamworkItems.STEAM_BOOTS);
+        ARMOR.addItem(SteamworkItems.STEAM_BRONZE_HELMET);
+        ARMOR.addItem(SteamworkItems.STEAM_BRONZE_CHESTPLATE);
+        ARMOR.addItem(SteamworkItems.STEAM_BRONZE_LEGGINGS);
+        ARMOR.addItem(SteamworkItems.STEAM_BRONZE_BOOTS);
+        ARMOR.addItem(SteamworkItems.STEAM_INVAR_HELMET);
+        ARMOR.addItem(SteamworkItems.STEAM_INVAR_CHESTPLATE);
+        ARMOR.addItem(SteamworkItems.STEAM_INVAR_LEGGINGS);
+        ARMOR.addItem(SteamworkItems.STEAM_INVAR_BOOTS);
+        ARMOR.addItem(SteamworkItems.STEAM_TUNGSTEN_HELMET);
+        ARMOR.addItem(SteamworkItems.STEAM_TUNGSTEN_CHESTPLATE);
+        ARMOR.addItem(SteamworkItems.STEAM_TUNGSTEN_LEGGINGS);
+        ARMOR.addItem(SteamworkItems.STEAM_TUNGSTEN_BOOTS);
 
         ROOT.addPage(SteamworkItems.BRASS_FLOW_VALVE, STEAM_LOGISTICS);
         STEAM_LOGISTICS.addItem(SteamworkItems.STEAM_COMPRESSOR);

@@ -258,76 +258,341 @@ item:
   steam_sword:
     name: "蒸汽剑"
     lore: |-
-      <arrow> 注入蒸汽动力的锋利剑刃，威力远超普通铁剑
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> 注入蒸汽动力的锋利剑刃
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>攻击技能：<aqua>⚔ 蒸汽横扫斩</aqua>
+      <arrow>   <dark_gray>有汽攻击 · 强化伤害 · 横扫周围敌人 · 点燃 2 秒
+      <arrow> <gray>右键技能：<aqua>💨 蒸汽喷射</aqua>
+      <arrow>   <dark_gray>向视线锥形喷射蒸汽 · 伤害+点燃前方敌人（2.5s 冷却）
+      <arrow> <gray>耗尽：伤害降低，蒸汽特效停止
 
   # ───── 蒸汽工具 ─────
   steam_pickaxe:
     name: "蒸汽镐"
     lore: |-
-      <arrow> 蒸汽驱动的旋转冲击镐，挖掘效率极高
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> 蒸汽驱动的旋转冲击镐
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>⛏ 范围采掘 3×3</aqua>
+      <arrow>   <dark_gray>有汽挖掘 · 同时破坏周围一圈适用方块
+      <arrow> <gray>耗尽：失去范围挖掘并获得短暂挖掘疲劳
 
   steam_axe:
     name: "蒸汽斧"
     lore: |-
-      <arrow> 内置蒸汽引擎的伐木斧，砍树如切豆腐
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> 内置蒸汽引擎的伐木斧
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>🪓 范围伐木 3×3</aqua>
+      <arrow>   <dark_gray>有汽砍伐 · 同时破坏周围一圈可用斧采集的方块
+      <arrow> <gray>耗尽：失去范围砍伐并获得短暂挖掘疲劳
 
   steam_shovel:
     name: "蒸汽锹"
     lore: |-
       <arrow> 带有振动装置的蒸汽动力锹
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>⛏ 范围掘土 3×3</aqua>
+      <arrow>   <dark_gray>有汽铲挖 · 同时铲除周围一圈泥土、沙砾等松散方块
+      <arrow> <gray>耗尽：失去范围铲挖并获得短暂挖掘疲劳
 
   steam_hoe:
     name: "蒸汽锄"
     lore: |-
       <arrow> 蒸汽驱动的农耕工具
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>🌱 范围耕作 3×3</aqua>
+      <arrow>   <dark_gray>有汽右键 · 一次将周围一圈土地翻成耕地
+      <arrow> <gray>耗尽：无法触发范围耕地并获得短暂挖掘疲劳
 
   # ───── 蒸汽盔甲 ─────
   steam_helmet:
     name: "蒸汽头盔"
     lore: |-
       <arrow> 内置微型锅炉的防护头盔
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击耗汽；提供夜视与水下呼吸
+      <arrow> <gray>全套技能：<aqua>⚡ 蒸汽冲刺</aqua><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：增益停止，蒸汽喷雾特效消失
 
   steam_chestplate:
     name: "蒸汽胸甲"
     lore: |-
       <arrow> 以黄铜和铁锻造的重型蒸汽胸甲
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>全套有汽：待机不耗汽，受击耗汽；提供抗性提升
+      <arrow> <gray>全套技能：<aqua>⚡ 蒸汽冲刺</aqua>
+      <arrow>   <dark_gray>副手键 · 向面朝方向爆发冲刺 · 附加速度II与吸收
+      <arrow> <gray>耗尽：增益与套装技能停止
 
   steam_leggings:
     name: "蒸汽护腿"
     lore: |-
       <arrow> 内衬蒸汽管道的强化护腿
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击耗汽；提供移速提升
+      <arrow> <gray>全套技能：<aqua>⚡ 蒸汽冲刺</aqua><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：速度增益停止
 
   steam_boots:
     name: "蒸汽靴子"
     lore: |-
       <arrow> 装有减震蒸汽弹簧的重型靴子
-      <arrow> <attr>蒸汽容量：</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击耗汽；提供缓降保护
+      <arrow> <gray>全套技能：<aqua>⚡ 蒸汽冲刺</aqua><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：落地保护停止
+
+  steam_bronze_sword:
+    name: "青铜蒸汽剑"
+    lore: |-
+      <arrow> Pylon 青铜强化的稳固蒸汽剑
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>攻击技能：<gold>⚔ 烈焰横扫斩</gold>
+      <arrow>   <dark_gray>有汽攻击 · 强化伤害 · 横扫周围敌人 · 点燃 5 秒烈焰（耗汽略低）
+      <arrow> <gray>右键技能：<gold>💨 烈焰喷射</gold>
+      <arrow>   <dark_gray>向视线锥形喷射烈焰 · 伤害+长时间点燃前方敌人（2.5s 冷却）
+      <arrow> <gray>耗尽：伤害降低，火花与喷汽停止
+  steam_bronze_pickaxe:
+    name: "青铜蒸汽镐"
+    lore: |-
+      <arrow> 耐用的青铜冲击镐，适合早期矿脉开采
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<gold>⛏ 熔炼采掘 3×3</gold>
+      <arrow>   <dark_gray>有汽挖掘 3×3 · 矿石掉落自动冶炼成锭（耗汽略低）
+      <arrow> <gray>耗尽：失去范围挖掘并获得短暂挖掘疲劳
+  steam_bronze_axe:
+    name: "青铜蒸汽斧"
+    lore: |-
+      <arrow> 以青铜传动件强化的蒸汽伐木斧
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<gold>🪓 熔炼伐木 3×3</gold>
+      <arrow>   <dark_gray>有汽砍伐 3×3 · 可冶炼掉落物自动熔炼（耗汽略低）
+      <arrow> <gray>耗尽：失去范围砍伐并获得短暂挖掘疲劳
+  steam_bronze_shovel:
+    name: "青铜蒸汽锹"
+    lore: |-
+      <arrow> 稳定耐磨的青铜蒸汽掘土工具
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<gold>⛏ 熔炼掘土 3×3</gold>
+      <arrow>   <dark_gray>有汽铲挖 3×3 · 沙等可冶炼掉落自动熔炼（耗汽略低）
+      <arrow> <gray>耗尽：失去范围铲挖并获得短暂挖掘疲劳
+  steam_bronze_hoe:
+    name: "青铜蒸汽锄"
+    lore: |-
+      <arrow> 青铜机构驱动的蒸汽农耕工具
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>🌱 范围耕作 3×3</aqua>
+      <arrow>   <dark_gray>有汽右键 · 一次将周围一圈土地翻成耕地（耗汽略低）
+      <arrow> <gray>耗尽：无法触发范围耕地
+  steam_bronze_helmet:
+    name: "青铜蒸汽头盔"
+    lore: |-
+      <arrow> 稳固的青铜蒸汽防护头盔
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击低耗汽；夜视与水下呼吸
+      <arrow> <gray>全套技能：<gold>🔥 熔炉吐息</gold><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：增益停止
+  steam_bronze_chestplate:
+    name: "青铜蒸汽胸甲"
+    lore: |-
+      <arrow> Pylon 青铜板件加固的蒸汽胸甲
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>全套有汽：待机不耗汽，受击低耗汽；抗性提升
+      <arrow> <gray>全套技能：<gold>🔥 熔炉吐息</gold>
+      <arrow>   <dark_gray>副手键 · 5格环形火焰爆炸 · 点燃并伤害周围所有生物
+      <arrow> <gray>耗尽：增益与套装技能停止
+  steam_bronze_leggings:
+    name: "青铜蒸汽护腿"
+    lore: |-
+      <arrow> 耐磨青铜关节支撑的蒸汽护腿
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击低耗汽；移速提升
+      <arrow> <gray>全套技能：<gold>🔥 熔炉吐息</gold><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：速度增益停止
+  steam_bronze_boots:
+    name: "青铜蒸汽靴子"
+    lore: |-
+      <arrow> 采用青铜减震框架的蒸汽靴子
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击低耗汽；缓降保护
+      <arrow> <gray>全套技能：<gold>🔥 熔炉吐息</gold><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：落地保护停止
+
+  steam_invar_sword:
+    name: "因瓦蒸汽剑"
+    lore: |-
+      <arrow> 低热膨胀合金制成的精密节能蒸汽剑
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>攻击技能：<aqua>⚔ 精密横扫斩</aqua>
+      <arrow>   <dark_gray>有汽攻击 · 节能强化伤害 · 横扫周围敌人 · 命中附加缓慢II · 点燃 2 秒
+      <arrow> <gray>右键技能：<aqua>💨 凝滞喷射</aqua>
+      <arrow>   <dark_gray>向视线锥形喷射蒸汽 · 伤害+缓慢II减速前方敌人（2.5s 冷却）
+      <arrow> <gray>耗尽：伤害降低，蒸汽特效停止
+  steam_invar_pickaxe:
+    name: "因瓦蒸汽镐"
+    lore: |-
+      <arrow> 因瓦框架让冲击节律更加稳定，耗汽更低
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>⛏ 精密采掘 3×3</aqua>
+      <arrow>   <dark_gray>有汽挖掘 3×3 · 掉落物直接收入背包（低耗汽）
+      <arrow> <gray>耗尽：失去范围挖掘并获得短暂挖掘疲劳
+  steam_invar_axe:
+    name: "因瓦蒸汽斧"
+    lore: |-
+      <arrow> 精密调校的轻耗汽蒸汽伐木斧
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>🪓 精密伐木 3×3</aqua>
+      <arrow>   <dark_gray>有汽砍伐 3×3 · 掉落物直接收入背包（低耗汽）
+      <arrow> <gray>耗尽：失去范围砍伐并获得短暂挖掘疲劳
+  steam_invar_shovel:
+    name: "因瓦蒸汽锹"
+    lore: |-
+      <arrow> 低形变结构让铲挖动作更顺滑
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>⛏ 精密掘土 3×3</aqua>
+      <arrow>   <dark_gray>有汽铲挖 3×3 · 掉落物直接收入背包（低耗汽）
+      <arrow> <gray>耗尽：失去范围铲挖并获得短暂挖掘疲劳
+  steam_invar_hoe:
+    name: "因瓦蒸汽锄"
+    lore: |-
+      <arrow> 节能精密的蒸汽农耕工具
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<aqua>🌱 范围耕作 3×3</aqua>
+      <arrow>   <dark_gray>有汽右键 · 一次将周围一圈土地翻成耕地（低耗汽）
+      <arrow> <gray>耗尽：无法触发范围耕地
+  steam_invar_helmet:
+    name: "因瓦蒸汽头盔"
+    lore: |-
+      <arrow> 因瓦合金稳定框架制成的节能头盔
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击低耗汽；夜视与水下呼吸
+      <arrow> <gray>全套技能：<aqua>🛡 蒸汽护盾</aqua><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：增益停止
+  steam_invar_chestplate:
+    name: "因瓦蒸汽胸甲"
+    lore: |-
+      <arrow> 适合长时间运行的低耗汽蒸汽胸甲
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>全套有汽：待机不耗汽，受击低耗汽；抗性提升
+      <arrow> <gray>全套技能：<aqua>🛡 蒸汽护盾</aqua>
+      <arrow>   <dark_gray>副手键 · 激活4秒护盾 · 受伤时消耗蒸汽抵消60%伤害
+      <arrow> <gray>耗尽：增益与套装技能停止
+  steam_invar_leggings:
+    name: "因瓦蒸汽护腿"
+    lore: |-
+      <arrow> 精密低耗的因瓦蒸汽护腿
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击低耗汽；移速提升
+      <arrow> <gray>全套技能：<aqua>🛡 蒸汽护盾</aqua><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：速度增益停止
+  steam_invar_boots:
+    name: "因瓦蒸汽靴子"
+    lore: |-
+      <arrow> 节能调压机构支撑的蒸汽靴子
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击低耗汽；缓降保护
+      <arrow> <gray>全套技能：<aqua>🛡 蒸汽护盾</aqua><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：落地保护停止
+
+  steam_tungsten_sword:
+    name: "钨蒸汽剑"
+    lore: |-
+      <arrow> 能承受过热蒸汽负载的重型高温剑刃
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>攻击技能：<white>⚔ 重型横扫斩</white>
+      <arrow>   <dark_gray>有汽攻击 · 高耗汽高伤害 · 大范围横扫 · 击退周围敌人 · 点燃 2 秒
+      <arrow> <gray>右键技能：<white>💨 高压喷射</white>
+      <arrow>   <dark_gray>向视线锥形喷射高压蒸汽 · 高伤害+击退前方敌人（2.5s 冷却）
+      <arrow> <gray>耗尽：伤害降低，重型蒸汽特效停止
+  steam_tungsten_pickaxe:
+    name: "钨蒸汽镐"
+    lore: |-
+      <arrow> 针对高负载开采设计的重型蒸汽镐
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<white>⛏ 重型采掘 5×5</white>
+      <arrow>   <dark_gray>有汽挖掘 · 同时破坏周围 5×5 范围适用方块（高耗汽）
+      <arrow> <gray>耗尽：失去范围挖掘并获得短暂挖掘疲劳
+  steam_tungsten_axe:
+    name: "钨蒸汽斧"
+    lore: |-
+      <arrow> 重型钨合金刃头带来极高破坏力
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<white>🪓 重型伐木 5×5</white>
+      <arrow>   <dark_gray>有汽砍伐 · 同时破坏周围 5×5 范围可用斧采集的方块（高耗汽）
+      <arrow> <gray>耗尽：失去范围砍伐并获得短暂挖掘疲劳
+  steam_tungsten_shovel:
+    name: "钨蒸汽锹"
+    lore: |-
+      <arrow> 高温高压系统中的重型掘土工具
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<white>⛏ 重型掘土 5×5</white>
+      <arrow>   <dark_gray>有汽铲挖 · 同时铲除周围 5×5 范围松散方块（高耗汽）
+      <arrow> <gray>耗尽：失去范围铲挖并获得短暂挖掘疲劳
+  steam_tungsten_hoe:
+    name: "钨蒸汽锄"
+    lore: |-
+      <arrow> 沉重但强力的高阶蒸汽农具
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>蒸汽技能：<white>🌱 重型耕作 5×5</white>
+      <arrow>   <dark_gray>有汽右键 · 一次将周围 5×5 范围土地翻成耕地（高耗汽）
+      <arrow> <gray>耗尽：无法触发范围耕地
+  steam_tungsten_helmet:
+    name: "钨蒸汽头盔"
+    lore: |-
+      <arrow> 极高耐热性的重型蒸汽头盔
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击高耗汽；夜视与水下呼吸
+      <arrow> <gray>全套技能：<white>💥 蒸汽地震</white><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：增益停止
+  steam_tungsten_chestplate:
+    name: "钨蒸汽胸甲"
+    lore: |-
+      <arrow> 面向过热蒸汽环境的顶级重甲
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>全套有汽：待机不耗汽，受击高耗汽；高等级抗性提升
+      <arrow> <gray>全套技能：<white>💥 蒸汽地震</white>
+      <arrow>   <dark_gray>副手键 · 4.5格范围冲击波 · 距离衰减伤害并强力击退近敌
+      <arrow> <gray>全套飞行（<white>Ctrl+Shift</white> 切换三种模式，由四件装备分摊耗汽）：
+      <arrow>   <dark_gray>喷气推进 · 长按跳跃点火2秒后快速推进；落地前空中可松手滑翔、再按复推不重新点火
+      <arrow>   <dark_gray>悬浮飞行 · 在空中飞行时切入才接管为类创造自由飞行（跳跃升/潜行降），持续耗汽；落地请切「关闭」
+      <arrow>   <dark_gray>关闭 · 跳跃恢复正常，不触发喷气
+      <arrow> <gray>耗尽：增益与套装技能停止
+  steam_tungsten_leggings:
+    name: "钨蒸汽护腿"
+    lore: |-
+      <arrow> 以钨合金承受高压冲击的重型护腿
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击高耗汽；移速提升
+      <arrow> <gray>全套技能：<white>💥 蒸汽地震</white><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：速度增益停止
+  steam_tungsten_boots:
+    name: "钨蒸汽靴子"
+    lore: |-
+      <arrow> 高负载钨合金减震靴
+      <arrow> <gray>安装蒸汽罐后显示实时加压蒸汽条
+      <arrow> <gray>穿戴有汽：待机不耗汽，受击高耗汽；移速提升
+      <arrow> <gray>全套技能：<white>💥 蒸汽地震</white><dark_gray>（详见胸甲）
+      <arrow> <gray>耗尽：速度增益停止
 
   # ───── 便携蒸汽能源 ─────
   steam_canister_brass:
     name: "黄铜蒸汽罐"
     lore: |-
-      <arrow> 入门级便携蒸汽储能
+      <arrow> 入门级便携<aqua>加压蒸汽</aqua>储能；在改装台装入蒸汽装备作为电池
+      <arrow> 在<aqua>蒸汽充汽舱</aqua>充注加压蒸汽，或装入装备后随装备一起充
       <arrow> <attr>容量：</attr> <aqua>%capacity%</aqua>
 
   steam_canister_invar:
     name: "因瓦蒸汽罐"
     lore: |-
-      <arrow> 中阶便携蒸汽储能，因瓦合金外壳更耐压
+      <arrow> 中阶便携<aqua>加压蒸汽</aqua>储能，因瓦合金外壳耐压更高
+      <arrow> 在改装台装入蒸汽装备，提供更高加压蒸汽容量上限
       <arrow> <attr>容量：</attr> <aqua>%capacity%</aqua>
 
   steam_canister_tungsten:
     name: "钨蒸汽罐"
     lore: |-
-      <arrow> 高阶便携蒸汽储能，可承受过热蒸汽的高压
+      <arrow> 高阶便携<aqua>加压蒸汽</aqua>储能，钨合金高压外壳
+      <arrow> 在改装台装入蒸汽装备，提供最高加压蒸汽容量上限
       <arrow> <attr>容量：</attr> <aqua>%capacity%</aqua>
 
   # ───── 方块物品 ─────
@@ -412,10 +677,11 @@ item:
       <arrow> 专门加速 Steamwork 精密加工机器
       <arrow> 支持：精密磨坊、精密铸造炉、催化反应釜、结晶塔、离心机、破碎机、液压锻造机
       <arrow> 同时驱动上限：3 台
+      <arrow> <gold>消耗过热蒸汽</gold>
       <arrow> <attr>扫描半径：</attr> %scan-radius%
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
-      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
-    waila: "精密加工涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+      <arrow> <attr>过热蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗过热汽：</attr> %steam-per-operation%
+    waila: "精密加工涡轮 | 过热蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
 
   hydraulic_turbine:
     name: "液压涡轮"
@@ -423,10 +689,11 @@ item:
       <arrow> 专门加速 Pylon 液压系列机器
       <arrow> 支持：液压破碎机、液压锤头、液压混合附件等
       <arrow> 同时驱动上限：4 台
+      <arrow> <aqua>消耗加压蒸汽</aqua>
       <arrow> <attr>扫描半径：</attr> %scan-radius%
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
-      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
-    waila: "液压涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+      <arrow> <attr>加压蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗加压汽：</attr> %steam-per-operation%
+    waila: "液压涡轮 | 加压蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
 
   diesel_turbine:
     name: "柴油涡轮"
@@ -434,10 +701,11 @@ item:
       <arrow> 专门加速 Pylon 柴油系列机器
       <arrow> 支持：柴油破碎机、柴油锤头、柴油混合附件、钯凝结器、生物精炼厂等
       <arrow> 同时驱动上限：4 台
+      <arrow> <aqua>消耗加压蒸汽</aqua>
       <arrow> <attr>扫描半径：</attr> %scan-radius%
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
-      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
-    waila: "柴油涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+      <arrow> <attr>加压蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗加压汽：</attr> %steam-per-operation%
+    waila: "柴油涡轮 | 加压蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
 
   pylon_universal_turbine:
     name: "通用 Pylon 涡轮"
@@ -457,10 +725,11 @@ item:
       <arrow> 同时驱动上限：6 台，扫描半径 5 格
       <arrow> <gold>破顶叠加：</gold><gray>无视涡轮叠加上限，加速永远生效
       <arrow> <gold>协同效率：</gold><gray>每多加速 1 台耗汽 -5%，满载时降至 65%
+      <arrow> <gold>消耗过热蒸汽</gold>
       <arrow> <attr>扫描半径：</attr> %scan-radius%
-      <arrow> <attr>蒸汽缓冲：</attr> %steam-buffer%
-      <arrow> <attr>每次加速耗汽：</attr> %steam-per-operation%
-    waila: "精密全能涡轮 | 蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
+      <arrow> <attr>过热蒸汽缓冲：</attr> %steam-buffer%
+      <arrow> <attr>每次加速耗过热汽：</attr> %steam-per-operation%
+    waila: "精密全能涡轮 | 过热蒸汽 %steam-bar% | 目标 %targets%/%boosted% | %state%"
 
   steam_blower:
     name: "蒸汽鼓风器"
@@ -537,6 +806,24 @@ item:
       <arrow> <attr>蒸汽缓存:</attr> %steam-buffer%
       <arrow> <attr>暂存上限:</attr> %max-points%
     waila: "蒸汽科研接口 | 蒸汽 %steam-bar% | 材%material-pts% 生%biology-pts% 精%precision-pts% 化%chemistry-pts% | %state%"
+
+  steam_canister_bench:
+    name: "蒸汽装备改装台"
+    lore: |-
+      <arrow> 给蒸汽武器/工具/盔甲安装或拆卸蒸汽罐
+      <arrow> 安装蒸汽罐后装备才能蓄汽、激活蒸汽能力
+      <arrow> 更换更大的罐可提升装备蒸汽容量上限
+    waila: "蒸汽装备改装台"
+
+  steam_charging_chamber:
+    name: "蒸汽充汽舱"
+    lore: |-
+      <arrow> 多方块充能室：主方块居中层，底层锰钢块+四角锰青铜块，顶层倒置青铜楼梯+四角锰青铜块
+      <arrow> <aqua>加压蒸汽</aqua>管道从顶层楼梯上方接入，玩家进入帧内自动充汽
+      <arrow> <aqua>消耗加压蒸汽</aqua>
+      <arrow> <attr>加压蒸汽缓存：</attr> %steam-buffer%
+      <arrow> <attr>充汽速率：</attr> %charge-rate-per-tick%
+    waila: "蒸汽充汽舱 | %structure% | 加压蒸汽 %steam-bar%"
 
   steam_heating_chamber:
     name: "蒸汽加热室"
@@ -904,6 +1191,14 @@ item:
         next: "<dark_gray>下一步：<gray>精密铣床 → 校准钯合金毛坯"
       step_3:
         next: "<dark_gray>下一步：<gray>精密熔炉 + 矿物熔剂 → 钯合金锭（成品）"
+    flight_core:
+      line_name: "蒸汽飞行核心"
+      step_1:
+        next: "<dark_gray>下一步：<gray>精密熔炉 + 矿物熔剂 + 加热线圈 → 粗炼飞行核心"
+      step_2:
+        next: "<dark_gray>下一步：<gray>精密铣床 → 校准飞行核心毛坯"
+      step_3:
+        next: "<dark_gray>下一步：<gray>装配台 + 喷射喷嘴 + 精密轴承 → 蒸汽飞行核心（成品）"
 
   palladium_workpiece_1:
     name: "<aqua>活化钯合金基体"
@@ -911,6 +1206,29 @@ item:
     name: "<gold>粗炼钯合金锭"
   palladium_workpiece_3:
     name: "<yellow>校准钯合金毛坯"
+
+  jet_nozzle:
+    name: "喷射喷嘴"
+    lore: |-
+      <arrow> 钨合金高压喷射口，飞行装备的推进部件
+      <arrow> 用于合成蒸汽飞行核心与钨级飞行护甲
+  steam_flight_core:
+    name: "<aqua>蒸汽飞行核心"
+    lore: |-
+      <arrow> 经催化反应、熔炼、精密铣削与装配四道工序锻造的飞行动力核心
+      <arrow> 钨蒸汽胸甲的关键部件，赋予全套钨甲喷气飞行能力
+  flight_core_workpiece_1:
+    name: "<aqua>活化飞行合金基体"
+  flight_core_workpiece_2:
+    name: "<gold>粗炼飞行核心"
+  flight_core_workpiece_3:
+    name: "<yellow>校准飞行核心毛坯"
+
+  turbine_rotor:
+    name: "涡轮转子"
+    lore: |-
+      <arrow> 由钯合金、精密轴承、耐磨板与高压法兰装配的高速转子
+      <arrow> 精密蒸汽涡轮的核心运动部件
 
   steam_distillation_tower:
     name: "蒸汽精馏塔"
@@ -975,30 +1293,35 @@ item:
     lore: |-
       <arrow> 为蒸汽科研接口准备的矿物标本
       <arrow> 产出 <green>5</green> 点材料学研究点数
+      <arrow> 产出 <green>2</green> 点全局研究点数
 
   organic_analysis_sample:
     name: "有机分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的有机标本
       <arrow> 产出 <green>5</green> 点生物学研究点数
+      <arrow> 产出 <green>2</green> 点全局研究点数
 
   metallurgical_analysis_sample:
     name: "冶金分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的高温合金标本
       <arrow> 产出 <green>7</green> 点精密工程研究点数
+      <arrow> 产出 <green>2</green> 点全局研究点数
 
   fluid_analysis_sample:
     name: "流体分析样本"
     lore: |-
       <arrow> 为蒸汽科研接口准备的封装流体标本
       <arrow> 产出 <green>6</green> 点化学研究点数
+      <arrow> 产出 <green>2</green> 点全局研究点数
 
   refined_mineral_sample:
     name: "精制矿物样本"
     lore: |-
       <arrow> 4 个矿物分析样本经蒸汽压机压制浓缩而成
       <arrow> 产出 <green>25</green> 点材料学研究点数（约 5× 基础效率）
+      <arrow> 产出 <green>6</green> 点全局研究点数
       <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
 
   concentrated_organic_sample:
@@ -1006,6 +1329,7 @@ item:
     lore: |-
       <arrow> 4 个有机分析样本经蒸汽压机压制浓缩而成
       <arrow> 产出 <green>25</green> 点生物学研究点数（约 5× 基础效率）
+      <arrow> 产出 <green>6</green> 点全局研究点数
       <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
 
   refined_metallurgical_sample:
@@ -1013,6 +1337,7 @@ item:
     lore: |-
       <arrow> 4 个冶金分析样本经蒸汽压机精炼提纯而成
       <arrow> 产出 <green>35</green> 点精密工程研究点数（约 5× 基础效率）
+      <arrow> 产出 <green>8</green> 点全局研究点数
       <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
 
   purified_fluid_sample:
@@ -1020,6 +1345,7 @@ item:
     lore: |-
       <arrow> 4 个流体分析样本经蒸汽压机提纯压缩而成
       <arrow> 产出 <green>30</green> 点化学研究点数（约 5× 基础效率）
+      <arrow> 产出 <green>7</green> 点全局研究点数
       <arrow> <attr>蒸汽效率约为基础样本的 2 倍</attr>
 
   analysis_residue:
@@ -1106,16 +1432,16 @@ gui:
 
   precision_steam_turbine:
     title: "<dark_gray>精密全能涡轮"
-    steam_gauge: "<aqua>蒸汽储量"
-    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<gold>过热蒸汽储量"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>扫描范围"
     scan_radius: "<gray>半径：<reset><yellow>%radius%"
     max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
     targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
-    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 过热蒸汽 <gold>%steam%"
     last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
-    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    last_steam_used: "<gray>上次耗过热汽：<reset><gold>%steam%"
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
@@ -1138,48 +1464,48 @@ gui:
 
   precision_processing_turbine:
     title: "<dark_gray>精密加工涡轮"
-    steam_gauge: "<aqua>蒸汽储量"
-    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<gold>过热蒸汽储量"
+    steam: "<gray>过热蒸汽：<reset><gold>%steam% <gray>/ <gold>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>扫描范围"
     scan_radius: "<gray>半径：<reset><yellow>%radius%"
     max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
     targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
-    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 过热蒸汽 <gold>%steam%"
     last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
-    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    last_steam_used: "<gray>上次耗过热汽：<reset><gold>%steam%"
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
 
   hydraulic_turbine:
     title: "<dark_gray>液压涡轮"
-    steam_gauge: "<aqua>蒸汽储量"
-    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<aqua>加压蒸汽储量"
+    steam: "<gray>加压蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>扫描范围"
     scan_radius: "<gray>半径：<reset><yellow>%radius%"
     max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
     targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
-    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 加压蒸汽 <aqua>%steam%"
     last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
-    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    last_steam_used: "<gray>上次耗加压汽：<reset><aqua>%steam%"
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
 
   diesel_turbine:
     title: "<dark_gray>柴油涡轮"
-    steam_gauge: "<aqua>蒸汽储量"
-    steam: "<gray>蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<aqua>加压蒸汽储量"
+    steam: "<gray>加压蒸汽：<reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>扫描范围"
     scan_radius: "<gray>半径：<reset><yellow>%radius%"
     max_targets: "<gray>最大目标：<reset><yellow>%max% 台"
     targets_found: "<gray>检测到目标：<reset><yellow>%targets%"
-    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 蒸汽 <aqua>%steam%"
+    boost: "<gray>每次加速：<reset><yellow>%ticks% ticks <gray>| 加压蒸汽 <aqua>%steam%"
     last_boosted: "<gray>上次加速目标：<reset><yellow>%boosted%"
-    last_steam_used: "<gray>上次耗汽：<reset><aqua>%steam%"
+    last_steam_used: "<gray>上次耗加压汽：<reset><aqua>%steam%"
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
@@ -1410,6 +1736,14 @@ gui:
       no_steam: "<red>过热蒸汽不足"
       output_full: "<yellow>输出槽已满"
       processing: "<green>合成中"
+
+  steam_canister_bench:
+    title: "<dark_gray>蒸汽装备改装台"
+    operate: "<yellow>安装 / 拆卸"
+    state:
+      idle: "<gray>装备槽放蒸汽装备，罐槽放蒸汽罐"
+      ready_install: "<green>▶ 左键安装蒸汽罐"
+      ready_remove: "<gold>▶ 左键拆卸蒸汽罐（罐槽需为空）"
 
   steam_science_interface:
     title: "<dark_gray>蒸汽科研接口"
@@ -1906,6 +2240,19 @@ message:
     claimed_discipline: "<green>已领取 <aqua>%points%</aqua> <light_purple>%discipline%</light_purple> 学科点数"
     analysis_research_bonus: "<gray>分析研究奖励：获得 <yellow>+%points%</yellow> 全局研究点数"
     discipline_unlock_bonus: "<yellow>学科研究奖励：额外获得 <white>%points%</white> 全局研究点数"
+  steam_set:
+    dash: "<aqua>⚡ 蒸汽冲刺！"
+    fire_nova: "<gold>🔥 熔炉吐息！"
+    barrier_activate: "<aqua>🛡 蒸汽护盾已激活（5 秒）"
+    barrier_absorb: "<aqua>🛡 护盾吸收了 %absorbed% 伤害"
+    barrier_broken: "<gray>🛡 护盾蒸汽耗尽，护盾破碎！"
+    quake: "<white>💥 蒸汽地震！"
+  steam_canister_bench:
+    installed: "<green>已安装 <aqua>%canister%</aqua>，装备已激活"
+    removed: "<yellow>已拆卸蒸汽罐，装备回到未激活状态"
+    need_equipment: "<red>请在装备槽放入蒸汽武器/工具/盔甲"
+    need_canister: "<red>请在罐槽放入蒸汽罐"
+    canister_slot_occupied: "<red>拆卸前请清空罐槽"
 
 line:
   unknown_creator: "未知"

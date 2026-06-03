@@ -32,6 +32,20 @@ public final class CatalyticReactionRecipes {
         // 钯合金工序链第 1 步：用更高 priority 让指南把工序按 1 → 2 → 3 顺序展示
         RebarRecipe.setPriority(reactPalladium, 30.0);
 
+        // 蒸汽飞行核心工序链第 1 步：钯合金锭 + 钨锭 + 催化芯 → 活化飞行合金基体
+        SteamCatalyticReactionRecipe reactFlightCore = new SteamCatalyticReactionRecipe(
+                steamworkKey("react_flight_core"),
+                List.of(
+                        RecipeInput.of(SteamworkItems.PALLADIUM_ALLOY_INGOT),
+                        RecipeInput.of(SteamworkItems.TUNGSTEN_INGOT, 2),
+                        RecipeInput.of(SteamworkItems.CATALYST_CORE)
+                ),
+                SequencedWorkpiece.flightCore(1),
+                300.0,
+                420);
+        SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(reactFlightCore);
+        RebarRecipe.setPriority(reactFlightCore, 30.0);
+
         SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(new SteamCatalyticReactionRecipe(
                 steamworkKey("react_high_polymer"),
                 List.of(

@@ -4,6 +4,8 @@ import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
+import io.github.pylonmc.rebar.fluid.RebarFluid;
+import io.github.steamwork.SteamworkFluids;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -58,6 +60,12 @@ public class DieselTurbine extends AbstractSteamBooster {
     @Override
     protected int maxTargets() {
         return maxTargetsConfig;
+    }
+
+    /** 柴油机器属于高能驱动体系，需要加压蒸汽才能稳定输出。 */
+    @Override
+    protected @NotNull RebarFluid boosterFluid() {
+        return SteamworkFluids.PRESSURIZED_STEAM;
     }
 
     /**

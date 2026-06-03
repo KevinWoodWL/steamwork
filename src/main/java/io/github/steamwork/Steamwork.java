@@ -47,6 +47,10 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
                 new io.github.steamwork.content.line.ProductionLineListener(), this);
         getServer().getPluginManager().registerEvents(
                 new io.github.steamwork.content.line.PylonLineOutputBridge(), this);
+        getServer().getPluginManager().registerEvents(
+                new io.github.steamwork.content.equipment.SteamSetBonusListener(), this);
+        getServer().getPluginManager().registerEvents(
+                new io.github.steamwork.content.equipment.SteamWeaponSkillListener(), this);
 
         SteamworkResearches.initialize();
         SteamworkRecipes.initialize();

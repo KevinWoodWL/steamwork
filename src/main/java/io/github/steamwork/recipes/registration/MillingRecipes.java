@@ -28,6 +28,16 @@ public final class MillingRecipes {
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(millBlank);
         RebarRecipe.setPriority(millBlank, 10.0);
 
+        // 蒸汽飞行核心工序链第 3 步：精密铣削粗炼核心 → 校准飞行核心毛坯
+        SteamMillingRecipe millFlightCore = new SteamMillingRecipe(
+                steamworkKey("mill_flight_core_blank"),
+                RecipeInput.of(SequencedWorkpiece.flightCore(2)),
+                SequencedWorkpiece.flightCore(3),
+                180.0,
+                360);
+        SteamMillingRecipe.RECIPE_TYPE.addRecipe(millFlightCore);
+        RebarRecipe.setPriority(millFlightCore, 10.0);
+
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
                 steamworkKey("mill_invar_to_precision_gear"),
                 RecipeInput.of(SteamworkItems.INVAR_INGOT, 2),

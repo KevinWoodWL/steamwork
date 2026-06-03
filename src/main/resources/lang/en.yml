@@ -258,76 +258,341 @@ item:
   steam_sword:
     name: "Steam Sword"
     lore: |-
-      <arrow> A steam-powered blade, far deadlier than ordinary iron
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> A steam-powered blade
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Attack skill: <aqua>�?Steam Sweep</aqua>
+      <arrow>   <dark_gray>Charged hits · bonus damage · sweeps nearby foes · ignites for 2s
+      <arrow> <gray>Right-click skill: <aqua>💨 Steam Burst</aqua>
+      <arrow>   <dark_gray>Sprays steam in a forward cone · damages & ignites foes (2.5s cooldown)
+      <arrow> <gray>Depleted: reduced damage; vent effects stop
 
   # Steam tools
   steam_pickaxe:
     name: "Steam Pickaxe"
     lore: |-
-      <arrow> A steam-driven rotary impact pick for fast mining
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> A steam-driven rotary impact pick
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>�?Area Mining 3×3</aqua>
+      <arrow>   <dark_gray>Charged break · also breaks the surrounding ring of matching blocks
+      <arrow> <gray>Depleted: loses area mining and briefly slows mining
 
   steam_axe:
     name: "Steam Axe"
     lore: |-
-      <arrow> An internal-combustion lumber axe
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> A steam-engine lumber axe
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>🪓 Area Chopping 3×3</aqua>
+      <arrow>   <dark_gray>Charged break · also breaks the surrounding ring of axe-suitable blocks
+      <arrow> <gray>Depleted: loses area chopping and briefly slows mining
 
   steam_shovel:
     name: "Steam Shovel"
     lore: |-
       <arrow> A vibrating steam-powered digging shovel
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>�?Area Digging 3×3</aqua>
+      <arrow>   <dark_gray>Charged break · also digs the surrounding ring of dirt, gravel, sand
+      <arrow> <gray>Depleted: loses area digging and briefly slows mining
 
   steam_hoe:
     name: "Steam Hoe"
     lore: |-
       <arrow> A steam-driven farming implement
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>🌱 Area Tilling 3×3</aqua>
+      <arrow>   <dark_gray>Charged right-click · tills the surrounding ring of soil into farmland
+      <arrow> <gray>Depleted: cannot trigger area tilling
 
   # Steam armor
   steam_helmet:
     name: "Steam Helmet"
     lore: |-
       <arrow> A protective helmet with a miniature boiler
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle steam cost; spends steam when hit; grants night vision and water breathing
+      <arrow> <gray>Set skill: <aqua>�?Steam Dash</aqua><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: buffs and steam vent effects stop
 
   steam_chestplate:
     name: "Steam Chestplate"
     lore: |-
       <arrow> Heavy steam chestplate forged from brass and iron
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Full set charged: no idle steam cost; spends steam when hit; grants resistance
+      <arrow> <gray>Set skill: <aqua>�?Steam Dash</aqua>
+      <arrow>   <dark_gray>Off-hand key · burst dash forward · grants Speed II & Absorption
+      <arrow> <gray>Depleted: buffs and set skill stop
 
   steam_leggings:
     name: "Steam Leggings"
     lore: |-
       <arrow> Reinforced leggings lined with steam pipes
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle steam cost; spends steam when hit; grants movement speed
+      <arrow> <gray>Set skill: <aqua>�?Steam Dash</aqua><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: speed buff stops
 
   steam_boots:
     name: "Steam Boots"
     lore: |-
       <arrow> Heavy boots with steam-damped shock absorbers
-      <arrow> <attr>Steam capacity:</attr> <aqua>%capacity%</aqua>
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle steam cost; spends steam when hit; grants slow-fall protection
+      <arrow> <gray>Set skill: <aqua>�?Steam Dash</aqua><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: speed buff stops
+
+  steam_bronze_sword:
+    name: "Bronze Steam Sword"
+    lore: |-
+      <arrow> A steady steam blade reinforced with Pylon bronze
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Attack skill: <gold>�?Blazing Sweep</gold>
+      <arrow>   <dark_gray>Charged hits · bonus damage · sweeps nearby foes · ignites for 5s (lower cost)
+      <arrow> <gray>Right-click skill: <gold>💨 Flame Burst</gold>
+      <arrow>   <dark_gray>Sprays flame in a forward cone · damages & long-ignites foes (2.5s cooldown)
+      <arrow> <gray>Depleted: reduced damage; sparks and vents stop
+  steam_bronze_pickaxe:
+    name: "Bronze Steam Pickaxe"
+    lore: |-
+      <arrow> A durable bronze impact pick for early mining
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <gold>�?Smelting Mining 3×3</gold>
+      <arrow>   <dark_gray>Charged 3×3 break · auto-smelts ore drops into ingots (lower cost)
+      <arrow> <gray>Depleted: loses area mining and briefly slows mining
+  steam_bronze_axe:
+    name: "Bronze Steam Axe"
+    lore: |-
+      <arrow> A steam lumber axe with bronze transmission parts
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <gold>🪓 Smelting Chopping 3×3</gold>
+      <arrow>   <dark_gray>Charged 3×3 break · auto-smelts smeltable drops (lower cost)
+      <arrow> <gray>Depleted: loses area chopping and briefly slows mining
+  steam_bronze_shovel:
+    name: "Bronze Steam Shovel"
+    lore: |-
+      <arrow> A stable, wear-resistant bronze digging tool
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <gold>�?Smelting Digging 3×3</gold>
+      <arrow>   <dark_gray>Charged 3×3 dig · auto-smelts smeltable drops like sand (lower cost)
+      <arrow> <gray>Depleted: loses area digging and briefly slows mining
+  steam_bronze_hoe:
+    name: "Bronze Steam Hoe"
+    lore: |-
+      <arrow> A steam farming tool driven by bronze mechanisms
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>🌱 Area Tilling 3×3</aqua>
+      <arrow>   <dark_gray>Charged right-click · tills the surrounding ring into farmland (lower cost)
+      <arrow> <gray>Depleted: cannot trigger area tilling
+  steam_bronze_helmet:
+    name: "Bronze Steam Helmet"
+    lore: |-
+      <arrow> A sturdy bronze steam protection helmet
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; lower steam use when hit; grants night vision and water breathing
+      <arrow> <gray>Set skill: <gold>🔥 Furnace Breath</gold><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: buffs stop
+  steam_bronze_chestplate:
+    name: "Bronze Steam Chestplate"
+    lore: |-
+      <arrow> A steam chestplate reinforced with Pylon bronze plating
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Full set charged: no idle cost; lower steam use when hit; grants resistance
+      <arrow> <gray>Set skill: <gold>🔥 Furnace Breath</gold>
+      <arrow>   <dark_gray>Off-hand key · ring of fire within 5 blocks · ignites & damages all nearby mobs
+      <arrow> <gray>Depleted: buffs and set skill stop
+  steam_bronze_leggings:
+    name: "Bronze Steam Leggings"
+    lore: |-
+      <arrow> Steam leggings supported by wear-resistant bronze joints
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; lower steam use when hit; grants movement speed
+      <arrow> <gray>Set skill: <gold>🔥 Furnace Breath</gold><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: speed buff stops
+  steam_bronze_boots:
+    name: "Bronze Steam Boots"
+    lore: |-
+      <arrow> Steam boots built around a bronze shock frame
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; lower steam use when hit; grants slow-fall protection
+      <arrow> <gray>Set skill: <gold>🔥 Furnace Breath</gold><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: landing protection stops
+
+  steam_invar_sword:
+    name: "Invar Steam Sword"
+    lore: |-
+      <arrow> A precise, efficient blade made from low-expansion alloy
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Attack skill: <aqua>�?Precision Sweep</aqua>
+      <arrow>   <dark_gray>Charged hits · efficient damage · sweeps foes · applies Slowness II · ignites 2s
+      <arrow> <gray>Right-click skill: <aqua>💨 Chilling Burst</aqua>
+      <arrow>   <dark_gray>Sprays steam in a forward cone · damages & applies Slowness II (2.5s cooldown)
+      <arrow> <gray>Depleted: reduced damage; vent effects stop
+  steam_invar_pickaxe:
+    name: "Invar Steam Pickaxe"
+    lore: |-
+      <arrow> Stable impact rhythm and lower steam usage
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>�?Precision Mining 3×3</aqua>
+      <arrow>   <dark_gray>Charged 3×3 break · drops go straight into your inventory (low cost)
+      <arrow> <gray>Depleted: loses area mining and briefly slows mining
+  steam_invar_axe:
+    name: "Invar Steam Axe"
+    lore: |-
+      <arrow> A precision-tuned, efficient steam lumber axe
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>🪓 Precision Chopping 3×3</aqua>
+      <arrow>   <dark_gray>Charged 3×3 break · drops go straight into your inventory (low cost)
+      <arrow> <gray>Depleted: loses area chopping and briefly slows mining
+  steam_invar_shovel:
+    name: "Invar Steam Shovel"
+    lore: |-
+      <arrow> Low-deformation structure for smoother digging
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>�?Precision Digging 3×3</aqua>
+      <arrow>   <dark_gray>Charged 3×3 dig · drops go straight into your inventory (low cost)
+      <arrow> <gray>Depleted: loses area digging and briefly slows mining
+  steam_invar_hoe:
+    name: "Invar Steam Hoe"
+    lore: |-
+      <arrow> An efficient precision steam farming tool
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <aqua>🌱 Area Tilling 3×3</aqua>
+      <arrow>   <dark_gray>Charged right-click · tills the surrounding ring into farmland (low cost)
+      <arrow> <gray>Depleted: cannot trigger area tilling
+  steam_invar_helmet:
+    name: "Invar Steam Helmet"
+    lore: |-
+      <arrow> An efficient helmet built on a stable invar frame
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; low steam use when hit; grants night vision and water breathing
+      <arrow> <gray>Set skill: <aqua>🛡 Steam Barrier</aqua><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: buffs stop
+  steam_invar_chestplate:
+    name: "Invar Steam Chestplate"
+    lore: |-
+      <arrow> A low-consumption chestplate for long operation
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Full set charged: no idle cost; low steam use when hit; grants resistance
+      <arrow> <gray>Set skill: <aqua>🛡 Steam Barrier</aqua>
+      <arrow>   <dark_gray>Off-hand key · 4s barrier · spends steam to absorb 60% incoming damage
+      <arrow> <gray>Depleted: buffs and set skill stop
+  steam_invar_leggings:
+    name: "Invar Steam Leggings"
+    lore: |-
+      <arrow> Precise, efficient invar steam leggings
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; low steam use when hit; grants movement speed
+      <arrow> <gray>Set skill: <aqua>🛡 Steam Barrier</aqua><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: speed buff stops
+  steam_invar_boots:
+    name: "Invar Steam Boots"
+    lore: |-
+      <arrow> Steam boots supported by efficient pressure regulators
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; low steam use when hit; grants slow-fall protection
+      <arrow> <gray>Set skill: <aqua>🛡 Steam Barrier</aqua><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: landing protection stops
+
+  steam_tungsten_sword:
+    name: "Tungsten Steam Sword"
+    lore: |-
+      <arrow> A heavy high-temperature blade rated for superheated steam load
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Attack skill: <white>�?Heavy Sweep</white>
+      <arrow>   <dark_gray>Charged hits · high-cost high damage · wide sweep · knocks back foes · ignites 2s
+      <arrow> <gray>Right-click skill: <white>💨 Pressure Blast</white>
+      <arrow>   <dark_gray>Sprays high-pressure steam in a cone · high damage & knockback (2.5s cooldown)
+      <arrow> <gray>Depleted: reduced damage; heavy vent effects stop
+  steam_tungsten_pickaxe:
+    name: "Tungsten Steam Pickaxe"
+    lore: |-
+      <arrow> A heavy steam pickaxe built for high-load mining
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <white>�?Heavy Mining 5×5</white>
+      <arrow>   <dark_gray>Charged break · breaks the surrounding 5×5 area of blocks (high cost)
+      <arrow> <gray>Depleted: loses area mining and briefly slows mining
+  steam_tungsten_axe:
+    name: "Tungsten Steam Axe"
+    lore: |-
+      <arrow> A heavy tungsten alloy head with extreme impact force
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <white>🪓 Heavy Chopping 5×5</white>
+      <arrow>   <dark_gray>Charged break · breaks the surrounding 5×5 area of axe blocks (high cost)
+      <arrow> <gray>Depleted: loses area chopping and briefly slows mining
+  steam_tungsten_shovel:
+    name: "Tungsten Steam Shovel"
+    lore: |-
+      <arrow> A heavy digging tool for high-pressure steam systems
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <white>�?Heavy Digging 5×5</white>
+      <arrow>   <dark_gray>Charged dig · digs the surrounding 5×5 area of loose blocks (high cost)
+      <arrow> <gray>Depleted: loses area digging and briefly slows mining
+  steam_tungsten_hoe:
+    name: "Tungsten Steam Hoe"
+    lore: |-
+      <arrow> A heavy but powerful high-tier steam farming tool
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Steam skill: <white>🌱 Heavy Tilling 5×5</white>
+      <arrow>   <dark_gray>Charged right-click · tills the surrounding 5×5 area into farmland (high cost)
+      <arrow> <gray>Depleted: cannot trigger area tilling
+  steam_tungsten_helmet:
+    name: "Tungsten Steam Helmet"
+    lore: |-
+      <arrow> A heavy steam helmet with extreme heat resistance
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; high steam use when hit; grants night vision and water breathing
+      <arrow> <gray>Set skill: <white>💥 Steam Quake</white><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: buffs stop
+  steam_tungsten_chestplate:
+    name: "Tungsten Steam Chestplate"
+    lore: |-
+      <arrow> Top-tier heavy armor for superheated steam environments
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Full set charged: no idle cost; high steam use when hit; grants stronger resistance
+      <arrow> <gray>Set skill: <white>💥 Steam Quake</white>
+      <arrow>   <dark_gray>Off-hand key · 4.5-block shockwave · falloff damage & strong knockback
+      <arrow> <gray>Full set flight (<white>Ctrl+Shift</white> cycles 3 modes, cost shared by all four pieces):
+      <arrow>   <dark_gray>Jetpack · hold jump for 2s ignition then fast thrust; mid-air glide/re-thrust without re-igniting until you land
+      <arrow>   <dark_gray>Hover · switch to it while airborne to take over as creative-style free flight (jump up / sneak down), drains steam; switch to Off to land
+      <arrow>   <dark_gray>Off · jump behaves normally, no jet
+      <arrow> <gray>Depleted: buffs and set skill stop
+  steam_tungsten_leggings:
+    name: "Tungsten Steam Leggings"
+    lore: |-
+      <arrow> Heavy leggings built to absorb high-pressure shocks
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; high steam use when hit; grants movement speed
+      <arrow> <gray>Set skill: <white>💥 Steam Quake</white><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: speed buff stops
+  steam_tungsten_boots:
+    name: "Tungsten Steam Boots"
+    lore: |-
+      <arrow> Heavy tungsten alloy shock-absorbing boots
+      <arrow> <gray>Install a canister to show a live pressurized-steam bar
+      <arrow> <gray>Worn while charged: no idle cost; high steam use when hit; grants movement speed
+      <arrow> <gray>Set skill: <white>💥 Steam Quake</white><dark_gray> (see chestplate)
+      <arrow> <gray>Depleted: landing protection stops
 
   # Portable steam energy
   steam_canister_brass:
     name: "Brass Steam Canister"
     lore: |-
-      <arrow> Entry-tier portable steam storage
+      <arrow> Entry-tier portable <aqua>pressurized steam</aqua> storage; install into steam gear as a battery
+      <arrow> Charge with <aqua>pressurized steam</aqua> in the Charging Chamber, or while installed in gear
       <arrow> <attr>Capacity:</attr> <aqua>%capacity%</aqua>
 
   steam_canister_invar:
     name: "Invar Steam Canister"
     lore: |-
-      <arrow> Mid-tier portable steam storage with reinforced invar casing
+      <arrow> Mid-tier portable <aqua>pressurized steam</aqua> storage with reinforced invar casing
+      <arrow> Install into steam gear for a higher pressurized steam capacity
       <arrow> <attr>Capacity:</attr> <aqua>%capacity%</aqua>
 
   steam_canister_tungsten:
     name: "Tungsten Steam Canister"
     lore: |-
-      <arrow> Top-tier portable steam storage, rated for superheated steam
+      <arrow> Top-tier portable <aqua>pressurized steam</aqua> storage with high-pressure tungsten shell
+      <arrow> Install into steam gear for the highest pressurized steam capacity
       <arrow> <attr>Capacity:</attr> <aqua>%capacity%</aqua>
 
   # Block items
@@ -412,10 +677,11 @@ item:
       <arrow> Accelerates precision Steamwork machines
       <arrow> Supports: Precision Mill, Foundry, Catalytic Reactor, Crystallizer, Centrifuge, Heavy Crusher, Hydraulic Forge
       <arrow> Max simultaneous targets: 3
+      <arrow> <gold>Requires superheated steam</gold>
       <arrow> <attr>Scan radius:</attr> %scan-radius%
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
-    waila: "Precision Processing Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Superheated steam per boost:</attr> %steam-per-operation%
+    waila: "Precision Processing Turbine | Superheated Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
 
   hydraulic_turbine:
     name: "Hydraulic Turbine"
@@ -423,10 +689,11 @@ item:
       <arrow> Accelerates Pylon hydraulic series machines
       <arrow> Supports: Hydraulic Breaker, Hammer Head, Mixing Attachment, etc.
       <arrow> Max simultaneous targets: 4
+      <arrow> <aqua>Requires pressurized steam</aqua>
       <arrow> <attr>Scan radius:</attr> %scan-radius%
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
-    waila: "Hydraulic Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+      <arrow> <attr>Pressurized steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Pressurized steam per boost:</attr> %steam-per-operation%
+    waila: "Hydraulic Turbine | Pressurized Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
 
   diesel_turbine:
     name: "Diesel Turbine"
@@ -434,10 +701,11 @@ item:
       <arrow> Accelerates Pylon diesel series machines
       <arrow> Supports: Diesel Breaker, Hammer Head, Mixing Attachment, Palladium Condenser, Biorefinery, etc.
       <arrow> Max simultaneous targets: 4
+      <arrow> <aqua>Requires pressurized steam</aqua>
       <arrow> <attr>Scan radius:</attr> %scan-radius%
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
-    waila: "Diesel Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+      <arrow> <attr>Pressurized steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Pressurized steam per boost:</attr> %steam-per-operation%
+    waila: "Diesel Turbine | Pressurized Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
 
   pylon_universal_turbine:
     name: "Pylon Universal Turbine"
@@ -453,14 +721,15 @@ item:
   precision_steam_turbine:
     name: "Precision Steam Turbine"
     lore: |-
-      <arrow> Accelerates all machine types — widest coverage
+      <arrow> Accelerates all machine types �?widest coverage
       <arrow> Max simultaneous targets: 6, scan radius: 5 blocks
-      <arrow> <gold>Stack Override: </gold><gray>ignores boost stack cap — boosts always land
+      <arrow> <gold>Stack Override: </gold><gray>ignores boost stack cap �?boosts always land
       <arrow> <gold>Synergy Scaling: </gold><gray>-5% steam cost per extra target, down to 65% at full load
+      <arrow> <gold>Requires superheated steam</gold>
       <arrow> <attr>Scan radius:</attr> %scan-radius%
-      <arrow> <attr>Steam buffer:</attr> %steam-buffer%
-      <arrow> <attr>Steam per boost:</attr> %steam-per-operation%
-    waila: "Precision Steam Turbine | Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
+      <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Superheated steam per boost:</attr> %steam-per-operation%
+    waila: "Precision Steam Turbine | Superheated Steam %steam-bar% | Targets %targets%/%boosted% | %state%"
 
   steam_sterilizer:
     name: "Steam Sterilizer"
@@ -531,6 +800,24 @@ item:
       <arrow> <attr>Stored points cap:</attr> %max-points%
     waila: "Steam Science Interface | Steam %steam-bar% | Mat%material-pts% Bio%biology-pts% Pre%precision-pts% Chem%chemistry-pts% | %state%"
 
+  steam_canister_bench:
+    name: "Steam Canister Bench"
+    lore: |-
+      <arrow> Install or remove steam canisters on steam weapons/tools/armor
+      <arrow> Equipment only stores steam & activates abilities once a canister is installed
+      <arrow> Swapping in a larger canister raises the equipment's steam capacity
+    waila: "Steam Canister Bench"
+
+  steam_charging_chamber:
+    name: "Steam Charging Chamber"
+    lore: |-
+      <arrow> Multiblock: core block in the middle layer, manganese-steel base + manganese-bronze corners below, inverted bronze stair + corners above
+      <arrow> Connect <aqua>pressurized steam</aqua> pipe above the top-layer stair; step inside the frame to auto-charge gear
+      <arrow> <aqua>Consumes pressurized steam</aqua>
+      <arrow> <attr>Pressurized steam buffer:</attr> %steam-buffer%
+      <arrow> <attr>Charge rate:</attr> %charge-rate-per-tick%
+    waila: "Steam Charging Chamber | %structure% | Pressurized Steam %steam-bar%"
+
   steam_heating_chamber:
     name: "Steam Heating Chamber"
     lore: |-
@@ -554,10 +841,10 @@ item:
   pneumatic_cargo_hub:
     name: "Pneumatic Cargo Hub"
     lore: |-
-      <arrow> Multiblock base — requires a Steam Catapult placed directly on top
+      <arrow> Multiblock base �?requires a Steam Catapult placed directly on top
       <arrow> A ghost slab projection shows where to place the catapult when missing
       <arrow> The current first item is shown as a hologram on top of the catapult
-      <arrow> Sends a batch of items every <attr>%interval%s</attr>; batch size (1–64) is adjusted in the GUI
+      <arrow> Sends a batch of items every <attr>%interval%s</attr>; batch size (1�?4) is adjusted in the GUI
       <arrow> Target hub must also have a catapult on top to receive items
       <arrow> Open the GUI and click the target slot to enter selection mode, then left-click the target hub in the world
       <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
@@ -568,7 +855,7 @@ item:
   steam_catapult:
     name: "Steam Catapult"
     lore: |-
-      <arrow> Upper module of the Pneumatic Cargo Hub multiblock — place directly on top of a hub
+      <arrow> Upper module of the Pneumatic Cargo Hub multiblock �?place directly on top of a hub
       <arrow> Performs the parabolic launch animation when the hub below sends a batch
     waila: "Steam Catapult | %state%"
 
@@ -588,7 +875,7 @@ item:
     name: "Steam Discharge Hopper"
     lore: |-
       <arrow> Draws items from the container above and pushes them into the container below
-      <arrow> Far faster than a vanilla hopper — speed scales with available steam
+      <arrow> Far faster than a vanilla hopper �?speed scales with available steam
       <arrow> <attr>Steam buffer:</attr> %steam-buffer%
       <arrow> <attr>Steam per item:</attr> %steam-per-item%
       <arrow> <attr>Max items per tick:</attr> %items-per-tick%
@@ -605,7 +892,7 @@ item:
   pneumatic_input:
     name: "Pneumatic Input"
     lore: |-
-      <arrow> Network endpoint — receives items pushed by the pneumatic network and inserts them into the adjacent container
+      <arrow> Network endpoint �?receives items pushed by the pneumatic network and inserts them into the adjacent container
       <arrow> No steam required; passively relays buffered items each tick
     waila: "Pneumatic Input"
 
@@ -621,7 +908,7 @@ item:
   production_line_inlet:
     name: "Production Line Inlet"
     lore: |-
-      <arrow> Entry point of a steam production line — <white>7 ingredient slots</white> + <white>7 fuel slots</white>
+      <arrow> Entry point of a steam production line �?<white>7 ingredient slots</white> + <white>7 fuel slots</white>
       <arrow> Fill via pneumatic network (ingredient/fuel INPUT groups) or manually
       <arrow> Pushes ingredients each tick; fuel supports round-robin or single-target mode
       <arrow> Compatible with vanilla furnaces, blast furnaces, and smokers as line machines
@@ -650,7 +937,7 @@ item:
   production_line_outlet:
     name: "Production Line Outlet"
     lore: |-
-      <arrow> Exit point of a steam production line — holds a 9-slot buffer
+      <arrow> Exit point of a steam production line �?holds a 9-slot buffer
       <arrow> Receives finished products pushed by the last machine in the line
       <arrow> The pneumatic network (OUTPUT group) or players can retrieve products
     waila_idle: "Production Line Outlet | Not configured"
@@ -670,7 +957,7 @@ item:
     lore: |-
       <arrow> Consumes pressurized steam to route items into the pneumatic network
       <arrow> Each face must connect to a <white>Pneumatic Output</white> or a <white>Pneumatic Input</white> via ducts
-      <arrow> Supports 1–6 output directions (N/S/E/W/Up/Down) — toggle each in the GUI
+      <arrow> Supports 1�? output directions (N/S/E/W/Up/Down) �?toggle each in the GUI
       <arrow> Multiple enabled directions are served round-robin
       <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
       <arrow> <attr>Steam per item:</attr> %steam-per-item%
@@ -727,7 +1014,7 @@ item:
     lore: |-
       <arrow> An invar-walled chamber that holds a perfectly stable temperature for hours of slow crystallization
       <arrow> Refines raw ores, dusts, and ore fragments into high-purity ingots and vanilla gems
-      <arrow> Never duplicates material — strict refinement ratios (4 dust → 1 ingot, 4 raw ore → 1 steel ingot)
+      <arrow> Never duplicates material �?strict refinement ratios (4 dust �?1 ingot, 4 raw ore �?1 steel ingot)
       <arrow> <attr>Superheated steam buffer:</attr> %steam-buffer%
     waila: "Precision Crystallizer | Superheated Steam %steam-bar% | %state%"
 
@@ -806,13 +1093,13 @@ item:
     name: "<green>Auto-Input Module"
     lore: |-
       <arrow> Automatically pulls items from all adjacent containers
-      <arrow> <red>Conflicts with Auto-Output Module — cannot be installed together
+      <arrow> <red>Conflicts with Auto-Output Module �?cannot be installed together
 
   upgrade_module_auto_output:
     name: "<red>Auto-Output Module"
     lore: |-
       <arrow> Automatically pushes output items to all adjacent containers
-      <arrow> <red>Conflicts with Auto-Input Module — cannot be installed together
+      <arrow> <red>Conflicts with Auto-Input Module �?cannot be installed together
 
   upgrade_module_bulk:
     name: "<gold>Bulk Processing Module"
@@ -894,11 +1181,19 @@ item:
     palladium_alloy:
       line_name: "Palladium Alloy"
       step_1:
-        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux → Rough Palladium Alloy Ingot"
+        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux �?Rough Palladium Alloy Ingot"
       step_2:
-        next: "<dark_gray>Next: <gray>Precision Mill → Calibrated Palladium Alloy Blank"
+        next: "<dark_gray>Next: <gray>Precision Mill �?Calibrated Palladium Alloy Blank"
       step_3:
-        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux → Palladium Alloy Ingot (final)"
+        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux �?Palladium Alloy Ingot (final)"
+    flight_core:
+      line_name: "Steam Flight Core"
+      step_1:
+        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux + Heating Coil -> Rough Flight Core"
+      step_2:
+        next: "<dark_gray>Next: <gray>Precision Mill -> Calibrated Flight Core Blank"
+      step_3:
+        next: "<dark_gray>Next: <gray>Assembly Bench + Jet Nozzle + Precision Bearing -> Steam Flight Core (final)"
 
   palladium_workpiece_1:
     name: "<aqua>Activated Palladium Matrix"
@@ -906,6 +1201,29 @@ item:
     name: "<gold>Rough Palladium Alloy Ingot"
   palladium_workpiece_3:
     name: "<yellow>Calibrated Palladium Alloy Blank"
+
+  jet_nozzle:
+    name: "Jet Nozzle"
+    lore: |-
+      <arrow> High-pressure tungsten-alloy jet nozzle; the thrust part for flight gear
+      <arrow> Used to craft the Steam Flight Core and tungsten flight armor
+  steam_flight_core:
+    name: "<aqua>Steam Flight Core"
+    lore: |-
+      <arrow> A flight power core forged through four stages: catalysis, foundry, precision milling and assembly
+      <arrow> The key part of the Tungsten Steam Chestplate, granting the full tungsten set jet flight
+  flight_core_workpiece_1:
+    name: "<aqua>Activated Flight Alloy Matrix"
+  flight_core_workpiece_2:
+    name: "<gold>Rough Flight Core"
+  flight_core_workpiece_3:
+    name: "<yellow>Calibrated Flight Core Blank"
+
+  turbine_rotor:
+    name: "Turbine Rotor"
+    lore: |-
+      <arrow> A high-speed rotor assembled from palladium alloy, precision bearings, wear plate and a high-pressure flange
+      <arrow> The core moving part of the Precision Steam Turbine
 
   steam_distillation_tower:
     name: "Steam Distillation Tower"
@@ -970,30 +1288,35 @@ item:
     lore: |-
       <arrow> A prepared mineral specimen for the steam science interface
       <arrow> Yields <green>5</green> material discipline research points
+      <arrow> Yields <green>2</green> global research points
 
   organic_analysis_sample:
     name: "Organic Analysis Sample"
     lore: |-
       <arrow> A bottled organic specimen for the steam science interface
       <arrow> Yields <green>5</green> biology discipline research points
+      <arrow> Yields <green>2</green> global research points
 
   metallurgical_analysis_sample:
     name: "Metallurgical Analysis Sample"
     lore: |-
       <arrow> A high-temperature alloy specimen for the steam science interface
       <arrow> Yields <green>7</green> precision discipline research points
+      <arrow> Yields <green>2</green> global research points
 
   fluid_analysis_sample:
     name: "Fluid Analysis Sample"
     lore: |-
       <arrow> A sealed fluid specimen for the steam science interface
       <arrow> Yields <green>6</green> chemistry discipline research points
+      <arrow> Yields <green>2</green> global research points
 
   refined_mineral_sample:
     name: "Refined Mineral Sample"
     lore: |-
       <arrow> Four mineral samples compressed in a steam press
       <arrow> Yields <green>25</green> material discipline points (~5× base efficiency)
+      <arrow> Yields <green>6</green> global research points
       <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
 
   concentrated_organic_sample:
@@ -1001,6 +1324,7 @@ item:
     lore: |-
       <arrow> Four organic samples compressed in a steam press
       <arrow> Yields <green>25</green> biology discipline points (~5× base efficiency)
+      <arrow> Yields <green>6</green> global research points
       <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
 
   refined_metallurgical_sample:
@@ -1008,6 +1332,7 @@ item:
     lore: |-
       <arrow> Four metallurgical samples refined in a steam press
       <arrow> Yields <green>35</green> precision discipline points (~5× base efficiency)
+      <arrow> Yields <green>8</green> global research points
       <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
 
   purified_fluid_sample:
@@ -1015,6 +1340,7 @@ item:
     lore: |-
       <arrow> Four fluid samples purified and compressed in a steam press
       <arrow> Yields <green>30</green> chemistry discipline points (~5× base efficiency)
+      <arrow> Yields <green>7</green> global research points
       <arrow> <attr>~2× steam efficiency compared to basic samples</attr>
 
   analysis_residue:
@@ -1100,16 +1426,16 @@ gui:
 
   precision_steam_turbine:
     title: "<dark_gray>Precision Steam Turbine"
-    steam_gauge: "<aqua>Steam Storage"
-    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<gold>Superheated Steam Storage"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>Scan Range"
     scan_radius: "<gray>Radius: <reset><yellow>%radius%"
     max_targets: "<gray>Max targets: <reset><yellow>%max%"
     targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
-    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Superheated Steam <gold>%steam%"
     last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
-    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    last_steam_used: "<gray>Last superheated steam used: <reset><gold>%steam%"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
@@ -1132,48 +1458,48 @@ gui:
 
   precision_processing_turbine:
     title: "<dark_gray>Precision Processing Turbine"
-    steam_gauge: "<aqua>Steam Storage"
-    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<gold>Superheated Steam Storage"
+    steam: "<gray>Superheated Steam: <reset><gold>%steam% <gray>/ <gold>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>Scan Range"
     scan_radius: "<gray>Radius: <reset><yellow>%radius%"
     max_targets: "<gray>Max targets: <reset><yellow>%max%"
     targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
-    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Superheated Steam <gold>%steam%"
     last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
-    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    last_steam_used: "<gray>Last superheated steam used: <reset><gold>%steam%"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
 
   hydraulic_turbine:
     title: "<dark_gray>Hydraulic Turbine"
-    steam_gauge: "<aqua>Steam Storage"
-    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<aqua>Pressurized Steam Storage"
+    steam: "<gray>Pressurized Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>Scan Range"
     scan_radius: "<gray>Radius: <reset><yellow>%radius%"
     max_targets: "<gray>Max targets: <reset><yellow>%max%"
     targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
-    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Pressurized Steam <aqua>%steam%"
     last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
-    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    last_steam_used: "<gray>Last pressurized steam used: <reset><aqua>%steam%"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
 
   diesel_turbine:
     title: "<dark_gray>Diesel Turbine"
-    steam_gauge: "<aqua>Steam Storage"
-    steam: "<gray>Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
+    steam_gauge: "<aqua>Pressurized Steam Storage"
+    steam: "<gray>Pressurized Steam: <reset><aqua>%steam% <gray>/ <aqua>%capacity%"
     progress_bar: "<reset>%bar% <gray>%percent%"
     scan: "<green>Scan Range"
     scan_radius: "<gray>Radius: <reset><yellow>%radius%"
     max_targets: "<gray>Max targets: <reset><yellow>%max%"
     targets_found: "<gray>Targets detected: <reset><yellow>%targets%"
-    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Steam <aqua>%steam%"
+    boost: "<gray>Boost per target: <reset><yellow>%ticks% ticks <gray>| Pressurized Steam <aqua>%steam%"
     last_boosted: "<gray>Last boosted targets: <reset><yellow>%boosted%"
-    last_steam_used: "<gray>Last steam used: <reset><aqua>%steam%"
+    last_steam_used: "<gray>Last pressurized steam used: <reset><aqua>%steam%"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
@@ -1204,7 +1530,7 @@ gui:
     time_remaining: "<gray>Time left: <yellow>%time%"
     output_summary: "<aqua>Yield: <yellow>%amount%</yellow> × <reset>%item%"
     reason:
-      structure_missing: "<gray>Reason: <reset><red>Structure incomplete — 3 Pylon Steel Blocks required below"
+      structure_missing: "<gray>Reason: <reset><red>Structure incomplete �?3 Pylon Steel Blocks required below"
       ready: "<gray>Reason: <reset><gray>Awaiting input"
       no_ingredients: "<gray>Reason: <reset><gray>No matching recipe"
       no_steam: "<gray>Reason: <reset><red>Insufficient steam"
@@ -1212,10 +1538,10 @@ gui:
       mixed_output: "<gray>Reason: <reset><yellow>Mixed items in output slot"
       processing: "<gray>Reason: <reset><green>Processing"
     steam_rate: "<gray>Steam draw: <reset><aqua>%rate%</aqua> <gray>mB/s"
-    interruption_warning: "<red>⚠ Steam outage too long — progress regressing</red>"
+    interruption_warning: "<red>�?Steam outage too long �?progress regressing</red>"
     recipe_lock:
       title: "<yellow>Output Selection"
-      unlocked: "<gray>No output selected — auto-select"
+      unlocked: "<gray>No output selected �?auto-select"
       locked: "<gray>Selected: <reset>%recipe%"
       available: "<gray>Available outputs:"
       hint_click: "<dark_gray>Left-click to select an output"
@@ -1225,7 +1551,7 @@ gui:
       title_inactive: "<gold>Pylon Linked Recipes"
       title_active: "<aqua>Pylon Linked Recipes (Active)"
       status_inactive: "<gray>Install the <aqua>Pylon Compat Module</aqua> to unlock these recipes"
-      status_active: "<green>Compat module installed — recipes below are now active"
+      status_active: "<green>Compat module installed �?recipes below are now active"
       recipes_header: "<gray>Available recipes (<yellow>%count%</yellow> total):"
       more: "<dark_gray>…and <yellow>%count%</yellow> more"
     line_status:
@@ -1277,7 +1603,7 @@ gui:
       ready: "<gray>Awaiting input"
       no_ingredients: "<gray>No matching recipe"
       no_steam: "<red>Insufficient steam"
-      structure_missing: "<red>Structure missing — place Iron Block 2 below"
+      structure_missing: "<red>Structure missing �?place Iron Block 2 below"
       processing: "<green>Pressing..."
 
   steam_grinder:
@@ -1405,6 +1731,14 @@ gui:
       active: "<green>Active"
       idle: "<gray>Idle"
 
+  steam_canister_bench:
+    title: "<dark_gray>Steam Canister Bench"
+    operate: "<yellow>Install / Remove"
+    state:
+      idle: "<gray>Equipment in left slot, canister in right slot"
+      ready_install: "<green>�?Left-click to install canister"
+      ready_remove: "<gold>�?Left-click to remove canister (canister slot must be empty)"
+
   steam_science_interface:
     title: "<dark_gray>Steam Science Interface"
     steam_gauge: "<aqua>Steam"
@@ -1424,21 +1758,21 @@ gui:
       chemistry: "<aqua>  Chemistry: <white>%points% <gray>/ <white>%max%"
     claim_hint: "<gray>LMB to transfer points to your discipline pools"
     discipline_research: "<light_purple>Discipline Research Terminal"
-    discipline_research_hint: "<gray>LMB to open — unlock ★ researches with discipline points"
+    discipline_research_hint: "<gray>LMB to open �?unlock �?researches with discipline points"
     discipline_research_title: "<dark_gray>Discipline Research"
-    discipline_sub_title: "<dark_gray>%discipline% — Research Unlock"
+    discipline_sub_title: "<dark_gray>%discipline% �?Research Unlock"
     discipline_click_hint: "<gray>Left-click to view researches"
     back: "<gray>Back to discipline selection"
     discipline_pts: "<gray>Accumulated: <white>%points% pt"
     disc_threshold: "<gray>  %name%: %bar% <white>%pts%<gray>/<white>%cost%"
-    disc_threshold_done: "<green>  ✓ %name%"
+    disc_threshold_done: "<green>  �?%name%"
     disc_no_research: "<dark_gray>  (No research in this discipline)"
     research_cost: "<gray>Discipline: <light_purple>%discipline%  <gray>Requires <aqua>%cost% pt"
     research_progress: "<gray>%bar% <white>%current%<gray>/<white>%cost%"
-    research_already_unlocked: "<green>✓ Already unlocked"
-    research_unlockable: "<aqua>▶ LMB to unlock (spends points)"
+    research_already_unlocked: "<green>�?Already unlocked"
+    research_unlockable: "<aqua>�?LMB to unlock (spends points)"
     research_bonus_hint: "<gray>  Bonus <yellow>+%points%</yellow> global research points"
-    research_insufficient: "<red>✗ Insufficient discipline points"
+    research_insufficient: "<red>�?Insufficient discipline points"
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
@@ -1458,7 +1792,7 @@ gui:
 
   steam_heating_chamber:
     title: "<dark_gray>Steam Heating Chamber"
-    ratio: "<gray>Conversion: <aqua>%input%<gray>mB steam <gray>→ <aqua>%output%<gray>mB superheated"
+    ratio: "<gray>Conversion: <aqua>%input%<gray>mB steam <gray>�?<aqua>%output%<gray>mB superheated"
     input_gauge: "<aqua>Steam Input"
     output_gauge: "<#fff4d8>Superheated Output"
     fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
@@ -1468,7 +1802,7 @@ gui:
 
   steam_compressor:
     title: "<dark_gray>Steam Compressor"
-    ratio: "<gray>Compression: <aqua>%input%<gray>mB → <#00cfff>%output%<gray>mB pressurized"
+    ratio: "<gray>Compression: <aqua>%input%<gray>mB �?<#00cfff>%output%<gray>mB pressurized"
     input_gauge: "<aqua>Steam Input"
     output_gauge: "<#00cfff>Pressurized Output"
     fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
@@ -1519,7 +1853,7 @@ gui:
     whitelist: "<white>Whitelist"
     blacklist: "<gray>Blacklist"
     buffer_slot: |-
-      <gray>Item buffer — 1 slot, max 64 of the same type
+      <gray>Item buffer �?1 slot, max 64 of the same type
       <dark_gray>Network push stops when full or type conflict
     mode_hint: "<gray>Click to toggle filter mode"
     slot_mode_title: "<#ffd166>Slot Mode"
@@ -1537,7 +1871,7 @@ gui:
     slot_mode_ingredient: "<#a0e6a0>Slot: Ingredient"
     slot_mode_fuel: "<#ffb060>Slot: Fuel"
     slot_mode_hint: |-
-      <gray>Click to cycle: Auto → Ingredient → Fuel
+      <gray>Click to cycle: Auto �?Ingredient �?Fuel
       <dark_gray>Ingredient/Fuel only push to furnaces, blast furnaces,
       <dark_gray>smokers (slot 0/1) or brewing stands (slot 3/4).
 
@@ -1560,7 +1894,7 @@ gui:
       waiting: "<gray>Status: <yellow>Ingredient buffer empty, waiting for items"
       pushing: "<gray>Status: <green>Pushing items downstream"
       blocked: "<gray>Status: <gold>Downstream blocked"
-      jammed: "<gray>Status: <red>Outlet full — line halted"
+      jammed: "<gray>Status: <red>Outlet full �?line halted"
     slot_hint:
       title: "<aqua>Slot Guide"
       ingredient: "<gray>Row 1: <white>Ingredient slots</white> (pushed to line machines)"
@@ -1575,11 +1909,11 @@ gui:
       single_target: "<yellow>Mode: Single Target"
       hint: "<gray>Click to toggle mode"
     machine_slot:
-      no_scan: "<gray>Not scanned — click the scan button"
+      no_scan: "<gray>Not scanned �?click the scan button"
       empty: "<gray>(no machine)"
       machine: "<white>Fuel Machine #%n% <gray>%pos%"
       unbound: "<gold>Unbound"
-      bound: "<green>→ Fuel Machine #%n% <gray>%pos%"
+      bound: "<green>�?Fuel Machine #%n% <gray>%pos%"
       click_cycle: "<dark_gray>Click to cycle target (-1 = unbound)"
 
   production_line_outlet:
@@ -1607,23 +1941,23 @@ gui:
     mode:
       title: "<aqua>Push Mode"
       ingredient: "<gray>Current: <green>Push to ingredient slot"
-      auto: "<gray>Current: <aqua>Auto-route (template match → fuel slot, others → ingredient)"
+      auto: "<gray>Current: <aqua>Auto-route (template match �?fuel slot, others �?ingredient)"
       auto_hint: "<dark_gray>Set the fuel type in the fuel template slot to the right"
       fuel: "<gray>Current: <gold>Push all to fuel slot"
       disabled: "<gray>Current: <red>Disabled (buffer only)"
       hint: "<dark_gray>Click to cycle modes"
     filter_mode:
       title: "<aqua>Filter Mode"
-      disabled: "<gray>Filter: <white>Off — all items pass through"
-      whitelist: "<gray>Filter: <green>Whitelist — only listed items pass through"
-      blacklist: "<gray>Filter: <red>Blacklist — listed items are intercepted"
-      left_hint: "<dark_gray>Left-click to cycle: Off → Whitelist → Blacklist"
+      disabled: "<gray>Filter: <white>Off �?all items pass through"
+      whitelist: "<gray>Filter: <green>Whitelist �?only listed items pass through"
+      blacklist: "<gray>Filter: <red>Blacklist �?listed items are intercepted"
+      left_hint: "<dark_gray>Left-click to cycle: Off �?Whitelist �?Blacklist"
       right_hint: "<dark_gray>Right-click to open the filter list"
     bl_behavior:
       title: "<aqua>Blacklist Behavior"
       inactive: "<gray>Active only in Blacklist mode"
-      retain: "<gray>Behavior: <yellow>Retain — blacklisted items stay in the buffer"
-      eject: "<gray>Behavior: <aqua>Eject — blacklisted items are sent to the line outlet"
+      retain: "<gray>Behavior: <yellow>Retain �?blacklisted items stay in the buffer"
+      eject: "<gray>Behavior: <aqua>Eject �?blacklisted items are sent to the line outlet"
       hint: "<dark_gray>Click to toggle behavior"
     filter_list:
       title: "<dark_gray>Filter List"
@@ -1847,7 +2181,7 @@ research:
   material_steam_armor: "Steam Armor"
 
 # Unlock instructions for discipline-gated researches (cost=null; cannot be
-# unlocked with global research points — only via the Steam Science Interface's
+# unlocked with global research points �?only via the Steam Science Interface's
 # discipline research terminal by spending the matching discipline points).
 researches:
   material_advanced_ingots:
@@ -1863,7 +2197,7 @@ researches:
 
 message:
   pneumatic_cargo_hub:
-    selecting: "<yellow>Selection mode — left-click target hub within %range% blocks, right-click this hub to cancel"
+    selecting: "<yellow>Selection mode �?left-click target hub within %range% blocks, right-click this hub to cancel"
     selection_cancelled: "<gray>Target selection cancelled"
     bound: "<green>Linked to hub at %x%, %y%, %z%"
     unbound: "<yellow>Target unlinked"
@@ -1899,6 +2233,19 @@ message:
     claimed_discipline: "<green>Claimed <aqua>%points%</aqua> <light_purple>%discipline%</light_purple> discipline points"
     analysis_research_bonus: "<gray>Analysis bonus: gained <yellow>+%points%</yellow> global research points"
     discipline_unlock_bonus: "<yellow>Research bonus: gained <white>%points%</white> global research points"
+  steam_set:
+    dash: "<aqua>�?Steam Dash!"
+    fire_nova: "<gold>🔥 Furnace Breath!"
+    barrier_activate: "<aqua>🛡 Steam Barrier active (5s)"
+    barrier_absorb: "<aqua>🛡 Barrier absorbed %absorbed% damage"
+    barrier_broken: "<gray>🛡 Barrier steam depleted, shield broken!"
+    quake: "<white>💥 Steam Quake!"
+  steam_canister_bench:
+    installed: "<green>Installed <aqua>%canister%</aqua>; equipment activated"
+    removed: "<yellow>Canister removed; equipment is now inactive"
+    need_equipment: "<red>Place a steam weapon/tool/armor in the equipment slot"
+    need_canister: "<red>Place a steam canister in the canister slot"
+    canister_slot_occupied: "<red>Empty the canister slot before removing"
 
 line:
   unknown_creator: "Unknown"
@@ -1906,7 +2253,7 @@ line:
     waiting: "<yellow>Waiting"
     pushing: "<green>Pushing"
     blocked: "<gold>Downstream Blocked"
-    jammed: "<red>Outlet Full — Halted"
+    jammed: "<red>Outlet Full �?Halted"
     receiving: "<green>Receiving"
     buffering: "<gold>Buffering"
   blueprint:
@@ -1918,10 +2265,10 @@ line:
     not_collinear: "Block must follow the same axis as the rest of the line"
     invalid_member: "This block is not a valid line member (only steam processors are accepted)"
     too_short: "Line is too short (minimum: inlet + 1 machine + outlet)"
-    activation_error: "An error occurred during line activation — rolled back"
+    activation_error: "An error occurred during line activation �?rolled back"
     activated: "Production line activated! <white>%count%</white> machine(s) in line, numbered <white>#%number%</white>"
     added: "Added machine <white>#%position%</white>. Continue left-clicking machines or the outlet"
     cancelled: "Production line configuration cancelled"
     invalidated: "Your production line <white>#%number%</white> has been invalidated!"
-  jammed: "Production line <white>#%number%</white> outlet is full — line halted! Clear the outlet to resume automatically"
+  jammed: "Production line <white>#%number%</white> outlet is full �?line halted! Clear the outlet to resume automatically"
 

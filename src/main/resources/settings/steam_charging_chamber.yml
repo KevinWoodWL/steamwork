@@ -1,0 +1,6 @@
+# 蒸汽充汽舱：玩家站入结构内，自动给全身装备 + 背包蒸汽罐充汽。
+tick-interval: 10
+# 蒸汽缓存（mB），从蒸汽管道顶部输入。
+steam-buffer: 20000.0
+# 每 tick 每件物品转入的蒸汽量（mB）。
+charge-rate-per-tick: 200.0

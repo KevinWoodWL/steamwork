@@ -34,6 +34,7 @@ public final class SequencedWorkpiece {
     }
 
     public static final String PALLADIUM_ALLOY = "palladium_alloy";
+    public static final String FLIGHT_CORE = "flight_core";
 
     private static final int MAX_DAMAGE = 1000;
     private static final int TOTAL_STEPS = 4;
@@ -47,10 +48,21 @@ public final class SequencedWorkpiece {
             SteamworkKeys.PALLADIUM_WORKPIECE_3,
     };
 
-    /** 三步中间品的模板（第 4 步产物是钯合金锭，不在此列）。 */
-    public static final ItemStack PALLADIUM_STEP_1 = build(1);
-    public static final ItemStack PALLADIUM_STEP_2 = build(2);
-    public static final ItemStack PALLADIUM_STEP_3 = build(3);
+    private static final NamespacedKey[] FLIGHT_CORE_KEYS = {
+            SteamworkKeys.FLIGHT_CORE_WORKPIECE_1,
+            SteamworkKeys.FLIGHT_CORE_WORKPIECE_2,
+            SteamworkKeys.FLIGHT_CORE_WORKPIECE_3,
+    };
+
+    /** 钯合金链三步中间品的模板（第 4 步产物是钯合金锭，不在此列）。 */
+    public static final ItemStack PALLADIUM_STEP_1 = build(PALLADIUM_ALLOY, PALLADIUM_KEYS, 1);
+    public static final ItemStack PALLADIUM_STEP_2 = build(PALLADIUM_ALLOY, PALLADIUM_KEYS, 2);
+    public static final ItemStack PALLADIUM_STEP_3 = build(PALLADIUM_ALLOY, PALLADIUM_KEYS, 3);
+
+    /** 飞行核心链三步中间品的模板（第 4 步产物是蒸汽飞行核心，不在此列）。 */
+    public static final ItemStack FLIGHT_CORE_STEP_1 = build(FLIGHT_CORE, FLIGHT_CORE_KEYS, 1);
+    public static final ItemStack FLIGHT_CORE_STEP_2 = build(FLIGHT_CORE, FLIGHT_CORE_KEYS, 2);
+    public static final ItemStack FLIGHT_CORE_STEP_3 = build(FLIGHT_CORE, FLIGHT_CORE_KEYS, 3);
 
     /** 返回钯合金工序链第 {@code step}（1..3）步的中间品克隆。 */
     public static @NotNull ItemStack palladiumAlloy(int step) {
@@ -63,15 +75,29 @@ public final class SequencedWorkpiece {
         };
     }
 
-    /** 注册三步中间品为独立 Rebar 物品。需在配方注册前由 SteamworkItems 调用。 */
+    /** 返回飞行核心工序链第 {@code step}（1..3）步的中间品克隆。 */
+    public static @NotNull ItemStack flightCore(int step) {
+        return switch (step) {
+            case 1 -> FLIGHT_CORE_STEP_1.clone();
+            case 2 -> FLIGHT_CORE_STEP_2.clone();
+            case 3 -> FLIGHT_CORE_STEP_3.clone();
+            default -> throw new IllegalArgumentException(
+                    "flight core workpiece step must be 1..3, got " + step);
+        };
+    }
+
+    /** 注册各链三步中间品为独立 Rebar 物品。需在配方注册前由 SteamworkItems 调用。 */
     public static void register() {
         RebarItem.register(RebarItem.class, PALLADIUM_STEP_1, SteamworkKeys.PALLADIUM_WORKPIECE_1);
         RebarItem.register(RebarItem.class, PALLADIUM_STEP_2, SteamworkKeys.PALLADIUM_WORKPIECE_2);
         RebarItem.register(RebarItem.class, PALLADIUM_STEP_3, SteamworkKeys.PALLADIUM_WORKPIECE_3);
+        RebarItem.register(RebarItem.class, FLIGHT_CORE_STEP_1, SteamworkKeys.FLIGHT_CORE_WORKPIECE_1);
+        RebarItem.register(RebarItem.class, FLIGHT_CORE_STEP_2, SteamworkKeys.FLIGHT_CORE_WORKPIECE_2);
+        RebarItem.register(RebarItem.class, FLIGHT_CORE_STEP_3, SteamworkKeys.FLIGHT_CORE_WORKPIECE_3);
     }
 
-    private static @NotNull ItemStack build(int step) {
-        NamespacedKey key = PALLADIUM_KEYS[step - 1];
+    private static @NotNull ItemStack build(@NotNull String chain, @NotNull NamespacedKey[] keys, int step) {
+        NamespacedKey key = keys[step - 1];
 
         // 步骤越靠后，损耗越小、耐久条越满，直观表现"工序推进"。
         int pct = (int) Math.round(100.0 * step / TOTAL_STEPS);
@@ -80,12 +106,12 @@ public final class SequencedWorkpiece {
         Component header = noItalic(Component.translatable(BASE_KEY + ".tooltip.header"));
         Component line = noItalic(Component.translatable(BASE_KEY + ".tooltip.line",
                 RebarArgument.of("line", Component.translatable(
-                        BASE_KEY + "." + PALLADIUM_ALLOY + ".line_name"))));
+                        BASE_KEY + "." + chain + ".line_name"))));
         Component stepLine = noItalic(Component.translatable(BASE_KEY + ".tooltip.step",
                 RebarArgument.of("step", step),
                 RebarArgument.of("steps", TOTAL_STEPS)));
         Component nextLine = noItalic(Component.translatable(
-                BASE_KEY + "." + PALLADIUM_ALLOY + ".step_" + step + ".next"));
+                BASE_KEY + "." + chain + ".step_" + step + ".next"));
 
         // rebar(key) 会自动把名字指向 steamwork.item.<key>.name；随后的 .lore() 覆盖默认 lore。
         return ItemStackBuilder.rebar(Material.RAW_IRON, key)
