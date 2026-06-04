@@ -36,6 +36,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -96,6 +97,10 @@ public class SteamAssemblyBench extends RebarBlock implements
 
     /** 当前每个底座的悬浮展示实体（瞬时，跨重载由 tick 依据库存重建）。 */
     private final Map<Integer, UUID> displays = new HashMap<>();
+    /** 每个底座的数量 TextDisplay（有物品时显示，无物品时不显示）。 */
+    private final Map<Integer, UUID> countDisplays = new HashMap<>();
+    /** 装配台中心方块前方的配方成品预览 ItemDisplay（无匹配配方时移除）。 */
+    private @Nullable UUID centerDisplayUuid = null;
 
     private final CraftButton craftButton = new CraftButton();
     private final ResultItem resultItem = new ResultItem();
@@ -307,18 +312,19 @@ public class SteamAssemblyBench extends RebarBlock implements
 
     private void completeCraft(@NotNull SteamAssemblyRecipe recipe) {
         // 动画期间物品/蒸汽可能被取走，完成时重新校验并消耗
-        int[] assign = assign(recipe);
-        if (assign == null) return;
+        List<List<SlotPlan>> plan = assign(recipe);
+        if (plan == null) return;
         if (fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) < steamPerCraft) return;
         removeFluid(SteamworkFluids.SUPERHEATED_STEAM, steamPerCraft);
 
         MachineUpdateReason reason = new MachineUpdateReason();
-        List<RecipeInput.Item> ingredients = recipe.ingredients();
-        for (int i = 0; i < ingredients.size(); i++) {
-            int slot = assign[i];
-            ItemStack stack = pedestals.getItem(slot);
-            if (stack == null) continue;
-            pedestals.setItem(reason, slot, stack.subtract(ingredients.get(i).getAmount()));
+        for (List<SlotPlan> ingPlan : plan) {
+            for (SlotPlan sp : ingPlan) {
+                ItemStack stack = pedestals.getItem(sp.slot());
+                if (stack == null) continue;
+                int remaining = stack.getAmount() - sp.amount();
+                pedestals.setItem(reason, sp.slot(), remaining <= 0 ? null : stack.asQuantity(remaining));
+            }
         }
         refreshDisplays();
 
@@ -330,6 +336,12 @@ public class SteamAssemblyBench extends RebarBlock implements
     }
 
     // ── 配方匹配 ──────────────────────────────────────────────────────────────
+
+    /**
+     * 单条原料的底座消耗计划：从 slot 消耗 amount 个。
+     * 一条原料可能对应多个 SlotPlan（跨底座合并凑够数量时）。
+     */
+    private record SlotPlan(int slot, int amount) {}
 
     /** 当前底座物品能匹配的所有配方（多条工序产物可能用同一组原料，如钨头盔/靴子）。 */
     private @NotNull List<SteamAssemblyRecipe> findAllMatches() {
@@ -348,31 +360,48 @@ public class SteamAssemblyBench extends RebarBlock implements
     }
 
     /**
-     * 把配方各原料分配到底座 slot：每项原料找一个类型匹配且数量足够的底座即可，
-     * 允许底座上有多余的无关物品（不参与、也不消耗）。返回 ingredient→slot 映射，或 null。
+     * 把配方各原料分配到底座 slots，支持同一原料从多个底座合并凑够数量。
+     * 允许底座上有多余的无关物品（不参与、也不消耗）。
+     * 返回每条原料的消耗计划列表，null 表示无法完全匹配。
      */
-    private int @Nullable [] assign(@NotNull SteamAssemblyRecipe recipe) {
+    private @Nullable List<List<SlotPlan>> assign(@NotNull SteamAssemblyRecipe recipe) {
         List<RecipeInput.Item> ingredients = recipe.ingredients();
 
-        int[] assign = new int[ingredients.size()];
-        boolean[] used = new boolean[PEDESTALS.size()];
-        for (int i = 0; i < ingredients.size(); i++) {
-            RecipeInput.Item ing = ingredients.get(i);
-            int found = -1;
-            for (int slot = 0; slot < PEDESTALS.size(); slot++) {
-                if (used[slot]) continue;
-                ItemStack s = pedestals.getItem(slot);
-                if (s == null || s.getType().isAir()) continue;
-                if (ing.matches(s)) {
-                    found = slot;
-                    break;
-                }
-            }
-            if (found < 0) return null;
-            used[found] = true;
-            assign[i] = found;
+        // 逐步扣减剩余可用量，确保同一底座不被多条原料重复分配
+        int[] available = new int[PEDESTALS.size()];
+        for (int slot = 0; slot < PEDESTALS.size(); slot++) {
+            ItemStack s = pedestals.getItem(slot);
+            available[slot] = (s != null && !s.getType().isAir()) ? s.getAmount() : 0;
         }
-        return assign;
+
+        List<List<SlotPlan>> result = new ArrayList<>();
+        for (RecipeInput.Item ing : ingredients) {
+            int needed = ing.getAmount();
+            List<SlotPlan> plan = new ArrayList<>();
+
+            for (int slot = 0; slot < PEDESTALS.size() && needed > 0; slot++) {
+                if (available[slot] <= 0) continue;
+                ItemStack s = pedestals.getItem(slot);
+                if (!typeMatchesIngredient(ing, s)) continue;
+                int take = Math.min(available[slot], needed);
+                plan.add(new SlotPlan(slot, take));
+                available[slot] -= take;
+                needed -= take;
+            }
+
+            if (needed > 0) return null; // 该原料数量不足
+            result.add(plan);
+        }
+        return result;
+    }
+
+    /**
+     * 检查底座物品类型是否与配方原料匹配（忽略数量，仅检查材质/NBT/自定义模型等）。
+     * 通过将 stack 数量临时设为原料要求量，令 matches() 的数量校验始终通过。
+     */
+    private static boolean typeMatchesIngredient(@NotNull RecipeInput.Item ing, @Nullable ItemStack s) {
+        if (s == null || s.getType().isAir()) return false;
+        return ing.matches(s.asQuantity(ing.getAmount()));
     }
 
     // ── 悬浮展示实体 ──────────────────────────────────────────────────────────
@@ -386,25 +415,58 @@ public class SteamAssemblyBench extends RebarBlock implements
         steamGaugeItem.notifyWindows();
     }
 
-    /** 依据底座库存，确保每个底座前方悬浮一个展示实体；空底座则移除。 */
+    /** 依据底座库存，确保每个底座前方悬浮一个展示实体及数量标签；空底座则全部移除。
+     *  同时在中心方块前方展示当前匹配配方的成品预览。 */
     private void refreshDisplays() {
         if (!isFormedAndFullyLoaded()) {
             clearDisplays();
             return;
         }
+
+        // ── 中心配方成品预览 ────────────────────────────────────────────────────
+        SteamAssemblyRecipe match = findMatch();
+        ItemDisplay centerDisplay = currentCenterDisplay();
+        if (match == null) {
+            if (centerDisplay != null) { centerDisplay.remove(); }
+            centerDisplayUuid = null;
+        } else {
+            ItemStack preview = match.producedStack().asQuantity(1);
+            if (centerDisplay == null) {
+                centerDisplay = spawnCenterDisplay(preview);
+                if (centerDisplay != null) centerDisplayUuid = centerDisplay.getUniqueId();
+            } else {
+                centerDisplay.setItemStack(preview);
+            }
+        }
+
         for (int i = 0; i < PEDESTALS.size(); i++) {
             ItemStack item = pedestals.getItem(i);
             ItemDisplay display = currentDisplay(i);
+            TextDisplay countDisplay = currentCountDisplay(i);
+
             if (item == null || item.getType().isAir()) {
                 if (display != null) display.remove();
                 displays.remove(i);
+                if (countDisplay != null) countDisplay.remove();
+                countDisplays.remove(i);
                 continue;
             }
+
+            // ItemDisplay
             if (display == null) {
                 display = spawnDisplay(i, item);
                 if (display != null) displays.put(i, display.getUniqueId());
             } else {
                 display.setItemStack(item.asQuantity(1));
+            }
+
+            // 数量 TextDisplay
+            Component countText = noItalic(Component.text(item.getAmount(), NamedTextColor.YELLOW));
+            if (countDisplay == null) {
+                countDisplay = spawnCountDisplay(i, countText);
+                if (countDisplay != null) countDisplays.put(i, countDisplay.getUniqueId());
+            } else {
+                countDisplay.text(countText);
             }
         }
     }
@@ -413,6 +475,13 @@ public class SteamAssemblyBench extends RebarBlock implements
         UUID id = displays.get(index);
         if (id == null) return null;
         if (org.bukkit.Bukkit.getEntity(id) instanceof ItemDisplay d && d.isValid()) return d;
+        return null;
+    }
+
+    private @Nullable TextDisplay currentCountDisplay(int index) {
+        UUID id = countDisplays.get(index);
+        if (id == null) return null;
+        if (org.bukkit.Bukkit.getEntity(id) instanceof TextDisplay d && d.isValid()) return d;
         return null;
     }
 
@@ -438,6 +507,58 @@ public class SteamAssemblyBench extends RebarBlock implements
         });
     }
 
+    /** 在 ItemDisplay 正下方生成物品数量 TextDisplay，固定朝向（不跟随玩家转向）。 */
+    private @Nullable TextDisplay spawnCountDisplay(int index, @NotNull Component text) {
+        Block pedestal = getMultiblockBlock(PEDESTALS.get(index));
+        Vector face = getFacing().getDirection();
+        // 紧贴底座方块朝向面（0.501），高度偏下
+        Location loc = pedestal.getLocation().add(0.5, 0.15, 0.5).add(face.clone().multiply(0.501));
+        loc.setYaw(yawFor(getFacing()));
+        return loc.getWorld().spawn(loc, TextDisplay.class, d -> {
+            d.text(text);
+            d.setBillboard(org.bukkit.entity.Display.Billboard.FIXED); // 固定朝向，不随玩家旋转
+            d.setDefaultBackground(false);
+            d.setBackgroundColor(org.bukkit.Color.fromARGB(0, 0, 0, 0)); // 完全透明背景
+            d.setShadowed(true);
+            d.setGravity(false);
+            d.setInvulnerable(true);
+            d.setPersistent(false);
+            d.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
+            d.setTransformation(new Transformation(
+                    new Vector3f(0f, 0f, 0f),
+                    new Quaternionf(),
+                    new Vector3f(0.5f, 0.5f, 0.5f),
+                    new Quaternionf()));
+        });
+    }
+
+    private @Nullable ItemDisplay currentCenterDisplay() {
+        if (centerDisplayUuid == null) return null;
+        if (org.bukkit.Bukkit.getEntity(centerDisplayUuid) instanceof ItemDisplay d && d.isValid()) return d;
+        return null;
+    }
+
+    /** 在装配台中心方块朝向面生成配方成品预览 ItemDisplay，位置与底座物品展示一致。 */
+    private @Nullable ItemDisplay spawnCenterDisplay(@NotNull ItemStack item) {
+        Vector face = getFacing().getDirection();
+        Location loc = getBlock().getLocation().add(0.5, 0.5, 0.5).add(face.clone().multiply(0.52));
+        loc.setYaw(yawFor(getFacing()));
+        return loc.getWorld().spawn(loc, ItemDisplay.class, d -> {
+            d.setItemStack(item);
+            d.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+            d.setTransformation(new Transformation(
+                    new Vector3f(0f, 0f, 0f),
+                    new Quaternionf(),
+                    new Vector3f(0.5f, 0.5f, 0.5f),
+                    new Quaternionf()));
+            d.setGravity(false);
+            d.setInvulnerable(true);
+            d.setPersistent(false);
+            d.setGlowing(true);
+            d.setBrightness(new org.bukkit.entity.Display.Brightness(15, 15));
+        });
+    }
+
     private static float yawFor(@NotNull BlockFace facing) {
         return switch (facing) {
             case NORTH -> 180f;
@@ -452,6 +573,13 @@ public class SteamAssemblyBench extends RebarBlock implements
             if (org.bukkit.Bukkit.getEntity(id) instanceof ItemDisplay d) d.remove();
         }
         displays.clear();
+        for (UUID id : countDisplays.values()) {
+            if (org.bukkit.Bukkit.getEntity(id) instanceof TextDisplay d) d.remove();
+        }
+        countDisplays.clear();
+        ItemDisplay cd = currentCenterDisplay();
+        if (cd != null) cd.remove();
+        centerDisplayUuid = null;
     }
 
     private @NotNull Location centerFront() {
