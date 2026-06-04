@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder;
+import io.github.pylonmc.rebar.entity.display.transform.LineBuilder;
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.steamwork.content.machines.PneumaticDuct;
@@ -19,6 +20,7 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,8 @@ public final class PneumaticEndpointSupport {
             BlockFace.EAST,  BlockFace.WEST,
             BlockFace.UP,    BlockFace.DOWN
     };
+    private static final double ENDPOINT_DUCT_THICKNESS = 0.35D;
+    private static final double DIRECT_CONNECTION_THICKNESS = 0.3505D;
 
     private PneumaticEndpointSupport() {}
 
@@ -90,29 +94,38 @@ public final class PneumaticEndpointSupport {
 
     /**
      * Pylon cargo-extractor style endpoint duct: the endpoint owns only the short
-     * body connector, while the duct block draws the network segment into it.
-     *
-     * <p>Special case: when the endpoint is directly adjacent to another endpoint
-     * (no duct in between), neither side has a duct to draw the connecting arm.
-     * In that case both endpoints draw their own arms pointing toward each other,
-     * using the same proportions as a duct-connected arm.</p>
+     * body connector, while a duct block or direct connection line draws the
+     * network segment into it.
      */
     public static @NotNull TransformBuilder ductTransform(@NotNull Block block,
                                                           @NotNull BlockFace face,
                                                           @NotNull BlockFace endpointFacing) {
-        RebarBlock neighbor = BlockStorage.get(block.getRelative(face));
-        if (neighbor instanceof PneumaticInput || neighbor instanceof PneumaticOutput) {
-            // Direct endpoint-to-endpoint: draw arm pointing toward the other endpoint,
-            // mirroring the arm a duct would have drawn on its connected face.
-            return new TransformBuilder()
-                    .lookAlong(face)
-                    .translate(0, 0, 0.1)
-                    .scale(0.35, 0.35, 0.80);
-        }
         return new TransformBuilder()
                 .lookAlong(endpointFacing)
                 .translate(0, 0, -0.0625)
-                .scale(0.35, 0.35, 0.475);
+                .scale(ENDPOINT_DUCT_THICKNESS, ENDPOINT_DUCT_THICKNESS, 0.475);
+    }
+
+    public static boolean isDirectEndpoint(@NotNull Block block, @NotNull BlockFace face) {
+        RebarBlock neighbor = BlockStorage.get(block.getRelative(face));
+        return neighbor instanceof PneumaticInput || neighbor instanceof PneumaticOutput;
+    }
+
+    public static boolean shouldOwnDirectConnection(@NotNull Block block, @NotNull BlockFace face) {
+        Block neighbor = block.getRelative(face);
+        if (!isDirectEndpoint(block, face)) return false;
+        if (block.getX() != neighbor.getX()) return block.getX() < neighbor.getX();
+        if (block.getY() != neighbor.getY()) return block.getY() < neighbor.getY();
+        return block.getZ() < neighbor.getZ();
+    }
+
+    public static @NotNull TransformBuilder directConnectionTransform(@NotNull BlockFace face) {
+        return new LineBuilder()
+                .from(new Vector3d())
+                .to(new Vector3d(face.getModX(), face.getModY(), face.getModZ()))
+                .thickness(DIRECT_CONNECTION_THICKNESS)
+                .extraLength(DIRECT_CONNECTION_THICKNESS)
+                .build();
     }
 
     public static @NotNull ItemDisplay createDisplay(

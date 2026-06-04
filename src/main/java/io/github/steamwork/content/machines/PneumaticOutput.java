@@ -205,13 +205,22 @@ public class PneumaticOutput extends RebarBlock implements
                         .scale(0.45, 0.45, 0.05)));
         newUuids.add(buildDisplay(Material.GRAY_CONCRETE, ":duct",
                 PneumaticEndpointSupport.ductTransform(getBlock(), ductFace, getFacing())));
+        if (PneumaticEndpointSupport.shouldOwnDirectConnection(getBlock(), ductFace)) {
+            newUuids.add(buildDisplayModel(Material.GRAY_CONCRETE, SteamworkKeys.PNEUMATIC_DUCT + ":line",
+                    PneumaticEndpointSupport.directConnectionTransform(ductFace)));
+        }
         displayUuids = List.copyOf(newUuids);
     }
 
     private @NotNull UUID buildDisplay(@NotNull Material material, @NotNull String modelSuffix,
                                        @NotNull TransformBuilder transform) {
+        return buildDisplayModel(material, SteamworkKeys.PNEUMATIC_OUTPUT + modelSuffix, transform);
+    }
+
+    private @NotNull UUID buildDisplayModel(@NotNull Material material, @NotNull String model,
+                                            @NotNull TransformBuilder transform) {
         ItemDisplay d = PneumaticEndpointSupport.createDisplay(
-                getBlock(), material, SteamworkKeys.PNEUMATIC_OUTPUT + modelSuffix, transform,
+                getBlock(), material, model, transform,
                 DISPLAY_MARKER_KEY, DISPLAY_OWNER_KEY);
         return d.getUniqueId();
     }
