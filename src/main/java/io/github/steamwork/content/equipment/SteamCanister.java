@@ -2,7 +2,7 @@ package io.github.steamwork.content.equipment;
 
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
-import io.github.pylonmc.rebar.item.base.RebarBlockInteractor;
+import io.github.pylonmc.rebar.item.interfaces.BlockInteractRebarItemHandler;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import org.bukkit.Material;
 import org.bukkit.event.EventPriority;
@@ -19,10 +19,10 @@ import java.util.List;
  * 蒸汽罐本身可被充汽舱充能（{@link io.github.steamwork.util.SteamCharge} 储能），
  * 也可在「蒸汽装备改装台」装入蒸汽装备，把容量赋予装备。</p>
  *
- * <p>底层材质为音乐唱片（非堆叠），实现 {@link RebarBlockInteractor} 以阻止玩家将其
+ * <p>底层材质为音乐唱片（非堆叠），实现 {@link BlockInteractRebarItemHandler} 以阻止玩家将其
  * 放入唱片机（{@link Material#JUKEBOX}）。</p>
  */
-public class SteamCanister extends SteamEquipment implements RebarBlockInteractor {
+public class SteamCanister extends SteamEquipment implements BlockInteractRebarItemHandler {
 
     private final double capacity = getSettings().getOrThrow("steam-capacity", ConfigAdapter.DOUBLE);
 
@@ -48,7 +48,7 @@ public class SteamCanister extends SteamEquipment implements RebarBlockInteracto
      * 在 {@link EventPriority#HIGH} 取消该交互，保证蒸汽罐不会被意外插入唱片机。</p>
      */
     @Override
-    public void onUsedToClickBlock(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
+    public void onInteractWithBlock(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.HIGH) return;
         var block = event.getClickedBlock();
         if (block != null && block.getType() == Material.JUKEBOX) {

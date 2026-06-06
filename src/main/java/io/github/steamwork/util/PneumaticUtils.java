@@ -1,13 +1,13 @@
 package io.github.steamwork.util;
 
-import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.steamwork.content.line.ProductionLineInlet;
 import io.github.steamwork.content.line.ProductionLineOutlet;
 import io.github.steamwork.content.machines.PneumaticCargoHub;
 import io.github.steamwork.content.machines.PneumaticInput;
+import io.github.steamwork.content.machines.PneumaticOutput;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -34,7 +34,7 @@ public final class PneumaticUtils {
      *
      * <p>支持：
      * <ul>
-     *   <li>实现 {@link RebarVirtualInventoryBlock} 并暴露 {@code "input"} 槽的 Rebar 机器
+     *   <li>实现 {@link VirtualInventoryRebarBlock} 并暴露 {@code "input"} 槽的 Rebar 机器
      *       （汽动货运站走特殊路径，对应其 {@code "send"} 槽）</li>
      *   <li>原版容器（箱子、漏斗、投掷器等）</li>
      * </ul>
@@ -43,8 +43,9 @@ public final class PneumaticUtils {
      * @return 成功推入返回 {@code true}；目标不存在或空间不足返回 {@code false}
      */
     public static boolean tryPushItem(@NotNull Block block, @NotNull ItemStack item) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(block)) return false;
         // 过滤检查：如果目标是汽动输入端，先校验黑/白名单
-        if (BlockStorage.get(block) instanceof PneumaticInput input && !input.isAllowed(item)) return false;
+        if (PneumaticEndpointSupport.loadedRebarBlock(block) instanceof PneumaticInput input && !input.isAllowed(item)) return false;
 
         ItemStack single = item.clone().asQuantity(1);
 
@@ -70,8 +71,9 @@ public final class PneumaticUtils {
      * @return 实际成功推入的数量
      */
     public static int tryPushItems(@NotNull Block block, @NotNull ItemStack item, int count) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(block)) return 0;
         // 过滤检查：如果目标是汽动输入端，先校验黑/白名单
-        if (BlockStorage.get(block) instanceof PneumaticInput input && !input.isAllowed(item)) return 0;
+        if (PneumaticEndpointSupport.loadedRebarBlock(block) instanceof PneumaticInput input && !input.isAllowed(item)) return 0;
 
         VirtualInventory vi = resolveInputInventory(block);
         if (vi != null) {
@@ -106,6 +108,7 @@ public final class PneumaticUtils {
      * @return 实际推入数量
      */
     public static int tryPushItemsToSlot(@NotNull Block block, @NotNull ItemStack item, int count, int targetSlot) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(block)) return 0;
         if (!(block.getState() instanceof org.bukkit.block.Container c)) return 0;
         Inventory inv = c.getInventory();
         if (targetSlot < 0 || targetSlot >= inv.getSize()) return 0;
@@ -133,8 +136,9 @@ public final class PneumaticUtils {
 
     /** 判断目标方块的输入槽是否有空间放入指定物品（至少 1 个）。 */
     public static boolean hasSpace(@NotNull Block block, @NotNull ItemStack item) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(block)) return false;
         // 过滤检查：如果目标是汽动输入端，先校验黑/白名单
-        if (BlockStorage.get(block) instanceof PneumaticInput input && !input.isAllowed(item)) return false;
+        if (PneumaticEndpointSupport.loadedRebarBlock(block) instanceof PneumaticInput input && !input.isAllowed(item)) return false;
 
         VirtualInventory vi = resolveInputInventory(block);
         if (vi != null) return hasViSpace(vi, item.clone().asQuantity(1));
@@ -163,6 +167,7 @@ public final class PneumaticUtils {
      * <p>有效目标 = 原版容器 + 有 {@code "input"} VI 的 Rebar 机器（含 CargoHub 的 {@code "send"} 别名）。</p>
      */
     public static boolean isItemTarget(@NotNull Block block) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(block)) return false;
         if (resolveInputInventory(block) != null) return true;
         return block.getState() instanceof org.bukkit.block.Container;
     }
@@ -175,7 +180,7 @@ public final class PneumaticUtils {
      * <p>支持：
      * <ul>
      *   <li>{@link PneumaticCargoHub} → 走其 {@code sendInventory}</li>
-     *   <li>其他 {@link RebarVirtualInventoryBlock} → 走 {@code "output"} VI（若存在）</li>
+     *   <li>其他 {@link VirtualInventoryRebarBlock} → 走 {@code "output"} VI（若存在）</li>
      *   <li>原版容器（箱子、漏斗等）</li>
      * </ul>
      * </p>
@@ -183,6 +188,7 @@ public final class PneumaticUtils {
      * @return 实际抽取数量
      */
     public static int pullFromContainer(@NotNull Block source, @NotNull VirtualInventory target, int maxCount) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(source)) return 0;
         MachineUpdateReason reason = new MachineUpdateReason();
 
         // 1. Rebar 虚拟背包机器
@@ -267,6 +273,7 @@ public final class PneumaticUtils {
                 BlockFace.UP, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.DOWN
         }) {
             Block neighbor = self.getRelative(face);
+            if (!PneumaticEndpointSupport.isChunkLoaded(neighbor)) continue;
             if (!(neighbor.getState() instanceof Hopper hopperState)) continue;
             if (!(neighbor.getBlockData() instanceof org.bukkit.block.data.type.Hopper hopperData)) continue;
             // 漏斗朝向必须指向 self（上方漏斗 face == UP，opposite == DOWN，与 hopperData.getFacing() 匹配）
@@ -303,6 +310,7 @@ public final class PneumaticUtils {
                 BlockFace.DOWN, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.UP
         }) {
             Block neighbor = self.getRelative(face);
+            if (!PneumaticEndpointSupport.isChunkLoaded(neighbor)) continue;
             if (!(neighbor.getState() instanceof Hopper hopperState)) continue;
             if (!(neighbor.getBlockData() instanceof org.bukkit.block.data.type.Hopper hopperData)) continue;
             // 下方漏斗 face==DOWN，opposite==UP；漏斗朝向 UP 表示它朝向 self
@@ -338,10 +346,11 @@ public final class PneumaticUtils {
      * <p>对汽动货运站走特例（{@code "send"} 槽），其他机器一律按 {@code "input"} 槽查找。</p>
      */
     private static @Nullable VirtualInventory resolveInputInventory(@NotNull Block block) {
-        RebarBlock rb = BlockStorage.get(block);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
+        if (rb instanceof PneumaticOutput) return null;
         if (rb instanceof PneumaticCargoHub hub) return hub.getSendInventory();
         if (rb instanceof ProductionLineInlet inlet) return inlet.getIngredientBuffer();
-        if (!(rb instanceof RebarVirtualInventoryBlock vib)) return null;
+        if (!(rb instanceof VirtualInventoryRebarBlock vib)) return null;
         return vib.getVirtualInventories().get("input");
     }
 
@@ -351,10 +360,10 @@ public final class PneumaticUtils {
      * <p>对汽动货运站走特例（{@code "send"} 槽），其他 Rebar 机器按 {@code "output"} 槽查找。</p>
      */
     private static @Nullable VirtualInventory resolveExtractInventory(@NotNull Block block) {
-        RebarBlock rb = BlockStorage.get(block);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
         if (rb instanceof PneumaticCargoHub hub) return hub.getSendInventory();
         if (rb instanceof ProductionLineOutlet outlet) return outlet.getBuffer();
-        if (!(rb instanceof RebarVirtualInventoryBlock vib)) return null;
+        if (!(rb instanceof VirtualInventoryRebarBlock vib)) return null;
         return vib.getVirtualInventories().get("output");
     }
 }

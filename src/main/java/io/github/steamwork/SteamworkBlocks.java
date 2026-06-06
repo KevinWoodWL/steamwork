@@ -19,11 +19,14 @@ import io.github.steamwork.content.machines.SteamCatapult;
 import io.github.steamwork.content.machines.SteamCompressor;
 import io.github.steamwork.content.machines.SteamDistillationTower;
 import io.github.steamwork.content.machines.PneumaticDuct;
+import io.github.steamwork.content.machines.PneumaticGateValve;
 import io.github.steamwork.content.machines.SteamSorter;
 import io.github.steamwork.content.machines.SteamGrinder;
 import io.github.steamwork.content.machines.SteamCanisterBench;
 import io.github.steamwork.content.machines.SteamChargingChamber;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
+import io.github.steamwork.content.machines.SteamOscillator;
+import io.github.steamwork.content.machines.SteamPressureTransducer;
 import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
@@ -102,5 +105,13 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.MANGANESE_STEEL_BLOCK, Material.IRON_BLOCK,
                 io.github.steamwork.content.machines.AssemblyPedestal.class);
         RebarBlock.register(SteamworkKeys.MANGANESE_BRONZE_BLOCK, Material.COPPER_BLOCK, RebarBlock.class);
+        // 汽动逻辑（PneumaticCraft 灵感）
+        RebarBlock.register(SteamworkKeys.STEAM_VORTEX_TUBE, Material.COPPER_BLOCK,
+                io.github.steamwork.content.machines.SteamVortexTube.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_LOGIC_GATE, Material.IRON_BLOCK,
+                io.github.steamwork.content.machines.PneumaticLogicGate.class);
+        RebarBlock.register(SteamworkKeys.STEAM_OSCILLATOR, Material.COPPER_BLOCK, SteamOscillator.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_GATE_VALVE, Material.STRUCTURE_VOID, PneumaticGateValve.class);
+        RebarBlock.register(SteamworkKeys.STEAM_PRESSURE_TRANSDUCER, Material.BARREL, SteamPressureTransducer.class);
     }
 }

@@ -1,7 +1,7 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.PylonKeys;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock.MultiblockComponent;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock.MultiblockComponent;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.steamwork.SteamworkFluids;

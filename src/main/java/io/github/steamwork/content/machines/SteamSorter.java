@@ -3,11 +3,11 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -52,25 +52,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 蒸汽压力分拣机 —— 消耗蒸汽将内部输入槽物品主动推送到上下左右前后六个相邻容器，
- * 根据过滤槽配置的物品类型决定推送目标；无匹配时轮询空位投送。
- *
- * GUI 布局（5行 × 9列）：
- *   行1：[bg][N标][N滤][S标][S滤][E标][E滤][W标][W滤]
- *   行2：[bg][bg][bg][U标][U滤][D标][D滤][bg][bg]
- *   行3：背景分隔
- *   行4：输入槽 × 9（满行）
- *   行5：蒸汽量表 | 背景 × 7 | 状态
- *
- * 过滤槽对应关系（filterInventory 索引与 FACES 一致）：
- *   0=北  1=南  2=东  3=西  4=上  5=下
- */
+ * 钂告苯鍘嬪姏鍒嗘嫞鏈?鈥斺€?娑堣€楄捀姹藉皢鍐呴儴杈撳叆妲界墿鍝佷富鍔ㄦ帹閫佸埌涓婁笅宸﹀彸鍓嶅悗鍏釜鐩搁偦瀹瑰櫒锛? * 鏍规嵁杩囨护妲介厤缃殑鐗╁搧绫诲瀷鍐冲畾鎺ㄩ€佺洰鏍囷紱鏃犲尮閰嶆椂杞绌轰綅鎶曢€併€? *
+ * GUI 甯冨眬锛?琛?脳 9鍒楋級锛? *   琛?锛歔bg][N鏍嘳[N婊[S鏍嘳[S婊[E鏍嘳[E婊[W鏍嘳[W婊
+ *   琛?锛歔bg][bg][bg][U鏍嘳[U婊[D鏍嘳[D婊[bg][bg]
+ *   琛?锛氳儗鏅垎闅? *   琛?锛氳緭鍏ユЫ 脳 9锛堟弧琛岋級
+ *   琛?锛氳捀姹介噺琛?| 鑳屾櫙 脳 7 | 鐘舵€? *
+ * 杩囨护妲藉搴斿叧绯伙紙filterInventory 绱㈠紩涓?FACES 涓€鑷达級锛? *   0=鍖? 1=鍗? 2=涓? 3=瑗? 4=涓? 5=涓? */
 public class SteamSorter extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarInventoryBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock {
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GuiRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock {
 
     private static final BlockFace[] FACES = {
             BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST,
@@ -83,40 +76,39 @@ public class SteamSorter extends RebarBlock implements
     private final int itemsPerTick = getSettings().getOrThrow("items-per-tick", ConfigAdapter.INTEGER);
 
     private boolean lastActive = false;
-    /** 用于判断蒸汽量是否变化，避免 GUI 每 tick 无谓刷新 */
+    /** 鐢ㄤ簬鍒ゆ柇钂告苯閲忔槸鍚﹀彉鍖栵紝閬垮厤 GUI 姣?tick 鏃犺皳鍒锋柊 */
     private double lastSteamAmount = -1;
-    /** 轮询游标：每次成功发送后递增，跨 tick 持续，保证多目标均衡分发。 */
+    /** 杞娓告爣锛氭瘡娆℃垚鍔熷彂閫佸悗閫掑锛岃法 tick 鎸佺画锛屼繚璇佸鐩爣鍧囪　鍒嗗彂銆?*/
     private int roundRobinCursor = 0;
 
     public static final int MIN_TICK_INTERVAL = 1;
     public static final int MAX_TICK_INTERVAL = 200;
 
     private static final NamespacedKey TICK_INTERVAL_KEY = steamworkKey("ss_tick_interval");
-    /** PDC 键：每个面的幽灵过滤槽材质（材质名称字符串，缺失 = 无过滤）。 */
+    /** PDC 閿細姣忎釜闈㈢殑骞界伒杩囨护妲芥潗璐紙鏉愯川鍚嶇О瀛楃涓诧紝缂哄け = 鏃犺繃婊わ級銆?*/
     private static final NamespacedKey[] FILTER_KEYS = {
             steamworkKey("sf_n"), steamworkKey("sf_s"), steamworkKey("sf_e"),
             steamworkKey("sf_w"), steamworkKey("sf_u"), steamworkKey("sf_d")
     };
 
     /**
-     * 输入槽（7格）：待分拣的物品放在这里，机器主动推送出去。
-     *
-     * <p>过滤槽（幽灵槽，每面一格）：左键用手持/光标物品设置该面的过滤类型；
-     * 空手左键清除；不消耗玩家手中的物品。过滤仅按 {@link Material} 类型匹配。</p>
+     * 杈撳叆妲斤紙7鏍硷級锛氬緟鍒嗘嫞鐨勭墿鍝佹斁鍦ㄨ繖閲岋紝鏈哄櫒涓诲姩鎺ㄩ€佸嚭鍘汇€?     *
+     * <p>杩囨护妲斤紙骞界伒妲斤紝姣忛潰涓€鏍硷級锛氬乏閿敤鎵嬫寔/鍏夋爣鐗╁搧璁剧疆璇ラ潰鐨勮繃婊ょ被鍨嬶紱
+     * 绌烘墜宸﹂敭娓呴櫎锛涗笉娑堣€楃帺瀹舵墜涓殑鐗╁搧銆傝繃婊や粎鎸?{@link Material} 绫诲瀷鍖归厤銆?/p>
      */
     private final VirtualInventory inputInventory = new VirtualInventory(7);
-    /** 每个面的幽灵过滤材质，null = 无过滤（索引与 FACES 一一对应）。 */
+    /** 姣忎釜闈㈢殑骞界伒杩囨护鏉愯川锛宯ull = 鏃犺繃婊わ紙绱㈠紩涓?FACES 涓€涓€瀵瑰簲锛夈€?*/
     private final @Nullable ItemStack[] filterItems = new @Nullable ItemStack[6];
-    /** 与 filterMaterials 对应的 GUI 交互按钮。 */
+    /** 涓?filterMaterials 瀵瑰簲鐨?GUI 浜や簰鎸夐挳銆?*/
     private final FilterSlotItem[] filterSlotItems = new FilterSlotItem[6];
-    /** 工作 tick 间隔，1–200，GUI 可调（默认取配置文件值）。 */
+    /** 宸ヤ綔 tick 闂撮殧锛?鈥?00锛孏UI 鍙皟锛堥粯璁ゅ彇閰嶇疆鏂囦欢鍊硷級銆?*/
     private int tickIntervalOverride;
 
     private final StatusItem statusItem = new StatusItem();
     private final SteamGaugeItem steamGaugeItem = new SteamGaugeItem();
     private final TickIntervalItem tickIntervalItem = new TickIntervalItem();
 
-    // ── 物品描述 ──────────────────────────────────────────────────────────────
+    // 鈹€鈹€ 鐗╁搧鎻忚堪 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     public static class Item extends RebarItem {
         private final double steamBuffer = getSettings().getOrThrow("pressurized-buffer", ConfigAdapter.DOUBLE);
@@ -135,7 +127,7 @@ public class SteamSorter extends RebarBlock implements
         }
     }
 
-    // ── 构造器 ────────────────────────────────────────────────────────────────
+    // 鈹€鈹€ 鏋勯€犲櫒 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @SuppressWarnings("unused")
     public SteamSorter(@NotNull Block block, @NotNull BlockCreateContext context) {
@@ -186,12 +178,12 @@ public class SteamSorter extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarFluidBufferBlock.super.onBreak(drops, context);
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
-    // ── tick ─────────────────────────────────────────────────────────────────
+    // 鈹€鈹€ tick 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     @Override
     public void tick() {
@@ -208,14 +200,14 @@ public class SteamSorter extends RebarBlock implements
                 ItemStack stack = inputs[i];
                 if (stack == null || stack.getType().isAir()) continue;
 
-                // 找到接受该物品的目标（直连容器 或 导管网络端点）
+                // Find a target that can accept this item.
                 Block target = findTarget(stack);
                 if (target == null) continue;
 
-                // 推入 1 个物品（PneumaticUtils 同时支持原版容器和 Rebar 机器）
+                // Push one item into the target.
                 if (!PneumaticUtils.tryPushItem(target, stack)) continue;
 
-                // 从输入槽减少一个
+                // Consume one item from the sorter input.
                 MachineUpdateReason reason = new MachineUpdateReason();
                 if (stack.getAmount() <= 1) {
                     inputInventory.setItem(reason, i, null);
@@ -238,7 +230,7 @@ public class SteamSorter extends RebarBlock implements
         setActive(pushed > 0);
         statusItem.notifyWindows();
 
-        // 只在蒸汽量实际变化时才刷新量表，避免每 tick 不必要地更新 GUI
+        // 鍙湪钂告苯閲忓疄闄呭彉鍖栨椂鎵嶅埛鏂伴噺琛紝閬垮厤姣?tick 涓嶅繀瑕佸湴鏇存柊 GUI
         double currentSteam = fluidAmount(SteamworkFluids.PRESSURIZED_STEAM);
         if (currentSteam != lastSteamAmount) {
             lastSteamAmount = currentSteam;
@@ -247,23 +239,21 @@ public class SteamSorter extends RebarBlock implements
     }
 
     /**
-     * 查找接受指定物品的目标方块。
-     *
-     * <p>搜索顺序（每个面独立）：
+     * 鏌ユ壘鎺ュ彈鎸囧畾鐗╁搧鐨勭洰鏍囨柟鍧椼€?     *
+     * <p>鎼滅储椤哄簭锛堟瘡涓潰鐙珛锛夛細
      * <ol>
-     *   <li>直接相邻的容器 / Rebar 机器 ── 过滤匹配者优先，否则加入备选池</li>
-     *   <li>该面有导管时，BFS 遍历整个导管网络，对每个端点同样做过滤匹配</li>
+     *   <li>鐩存帴鐩搁偦鐨勫鍣?/ Rebar 鏈哄櫒 鈹€鈹€ 杩囨护鍖归厤鑰呬紭鍏堬紝鍚﹀垯鍔犲叆澶囬€夋睜</li>
+     *   <li>璇ラ潰鏈夊绠℃椂锛孊FS 閬嶅巻鏁翠釜瀵肩缃戠粶锛屽姣忎釜绔偣鍚屾牱鍋氳繃婊ゅ尮閰?/li>
      * </ol>
-     * 过滤槽索引与 {@link #FACES} 一一对应：0=北 1=南 2=东 3=西 4=上 5=下。
-     * 某个面的过滤槽留空，则该面（及其导管网络）接受任何物品，进入备选池。</p>
+     * 杩囨护妲界储寮曚笌 {@link #FACES} 涓€涓€瀵瑰簲锛?=鍖?1=鍗?2=涓?3=瑗?4=涓?5=涓嬨€?     * 鏌愪釜闈㈢殑杩囨护妲界暀绌猴紝鍒欒闈紙鍙婂叾瀵肩缃戠粶锛夋帴鍙椾换浣曠墿鍝侊紝杩涘叆澶囬€夋睜銆?/p>
      *
-     * @param item 待推送的物品
-     * @return 找到的目标方块，找不到则 {@code null}
+     * @param item 寰呮帹閫佺殑鐗╁搧
+     * @return 鎵惧埌鐨勭洰鏍囨柟鍧楋紝鎵句笉鍒板垯 {@code null}
      */
     private @Nullable Block findTarget(@NotNull ItemStack item) {
-        // 先按过滤规则收集所有候选目标（有过滤 = 精确匹配面，无过滤 = 任意有空间的面）
-        List<Block> filtered  = new ArrayList<>();  // 过滤槽匹配
-        List<Block> unfiltered = new ArrayList<>(); // 无过滤槽的面
+        // 鍏堟寜杩囨护瑙勫垯鏀堕泦鎵€鏈夊€欓€夌洰鏍囷紙鏈夎繃婊?= 绮剧‘鍖归厤闈紝鏃犺繃婊?= 浠绘剰鏈夌┖闂寸殑闈級
+        List<Block> filtered = new ArrayList<>();
+        List<Block> unfiltered = new ArrayList<>();
 
         for (int fi = 0; fi < FACES.length; fi++) {
             Block neighbor = getBlock().getRelative(FACES[fi]);
@@ -271,23 +261,25 @@ public class SteamSorter extends RebarBlock implements
             boolean filterSet = filter != null && !filter.getType().isAir();
             boolean typeMatch = filterSet && filterMatches(filter, item);
 
-            // 直连气动输出端
-            if (BlockStorage.get(neighbor) instanceof PneumaticOutput) {
+            // Direct pneumatic input endpoint.
+            if (BlockStorage.get(neighbor) instanceof PneumaticInput) {
                 if (typeMatch && PneumaticUtils.hasSpace(neighbor, item)) filtered.add(neighbor);
                 else if (!filterSet && PneumaticUtils.hasSpace(neighbor, item)) unfiltered.add(neighbor);
                 continue;
             }
 
-            // 直连普通容器/机器
+            // 鐩磋繛鏅€氬鍣?鏈哄櫒
             if (!PneumaticDuct.isNetworkDuct(neighbor)) {
-                if (PneumaticUtils.isItemTarget(neighbor)) {
+                if (!(BlockStorage.get(neighbor) instanceof PneumaticInput)
+                        && !(BlockStorage.get(neighbor) instanceof PneumaticOutput)
+                        && PneumaticUtils.isItemTarget(neighbor)) {
                     if (typeMatch && PneumaticUtils.hasSpace(neighbor, item)) filtered.add(neighbor);
                     else if (!filterSet && PneumaticUtils.hasSpace(neighbor, item)) unfiltered.add(neighbor);
                 }
                 continue;
             }
 
-            // 导管网络 → BFS 查找气动输入端
+            // Duct network: BFS collects reachable pneumatic inputs.
             for (Block endpoint : PneumaticDuct.findReachableEndpoints(neighbor)) {
                 if (!(BlockStorage.get(endpoint) instanceof PneumaticInput)) continue;
                 if (typeMatch && PneumaticUtils.hasSpace(endpoint, item)) filtered.add(endpoint);
@@ -295,7 +287,7 @@ public class SteamSorter extends RebarBlock implements
             }
         }
 
-        // 有过滤匹配优先；否则用无过滤候选池；两者都用游标轮询
+        // Prefer filtered matches, otherwise use unfiltered candidates.
         List<Block> pool = !filtered.isEmpty() ? filtered : unfiltered;
         if (pool.isEmpty()) return null;
 
@@ -329,36 +321,25 @@ public class SteamSorter extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 
-    // ── GUI ───────────────────────────────────────────────────────────────────
+    // 鈹€鈹€ GUI 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     /**
-     * 布局说明：
-     * <pre>
-     * # N # S # E # W #   ← N/S/E/W 方向标签（交错排列）
-     * # f # f # f # f #   ← 对应过滤槽（列号与上方标签相同）
-     * # # U # # # D # #   ← U/D 方向标签（居中）
-     * # # f # # # f # #   ← U/D 过滤槽
-     * # # # # # # # # #   ← 分隔行
-     * s i i i i i i i a   ← 蒸汽量表 | 7格输入槽 | 状态
-     * </pre>
-     * filterInventory 顺序与 FACES 一致：0=北 1=南 2=东 3=西 4=上 5=下
-     */
+     * 甯冨眬璇存槑锛?     * <pre>
+     * # N # S # E # W #   鈫?N/S/E/W 鏂瑰悜鏍囩锛堜氦閿欐帓鍒楋級
+     * # f # f # f # f #   鈫?瀵瑰簲杩囨护妲斤紙鍒楀彿涓庝笂鏂规爣绛剧浉鍚岋級
+     * # # U # # # D # #   鈫?U/D 鏂瑰悜鏍囩锛堝眳涓級
+     * # # f # # # f # #   鈫?U/D 杩囨护妲?     * # # # # # # # # #   鈫?鍒嗛殧琛?     * s i i i i i i i a   鈫?钂告苯閲忚〃 | 7鏍艰緭鍏ユЫ | 鐘舵€?     * </pre>
+     * filterInventory 椤哄簭涓?FACES 涓€鑷达細0=鍖?1=鍗?2=涓?3=瑗?4=涓?5=涓?     */
     /**
-     * 布局说明：
-     * <pre>
-     * # N # S # E # W #   ← N/S/E/W 方向标签（交错排列）
-     * # 0 # 1 # 2 # 3 #   ← 北/南/东/西 幽灵过滤槽
-     * # # U # # # D # #   ← U/D 方向标签（居中）
-     * # # 4 # # # 5 # #   ← 上/下 幽灵过滤槽
-     * # # # # # # # # #   ← 分隔行
-     * s i i i i i i i a   ← 蒸汽量表 | 7格输入槽 | 状态
-     * </pre>
-     * 过滤槽 0-5 与 FACES（北/南/东/西/上/下）一一对应。
-     */
+     * 甯冨眬璇存槑锛?     * <pre>
+     * # N # S # E # W #   鈫?N/S/E/W 鏂瑰悜鏍囩锛堜氦閿欐帓鍒楋級
+     * # 0 # 1 # 2 # 3 #   鈫?鍖?鍗?涓?瑗?骞界伒杩囨护妲?     * # # U # # # D # #   鈫?U/D 鏂瑰悜鏍囩锛堝眳涓級
+     * # # 4 # # # 5 # #   鈫?涓?涓?骞界伒杩囨护妲?     * # # # # # # # # #   鈫?鍒嗛殧琛?     * s i i i i i i i a   鈫?钂告苯閲忚〃 | 7鏍艰緭鍏ユЫ | 鐘舵€?     * </pre>
+     * 杩囨护妲?0-5 涓?FACES锛堝寳/鍗?涓?瑗?涓?涓嬶級涓€涓€瀵瑰簲銆?     */
     @Override
     public @NotNull Gui createGui() {
         return Gui.builder()
@@ -375,14 +356,14 @@ public class SteamSorter extends RebarBlock implements
                 .addIngredient('s', steamGaugeItem)
                 .addIngredient('a', statusItem)
                 .addIngredient('t', tickIntervalItem)
-                // 幽灵过滤槽（0=北 1=南 2=东 3=西 4=上 5=下）
+                // 骞界伒杩囨护妲斤紙0=鍖?1=鍗?2=涓?3=瑗?4=涓?5=涓嬶級
                 .addIngredient('0', filterSlotItems[0])
                 .addIngredient('1', filterSlotItems[1])
                 .addIngredient('2', filterSlotItems[2])
                 .addIngredient('3', filterSlotItems[3])
                 .addIngredient('4', filterSlotItems[4])
                 .addIngredient('5', filterSlotItems[5])
-                // 方向标签行
+                // Direction labels.
                 .addIngredient('N', dirLabel(Material.BLUE_STAINED_GLASS_PANE,
                         "steamwork.gui.steam_sorter.filter.north"))
                 .addIngredient('S', dirLabel(Material.RED_STAINED_GLASS_PANE,
@@ -399,9 +380,7 @@ public class SteamSorter extends RebarBlock implements
     }
 
     /**
-     * 幽灵过滤槽 —— 左键用光标/手持物品设置该面的过滤类型；空手左键清除。
-     * 不消耗玩家手中的任何物品。
-     */
+     * 骞界伒杩囨护妲?鈥斺€?宸﹂敭鐢ㄥ厜鏍?鎵嬫寔鐗╁搧璁剧疆璇ラ潰鐨勮繃婊ょ被鍨嬶紱绌烘墜宸﹂敭娓呴櫎銆?     * 涓嶆秷鑰楃帺瀹舵墜涓殑浠讳綍鐗╁搧銆?     */
     private final class FilterSlotItem extends AbstractItem {
         private final int index;
 
@@ -436,7 +415,7 @@ public class SteamSorter extends RebarBlock implements
                 return;
             }
 
-            // 优先读取光标（拖动中的物品），其次读取主手
+            // Prefer the cursor stack, then the main hand.
             ItemStack cursor = player.getOpenInventory().getCursor();
             if (cursor != null && !cursor.getType().isAir()) {
                 filterItems[index] = cursor.clone().asQuantity(1);
@@ -486,9 +465,7 @@ public class SteamSorter extends RebarBlock implements
     }
 
     /**
-     * 创建方向标签静态物品（不可点击，仅作视觉引导）。
-     * 使用各方向对应的颜色玻璃板，lore 提示该槽位的过滤规则。
-     */
+     * 鍒涘缓鏂瑰悜鏍囩闈欐€佺墿鍝侊紙涓嶅彲鐐瑰嚮锛屼粎浣滆瑙夊紩瀵硷級銆?     * 浣跨敤鍚勬柟鍚戝搴旂殑棰滆壊鐜荤拑鏉匡紝lore 鎻愮ず璇ユЫ浣嶇殑杩囨护瑙勫垯銆?     */
     private static AbstractItem dirLabel(Material mat, String translationKey) {
         return new AbstractItem() {
             @Override
@@ -521,7 +498,7 @@ public class SteamSorter extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
                         fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),
                         12, TextColor.fromHexString("#d8edf0")
@@ -536,7 +513,7 @@ public class SteamSorter extends RebarBlock implements
         return Map.of("input", inputInventory);
     }
 
-    // ── GUI 物品 ──────────────────────────────────────────────────────────────
+    // 鈹€鈹€ GUI 鐗╁搧 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
     private final class StatusItem extends AbstractItem {
         @Override

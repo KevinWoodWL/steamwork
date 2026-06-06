@@ -73,10 +73,9 @@ public final class SteamworkResearches {
             SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT,
             SteamworkKeys.AUTO_PRODUCTION_MODULE);
 
-    public static final Research PRECISION_STEAM_AUTOMATION = new Research(
-            steamworkKey("precision_steam_automation"), SteamworkItems.STEAM_ARM, 150L,
-            SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_ASSEMBLY_BENCH,
-            SteamworkKeys.STEAM_MOTOR,
+    public static final Research PRECISION_STEAM_ASSEMBLY = new Research(
+            steamworkKey("precision_steam_assembly"), SteamworkItems.STEAM_ASSEMBLY_BENCH, 120L,
+            SteamworkKeys.STEAM_ASSEMBLY_BENCH,
             SteamworkKeys.STEAM_CANISTER_BRASS, SteamworkKeys.STEAM_CANISTER_INVAR,
             SteamworkKeys.STEAM_CANISTER_TUNGSTEN, SteamworkKeys.STEAM_CANISTER_BENCH,
             SteamworkKeys.STEAM_CHARGING_CHAMBER);
@@ -85,6 +84,13 @@ public final class SteamworkResearches {
             steamworkKey("precision_production_line"), SteamworkItems.PRODUCTION_LINE_INLET, 130L,
             SteamworkKeys.PRODUCTION_LINE_INLET, SteamworkKeys.PRODUCTION_LINE_OUTLET,
             SteamworkKeys.PRODUCTION_LINE_BLUEPRINT, SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST);
+
+    public static final Research PRECISION_PNEUMATIC_LOGIC = new Research(
+            steamworkKey("precision_pneumatic_logic"), SteamworkItems.PNEUMATIC_LOGIC_GATE, 120L,
+            SteamworkKeys.STEAM_VORTEX_TUBE,
+            SteamworkKeys.PNEUMATIC_LOGIC_GATE,
+            SteamworkKeys.STEAM_OSCILLATOR,
+            SteamworkKeys.STEAM_PRESSURE_TRANSDUCER);
 
     /** 解锁蒸汽科研接口 —— 必须保持全局研究点可解锁，否则玩家无法建造接口来获取学科点数。 */
     public static final Research CHEMISTRY_BASIC_RESEARCH = new Research(
@@ -132,7 +138,8 @@ public final class SteamworkResearches {
             SteamworkKeys.PNEUMATIC_DUCT, SteamworkKeys.PNEUMATIC_OUTPUT, SteamworkKeys.PNEUMATIC_INPUT,
             SteamworkKeys.PNEUMATIC_CARGO_HUB,
             SteamworkKeys.STEAM_CATAPULT, SteamworkKeys.STEAM_SORTER,
-            SteamworkKeys.PNEUMATIC_DISTRIBUTOR);
+            SteamworkKeys.PNEUMATIC_DISTRIBUTOR,
+            SteamworkKeys.PNEUMATIC_GATE_VALVE);
 
     /**
      * ★ 化学门控：需在蒸汽科研接口消耗 100 化学点数解锁。
@@ -152,6 +159,7 @@ public final class SteamworkResearches {
      */
     public static final Research PRECISION_ADVANCED_AUTOMATION_1 = new Research(
             steamworkKey("precision_advanced_automation_1"), SteamworkItems.STEAM_PRECISION_MILL, (Long) null,
+            SteamworkKeys.STEAM_ARM, SteamworkKeys.STEAM_MOTOR,
             SteamworkKeys.STEAM_PRECISION_MILL,
             SteamworkKeys.PRECISION_GEAR, SteamworkKeys.PRECISION_SCREW,
             SteamworkKeys.PRECISION_VALVE, SteamworkKeys.WEAR_PLATE,
@@ -221,8 +229,9 @@ public final class SteamworkResearches {
         MATERIAL_BASIC_MACHINES.register();
 
         PRECISION_STEAM_CALIBRATION.register();
-        PRECISION_STEAM_AUTOMATION.register();
+        PRECISION_STEAM_ASSEMBLY.register();
         PRECISION_PRODUCTION_LINE.register();
+        PRECISION_PNEUMATIC_LOGIC.register();
         CHEMISTRY_BASIC_RESEARCH.register();
 
         MATERIAL_ADVANCED_INGOTS.register();

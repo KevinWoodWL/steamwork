@@ -230,6 +230,7 @@ public final class SteamworkPages {
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_DUCT);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_INPUT);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_OUTPUT);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_GATE_VALVE);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_DISTRIBUTOR);
 
         ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
@@ -248,6 +249,11 @@ public final class SteamworkPages {
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_BUFFER_CHEST);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_OUTLET);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_BLUEPRINT);
+        // 汽动逻辑（Stage 2）
+        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_VORTEX_TUBE);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PNEUMATIC_LOGIC_GATE);
+        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_OSCILLATOR);
+        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_PRESSURE_TRANSDUCER);
 
         ROOT.addPage(SteamworkItems.MACHINE_CALIBRATOR, STEAM_CALIBRATION);
         STEAM_CALIBRATION.addItem(SteamworkItems.MACHINE_CALIBRATOR);

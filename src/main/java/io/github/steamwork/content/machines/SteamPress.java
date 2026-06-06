@@ -3,12 +3,12 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarGhostBlockHolder;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarInteractBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GhostBlockHolderRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.InteractRebarBlockHandler;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -79,12 +79,12 @@ import org.joml.Vector3i;
  * </pre>
  */
 public class SteamPress extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarGhostBlockHolder,
-        RebarInventoryBlock,
-        RebarInteractBlock,
-        RebarTickingBlock,
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GhostBlockHolderRebarBlock,
+        GuiRebarBlock,
+        InteractRebarBlockHandler,
+        TickingRebarBlock,
         SteamBoostable {
 
     private static final NamespacedKey RECIPE_KEY     = new NamespacedKey("steamwork", "pressing_recipe");
@@ -205,8 +205,8 @@ public class SteamPress extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarFluidBufferBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
         ItemDisplay d = getDisplayEntity();
         if (d != null) {
             ItemStack item = d.getItemStack();
@@ -469,11 +469,11 @@ public class SteamPress extends RebarBlock implements
     // ===== Machine block right-click → open status GUI =====
 
     @Override
-    public void onInteract(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
+    public void onInteractedWith(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.LOWEST) return;
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (event.getHand() != EquipmentSlot.HAND) return;
-        // Machine block GUI is opened automatically by RebarInventoryBlock - nothing extra needed here
+        // Machine block GUI is opened automatically by GuiRebarBlock - nothing extra needed here
     }
 
     // ===== Tick =====
@@ -721,7 +721,7 @@ public class SteamPress extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
             if (!active) {
                 pistonPressed = false;
             }
@@ -769,7 +769,7 @@ public class SteamPress extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.STEAM),
                         fluidCapacity(SteamworkFluids.STEAM),
                         16,

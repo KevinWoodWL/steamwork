@@ -1,0 +1,4 @@
+# 汽动逻辑门：读相邻机器蒸汽压力做逻辑，逻辑成立时搬运真蒸汽到输出面
+tick-interval: 2
+transfer-per-tick: 50.0   # 每 tick 每种蒸汽每路最多搬运量（mB）
+signal-threshold: 1.0     # 相邻蒸汽量 ≥ 此值算 HIGH 信号

@@ -870,7 +870,7 @@ item:
     name: "蒸汽分拣机"
     lore: |-
       <arrow> 消耗<white>加压蒸汽</white>，将输入槽物品按方向分发到汽动网络
-      <arrow> 每个面只能对接<white>汽动输出端</white>或通过导管连接<white>汽动输入端</white>
+      <arrow> 每个面可直连<white>汽动输入端</white>，或通过导管连接到<white>汽动输入端</white>
       <arrow> 过滤槽（6格）对应六个面：有过滤时只推对应类型，无过滤时轮询空位
       <arrow> <attr>加压蒸汽缓存:</attr> %steam-buffer%
       <arrow> <attr>每个物品耗气:</attr> %steam-per-item%
@@ -907,7 +907,7 @@ item:
       <arrow> 汽动网络的<white>入口适配器</white>，内置 <white>9 格存储仓</white>
       <arrow> 每 tick 自动从来源侧相邻容器补货到存储仓
       <arrow> 每 <white>%interval% tick</white> 从存储仓取出最多 <white>%extract% 个</white>物品批量发送到网络
-      <arrow> 可直连原版容器、Rebar 机器或通过导管连接<white>汽动输入端</white>
+      <arrow> 来源侧贴住原版容器或 Rebar 机器抽取物品；网络侧直连或通过导管连接<white>汽动输入端</white>
     waila: "汽动输出端 | 每 %interval% tick 发送 %extract% 个 | %state%"
 
   production_line_inlet:
@@ -961,7 +961,7 @@ item:
     name: "汽动分发器"
     lore: |-
       <arrow> 消耗加压蒸汽，将输入槽物品按方向分发到汽动网络
-      <arrow> 每个面只能对接<white>汽动输出端</white>或通过导管连接<white>汽动输入端</white>
+      <arrow> 每个面可直连<white>汽动输入端</white>，或通过导管连接到<white>汽动输入端</white>
       <arrow> 支持 1–6 个输出方向（北/南/东/西/上/下），可在 GUI 中逐一启用/禁用
       <arrow> 多方向启用时轮询均衡分发
       <arrow> <attr>加压蒸汽缓存:</attr> %pressurized-buffer%
@@ -1246,6 +1246,51 @@ item:
     name: "精馏冷凝顶盖"
     lore: <arrow> 完成蒸汽精馏塔结构所需的紫铜顶盖
 
+  steam_vortex_tube:
+    name: "蒸汽涡流分离器"
+    lore: |-
+      <arrow> 北面接<white>过热蒸汽</white>输入，南面输出<white>加压蒸汽</white>，东面输出<white>蒸馏水</white>
+      <arrow> 每周期消耗 %input% 过热蒸汽，产出 %pressurized% 加压蒸汽 + %water% 蒸馏水
+      <arrow> 约 10% 转化损耗；蒸馏水可用于下游化学配方
+      <arrow> 是将过热蒸汽升级为加压蒸汽的唯一途径
+
+  pneumatic_logic_gate:
+    name: "汽动逻辑门"
+    lore: |-
+      <arrow> 右键打开 GUI，分别指定 A 面、B 面（输入）和输出面，并选择门类型
+      <arrow> A/B 面需<white>贴着蒸汽机器</white>；蒸汽量 ≥ 阈值 = HIGH，低于 = LOW
+      <arrow> 信号阈值默认 1 mB，可在 GUI 中手动调节（1–1000 mB）
+      <arrow> 逻辑成立时，把 A/B 面的蒸汽<white>实际搬运</white>到输出面相邻机器
+      <arrow> NOT 模式：B 面有汽即截断 A→输出；三种蒸汽各自独立计算
+
+  steam_oscillator:
+    name: "蒸汽振荡器"
+    lore: |-
+      <arrow> 从输入面吸入蒸汽蓄压，达到上阈值后向输出面<white>喷发 %ticks% tick</white>
+      <arrow> 喷发结束或内压降至下阈值后重新蓄压，形成周期性脉冲
+      <arrow> 供汽越快，频率越高；无蒸汽则停摆
+      <arrow> 输出面接蒸汽机器或汽动逻辑门，可驱动节拍自动化
+      <arrow> <attr>上阈值:</attr> %threshold% <attr>喷发时长:</attr> %ticks% tick
+    waila: "蒸汽振荡器 | %fluid% %pressure-bar% | %state%"
+
+  pneumatic_gate_valve:
+    name: "汽动截止阀"
+    lore: |-
+      <arrow> 嵌入<white>汽动导管</white>链中段，方向与导管连接方向一致
+      <arrow> 无红石信号时<white>常开</white>，物品正常通过；接收红石信号后立即关闭
+      <arrow> 关闭时导管网络视其为断开，物品不会在阀门处堆积
+      <arrow> 配合蒸汽压力传感器或逻辑门可实现「有汽才放行」联动
+    waila: "汽动截止阀 | %state%"
+
+  steam_pressure_transducer:
+    name: "蒸汽压力传感器"
+    lore: |-
+      <arrow> 贴在蒸汽机器侧面，在 GUI 中选择<white>读取面</white>和蒸汽档位
+      <arrow> 将相邻机器的蒸汽填充比例映射为 <white>0–15 模拟红石信号</white>
+      <arrow> 在传感器侧面放置<white>红石比较器</white>即可直接读出信号强度
+      <arrow> 是蒸汽体系中唯一的真模拟量红石输出
+    waila: "蒸汽压力传感器 | %fluid% %pressure-bar% | 红石 %level%"
+
   # 蒸馏副产物与中间产物
   refined_resin:
     name: "精炼树脂"
@@ -1353,6 +1398,32 @@ item:
     lore: <arrow> 一次研究分析后留下的废弃物
 
 gui:
+  common:
+    steam_tier: "<aqua>蒸汽档位"
+    current: "<gray>当前：<reset>%value%"
+    input_face: "<gold>输入面：%face%"
+    output_face: "<gold>输出面：%face%"
+    read_face: "<gold>读取面：%face%"
+    connected_fluid_buffer: "<green>相邻蒸汽缓冲可用"
+    no_fluid_buffer: "<red>相邻无蒸汽缓冲"
+    left_click_cycle: "<dark_gray>左键循环选择"
+    left_click_cycle_steam: "<dark_gray>左键切换普通 / 过热 / 加压"
+    left_click_cycle_right_clear: "<dark_gray>左键循环 / 右键清除"
+    signal: "<gray>信号：%value%"
+    pressure: "<gray>压力：<aqua>%amount% <gray>/ <aqua>%capacity%"
+    steam_kind:
+      steam: "普通蒸汽"
+      superheated: "过热蒸汽"
+      pressurized: "加压蒸汽"
+    face:
+      north: "北"
+      south: "南"
+      east: "东"
+      west: "西"
+      up: "上"
+      down: "下"
+      unset: "未配置"
+
   steam_arm:
     title: "<dark_gray>蒸汽动力臂"
     steam_gauge: "<aqua>蒸汽储量"
@@ -1727,6 +1798,11 @@ gui:
     status:
       active: "<green>合成中"
       idle: "<gray>待机"
+      assembling: "<aqua>装配中…"
+      structure_missing: "<red>结构不完整"
+      no_steam: "<gold>过热蒸汽不足"
+      no_ingredients: "<gray>放入正确原料"
+      ready: "<green>就绪，可装配"
     reason:
       ready: "<gray>模板与材料已就绪"
       structure_missing: "<red>结构不完整，需要 4 角青铜块"
@@ -1736,6 +1812,24 @@ gui:
       no_steam: "<red>过热蒸汽不足"
       output_full: "<yellow>输出槽已满"
       processing: "<green>合成中"
+    craft:
+      start: "开始装配"
+      steam_cost: "<gray>需要过热蒸汽 <gold>%steam%</gold> mB"
+    result:
+      no_match: "<red>无匹配配方"
+      switch_hint: "<yellow>▸ 点击切换配方 (%index%/%total%)"
+    waila:
+      assembling: "<aqua>装配中…"
+      can_craft: "<green>可装配 → "
+      open_gui: "<gray>右键打开界面装配"
+      structure_missing: "<gray>结构不完整"
+    fluid_amount: "<aqua>%steam% <gray>/ <aqua>%capacity% mB"
+    actionbar:
+      crafting: "<gray>装配进行中…"
+      structure_missing: "<red>祭坛结构不完整"
+      no_recipe: "<red>底座物品未匹配任何装配配方"
+      no_steam: "<red>过热蒸汽不足（需从背后管道供给）"
+      started: "<aqua>开始装配…"
 
   steam_canister_bench:
     title: "<dark_gray>蒸汽装备改装台"
@@ -1805,6 +1899,64 @@ gui:
     status:
       active: "<green>运行中"
       idle: "<gray>待机"
+
+  steam_vortex_tube:
+    title: "<dark_gray>蒸汽涡流分离器"
+    ratio: "<gray>分离: <#ff8c00>%input%<gray> → <#18c0d8>%pressurized%<gray> 加压 <gray>+ <#29b6d6>%water%<gray> 水"
+    input_gauge: "<#ff8c00>过热蒸汽输入"
+    pressurized_gauge: "<#18c0d8>加压蒸汽输出"
+    water_gauge: "<#29b6d6>蒸馏水输出"
+    fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
+    waila: "蒸汽涡流分离器 | 过热 %superheated-bar% | 加压 %pressurized-bar% | %state%"
+    status:
+      active: "<green>运行中"
+      idle: "<gray>待机"
+
+  pneumatic_logic_gate:
+    title: "<dark_gray>汽动逻辑门"
+    waila: "汽动逻辑门 | 门: %mode% | %state%"
+    mode_label: "<light_purple>门类型"
+    mode_hint: "<dark_gray>左键切换 AND / OR / XOR / NOT"
+    threshold: "<yellow>信号阈值"
+    threshold_value: "<gray>当前：<aqua>%value% <gray>mB"
+    threshold_desc: "<gray>相邻蒸汽量 ≥ 此值才算 HIGH"
+    threshold_hint: "<dark_gray>左键 +1 | 右键 -1 | Shift ×10"
+    input_a: "<gold>输入 A：%face%"
+    input_a_not: "<gold>主进汽 A：%face%"
+    input_b: "<gold>输入 B：%face%"
+    control_b: "<gold>控制 B：%face%"
+    output_hint: "<gray>逻辑成立时把蒸汽搬到此面"
+    all_steam_kinds: "<dark_gray>作用于普通/过热/加压三种蒸汽"
+    mode:
+      and: "与 (AND)"
+      or: "或 (OR)"
+      xor: "异或 (XOR)"
+      not: "非 / 抑制 (NOT)"
+    signal:
+      high: "<green>HIGH"
+      low: "<gray>LOW"
+    state:
+      passing: "<green>放行中"
+      blocked: "<gray>截断"
+
+  steam_oscillator:
+    title: "<dark_gray>蒸汽振荡器"
+    burst_left: "<gray>剩余喷发：<reset>%ticks% tick"
+    state:
+      charging: "<yellow>蓄压中"
+      bursting: "<green>喷发中"
+      blocked: "<red>喷发受阻"
+
+  pneumatic_gate_valve:
+    state:
+      open: "<green>开启"
+      closed: "<red>关闭"
+
+  steam_pressure_transducer:
+    title: "<dark_gray>蒸汽压力传感器"
+    signal_item: "<aqua>压力传感器比较器占位物"
+    comparator_output: "<red>比较器输出：%level%"
+    inventory_repairs: "<dark_gray>桶内占位物会自动修正"
 
   steam_compressor:
     title: "<dark_gray>蒸汽加压机"
@@ -2172,6 +2324,7 @@ research:
   precision_steam_calibration: "蒸汽调校系统"
   precision_steam_automation: "蒸汽自动化"
   precision_production_line: "蒸汽自动化产线"
+  precision_pneumatic_logic: "汽动逻辑"
   chemistry_basic_research: "基础蒸汽科研"
   # Tier 3 - 高级合金与流体
   material_advanced_ingots: "高级合金锭"

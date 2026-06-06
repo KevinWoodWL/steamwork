@@ -1,10 +1,10 @@
 package io.github.steamwork.content.equipment;
 
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler;
-import io.github.pylonmc.rebar.item.base.RebarBlockInteractor;
-import io.github.pylonmc.rebar.item.base.RebarInventoryTicker;
-import io.github.pylonmc.rebar.item.base.RebarTool;
-import io.github.pylonmc.rebar.item.base.RebarWeapon;
+import io.github.pylonmc.rebar.item.interfaces.BlockInteractRebarItemHandler;
+import io.github.pylonmc.rebar.item.interfaces.InventoryTickerRebarItem;
+import io.github.pylonmc.rebar.item.interfaces.BlockBreakRebarItemHandler;
+import io.github.pylonmc.rebar.item.interfaces.EntityAttackRebarItemHandler;
 import io.github.steamwork.util.SteamCharge;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -60,10 +60,10 @@ import java.util.UUID;
  * <p>黄铜/青铜/因瓦 3×3，钨 5×5。</p>
  */
 public class SteamToolItem extends SteamEquipment implements
-        RebarTool,
-        RebarWeapon,
-        RebarBlockInteractor,
-        RebarInventoryTicker {
+        BlockBreakRebarItemHandler,
+        EntityAttackRebarItemHandler,
+        BlockInteractRebarItemHandler,
+        InventoryTickerRebarItem {
 
     private static final double STEAM_PER_HIT = 12.0;
     private static final double STEAM_PER_BREAK = 20.0;
@@ -117,7 +117,7 @@ public class SteamToolItem extends SteamEquipment implements
 
     @Override
     @MultiHandler(priorities = {EventPriority.HIGH})
-    public void onUsedToDamageEntity(@NotNull EntityDamageByEntityEvent event, @NotNull EventPriority priority) {
+    public void onDamageEntity(@NotNull EntityDamageByEntityEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.HIGH) return;
         // 重入守卫：横扫 / 蒸汽喷射造成的内部伤害不应再次触发本处理器（否则雪崩耗汽）
         if (dealingInternalDamage) return;
@@ -174,7 +174,7 @@ public class SteamToolItem extends SteamEquipment implements
 
     @Override
     @MultiHandler(priorities = {EventPriority.HIGH})
-    public void onUsedToBreakBlock(@NotNull BlockBreakEvent event, @NotNull EventPriority priority) {
+    public void onBreakBlock(@NotNull BlockBreakEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.HIGH) return;
         Player player = event.getPlayer();
         ItemStack tool = player.getInventory().getItemInMainHand();
@@ -209,7 +209,7 @@ public class SteamToolItem extends SteamEquipment implements
 
     @Override
     @MultiHandler(priorities = {EventPriority.HIGH})
-    public void onUsedToClickBlock(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
+    public void onInteractWithBlock(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.HIGH) return;
         Action action = event.getAction();
         boolean rightClick = action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK;
@@ -255,7 +255,7 @@ public class SteamToolItem extends SteamEquipment implements
      * 尝试释放蒸汽喷射：检查冷却 + 扣汽，成功则向视线方向喷射蒸汽冲击波。
      *
      * <p>由 {@link io.github.steamwork.content.equipment.SteamWeaponSkillListener} 在玩家右键
-     * （空气或方块）持蒸汽剑时调用——因为 {@code RebarBlockInteractor.onUsedToClickBlock}
+     * （空气或方块）持蒸汽剑时调用——因为 {@code BlockInteractRebarItemHandler.onInteractWithBlock}
      * 只在右键方块时回调，收不到右键空气事件。</p>
      */
     public void tryExecuteSteamBurst(

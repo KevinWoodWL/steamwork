@@ -1,11 +1,11 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -55,11 +55,11 @@ import java.util.Map;
 import java.util.Objects;
 
 public class SteamPressurizedFurnace extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarInventoryBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock {
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GuiRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock {
 
     private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     private final double steamBuffer = getSettings().getOrThrow("steam-buffer", ConfigAdapter.DOUBLE);
@@ -168,9 +168,9 @@ public class SteamPressurizedFurnace extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
-        RebarFluidBufferBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
     }
 
     @Override
@@ -745,7 +745,7 @@ public class SteamPressurizedFurnace extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 }

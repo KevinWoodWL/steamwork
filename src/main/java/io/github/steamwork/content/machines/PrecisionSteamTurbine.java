@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  * <ul>
  *   <li>原版熔炉 / 高炉 / 烟熏炉</li>
  *   <li>所有 Steamwork 自家 {@link SteamBoostable} 加工机器</li>
- *   <li>任何实现 {@link RebarProcessor} 的 Rebar/Pylon 机器</li>
+ *   <li>任何实现 {@link ProcessorRebarBlock} 的 Rebar/Pylon 机器</li>
  * </ul>
  * 同时驱动上限由配置文件 {@code max-targets} 控制（默认 2）。
  */

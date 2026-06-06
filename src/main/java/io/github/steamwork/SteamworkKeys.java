@@ -83,6 +83,13 @@ public final class SteamworkKeys {
     public static final NamespacedKey DISTILLATION_TOWER_SECTION = steamworkKey("distillation_tower_section");
     public static final NamespacedKey DISTILLATION_CONDENSER = steamworkKey("distillation_condenser");
 
+    // 汽动逻辑（PneumaticCraft 灵感）
+    public static final NamespacedKey STEAM_VORTEX_TUBE = steamworkKey("steam_vortex_tube");
+    public static final NamespacedKey PNEUMATIC_LOGIC_GATE = steamworkKey("pneumatic_logic_gate");
+    public static final NamespacedKey STEAM_OSCILLATOR = steamworkKey("steam_oscillator");
+    public static final NamespacedKey PNEUMATIC_GATE_VALVE = steamworkKey("pneumatic_gate_valve");
+    public static final NamespacedKey STEAM_PRESSURE_TRANSDUCER = steamworkKey("steam_pressure_transducer");
+
     // Steam tools and weapons
     public static final NamespacedKey STEAM_SWORD = steamworkKey("steam_sword");
     public static final NamespacedKey STEAM_PICKAXE = steamworkKey("steam_pickaxe");

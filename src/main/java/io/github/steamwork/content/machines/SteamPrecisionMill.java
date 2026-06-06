@@ -1,9 +1,8 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.PylonKeys;
-import io.github.pylonmc.rebar.block.base.RebarGhostBlockHolder;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock.MultiblockComponent;
-import io.github.pylonmc.rebar.block.context.BlockBreakContext;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock.MultiblockComponent;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.recipe.RecipeType;
@@ -17,14 +16,13 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +35,7 @@ import java.util.stream.Collectors;
  * 三个铁块未全部就位时机器停摆并以 ghost 块提示玩家。
  */
 public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecipe>
-        implements RebarGhostBlockHolder, PrecisionSteamBoostable {
+        implements SimpleRebarMultiblock, PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }
@@ -46,90 +44,34 @@ public class SteamPrecisionMill extends AbstractSteamProcessor<SteamMillingRecip
     @SuppressWarnings("unused")
     public SteamPrecisionMill(@NotNull Block block, @NotNull BlockCreateContext context) {
         super(block, context);
+        setMultiblockDirection(getFacing());
     }
 
     @SuppressWarnings("unused")
     public SteamPrecisionMill(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
+        setMultiblockDirection(getFacing());
     }
 
     // ===== 多方块结构 =====
 
     /**
-     * 缓存的三个铁块偏移量（懒加载，依赖机器朝向，方向固定后不会改变）。
-     * 沿垂直于机器朝向的水平轴排列，在视觉上形成一条铣床底座轨道。
+     * 三个钢块的规范（NORTH 朝向）相对偏移量。
+     * 框架会根据 setMultiblockDirection 自动旋转，无需手动处理朝向。
+     * 布局：机器正下方一排，沿 X 轴（东西）延伸。
      */
-    @Nullable
-    private List<Vector3i> cachedSteelOffsets = null;
-
-    /**
-     * 返回机器正下方三个铁块相对于机器方块的偏移量列表。
-     * 朝向 NORTH/SOUTH → 沿 X 轴（东西）延伸；
-     * 朝向 EAST/WEST  → 沿 Z 轴（南北）延伸。
-     */
-    private @NotNull List<Vector3i> getSteelOffsets() {
-        if (cachedSteelOffsets != null) return cachedSteelOffsets;
-        BlockFace facing;
-        try { facing = getFacing(); } catch (IllegalStateException e) { facing = BlockFace.SOUTH; }
-        int dx = (facing == BlockFace.NORTH || facing == BlockFace.SOUTH) ? 1 : 0;
-        int dz = (facing == BlockFace.NORTH || facing == BlockFace.SOUTH) ? 0 : 1;
-        cachedSteelOffsets = List.of(
-                new Vector3i(-dx, -1, -dz),
-                new Vector3i(0,   -1,  0),
-                new Vector3i( dx, -1,  dz)
+    @Override
+    public @NotNull Map<Vector3i, MultiblockComponent> getComponents() {
+        return Map.of(
+            new Vector3i(-1, -1, 0), MultiblockComponent.of(PylonKeys.STEEL_BLOCK),
+            new Vector3i( 0, -1, 0), MultiblockComponent.of(PylonKeys.STEEL_BLOCK),
+            new Vector3i( 1, -1, 0), MultiblockComponent.of(PylonKeys.STEEL_BLOCK)
         );
-        return cachedSteelOffsets;
     }
-
-    /**
-     * 校验三个铁块是否就位，同时更新 ghost 提示块。
-     * 每 tick 由 AbstractSteamProcessor.tick() 首先调用。
-     */
-    /** 用于复用的 Pylon 钢块组件（含 matches + ghost 信息）。 */
-    private static final MultiblockComponent STEEL_BLOCK_COMPONENT =
-            MultiblockComponent.of(PylonKeys.STEEL_BLOCK);
 
     @Override
     protected boolean hasValidStructure() {
-        syncGhostBlocks();
-        for (Vector3i offset : getSteelOffsets()) {
-            if (!STEEL_BLOCK_COMPONENT.matches(getBlock().getRelative(offset.x, offset.y, offset.z))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * 同步 ghost 块：缺少 Pylon 钢块的位置显示 ghost 提示，已就位的位置移除 ghost。
-     */
-    private void syncGhostBlocks() {
-        for (Vector3i offset : getSteelOffsets()) {
-            boolean hasBlock = STEEL_BLOCK_COMPONENT.matches(
-                    getBlock().getRelative(offset.x, offset.y, offset.z));
-            boolean hasGhost = hasGhostBlockAt(offset);
-            if (!hasBlock && !hasGhost) {
-                addGhostBlock(offset, List.of(), List.of(PylonKeys.STEEL_BLOCK));
-            } else if (hasBlock && hasGhost) {
-                removeGhostBlock(offset);
-            }
-        }
-    }
-
-    @Override
-    public void postInitialise() {
-        super.postInitialise();
-        syncGhostBlocks();
-    }
-
-    @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        super.onBreak(drops, context);
-        for (Vector3i offset : getSteelOffsets()) {
-            if (hasGhostBlockAt(offset)) {
-                removeGhostBlock(offset);
-            }
-        }
+        return isFormedAndFullyLoaded();
     }
 
     // ===== AbstractSteamProcessor 实现 =====

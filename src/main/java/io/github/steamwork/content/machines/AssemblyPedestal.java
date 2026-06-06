@@ -2,7 +2,7 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarInteractBlock;
+import io.github.pylonmc.rebar.block.interfaces.InteractRebarBlockHandler;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventPriority;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * <p>若该锰钢块不属于任何已成型祭坛，则不拦截事件，保持普通方块行为（可正常建造）。</p>
  */
-public class AssemblyPedestal extends RebarBlock implements RebarInteractBlock {
+public class AssemblyPedestal extends RebarBlock implements InteractRebarBlockHandler {
 
     @SuppressWarnings("unused")
     public AssemblyPedestal(@NotNull Block block, @NotNull BlockCreateContext context) {
@@ -31,7 +31,7 @@ public class AssemblyPedestal extends RebarBlock implements RebarInteractBlock {
     }
 
     @Override
-    public void onInteract(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
+    public void onInteractedWith(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (event.getHand() != EquipmentSlot.HAND) return;
 

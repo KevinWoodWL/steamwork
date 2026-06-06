@@ -81,7 +81,7 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
 
         String info =
                 "  " + ANSI_GOLD + "Steam & Pressure Technology" + ANSI_RESET + "\n" +
-                "  " + ANSI_GRAY + "author: sban66" + ANSI_RESET + "\n" +
+                "  " + ANSI_GRAY + "author: sban66(KevinWoodWL)" + ANSI_RESET + "\n" +
                 "  " + ANSI_GRAY + "version: " + getPluginMeta().getVersion() + ANSI_RESET;
 
         getLogger().info("\n" + banner + info);

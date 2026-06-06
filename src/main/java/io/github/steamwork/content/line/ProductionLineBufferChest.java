@@ -1,11 +1,11 @@
 package io.github.steamwork.content.line;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
@@ -45,9 +45,9 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * A production-line member that decouples mixed outputs from the next machine.
  */
 public class ProductionLineBufferChest extends RebarBlock implements
-        RebarDirectionalBlock, RebarTickingBlock,
-        RebarVirtualInventoryBlock, RebarInventoryBlock,
-        RebarLogisticBlock, ProductionLineMember {
+        DirectionalRebarBlock, TickingRebarBlock,
+        VirtualInventoryRebarBlock, GuiRebarBlock,
+        LogisticRebarBlock, ProductionLineMember {
 
     private static final int MAX_GAP = 4;
 
@@ -219,8 +219,8 @@ public class ProductionLineBufferChest extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
         // filterList 是幽灵槽，物品不是真实持有，不掉落
     }
 

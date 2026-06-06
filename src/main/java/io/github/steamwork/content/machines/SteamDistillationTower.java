@@ -4,11 +4,11 @@ import io.github.pylonmc.pylon.PylonFluids;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -63,11 +63,11 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * 段数越多解锁的配方越复杂。
  */
 public class SteamDistillationTower extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarInventoryBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock {
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GuiRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock {
 
     public static final int MAX_SECTIONS = 4;
 
@@ -143,7 +143,7 @@ public class SteamDistillationTower extends RebarBlock implements
         createFluidPoint(FluidPointType.OUTPUT, BlockFace.EAST, context, false);
         createFluidBuffer(SteamworkFluids.SUPERHEATED_STEAM, steamBuffer, true, false);
         // 通用入料缓冲（任意非过热蒸汽的输入流体）。本机器的 fluidBuffer 用于多种流体，
-        // 但 RebarFluidBufferBlock 的 buffer 是按流体类型注册的，所以我们在这里
+        // 但 FluidBufferRebarBlock 的 buffer 是按流体类型注册的，所以我们在这里
         // 为所有"可能成为输入"的流体都登记一份小容量。
         for (RebarFluid fluid : possibleInputFluids()) {
             createFluidBuffer(fluid, inputFluidBuffer, true, false);
@@ -198,9 +198,9 @@ public class SteamDistillationTower extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
-        RebarFluidBufferBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
     }
 
     @Override
@@ -431,7 +431,7 @@ public class SteamDistillationTower extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 
@@ -445,7 +445,7 @@ public class SteamDistillationTower extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
                         fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
                         16,

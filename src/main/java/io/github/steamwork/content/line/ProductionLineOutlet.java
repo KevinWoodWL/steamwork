@@ -1,11 +1,11 @@
 package io.github.steamwork.content.line;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
@@ -47,9 +47,9 @@ import java.util.UUID;
  * <p>玩家也可直接从 GUI 取走物品。</p>
  */
 public class ProductionLineOutlet extends RebarBlock implements
-        RebarDirectionalBlock, RebarTickingBlock,
-        RebarVirtualInventoryBlock, RebarInventoryBlock,
-        RebarLogisticBlock, ProductionLineMember {
+        DirectionalRebarBlock, TickingRebarBlock,
+        VirtualInventoryRebarBlock, GuiRebarBlock,
+        LogisticRebarBlock, ProductionLineMember {
 
     // ===== Item =====
 
@@ -149,8 +149,8 @@ public class ProductionLineOutlet extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
     // ===== tick（出口无需主动推送，由逻辑组 OUTPUT 供外部拉取）=====

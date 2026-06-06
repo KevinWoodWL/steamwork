@@ -2,10 +2,10 @@ package io.github.steamwork.content.line;
 
 import io.github.pylonmc.pylon.content.machines.simple.Grindstone;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
-import io.github.pylonmc.rebar.block.base.RebarRecipeProcessor;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.RecipeProcessorRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.logistics.LogisticGroup;
 import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.logistics.slot.LogisticSlot;
@@ -35,11 +35,11 @@ import java.util.UUID;
  *
  * <p>支持的机器类型：</p>
  * <ul>
- *   <li>实现 {@link RebarLogisticBlock} 且有 INPUT / BOTH 类型逻辑组的 Pylon 机器（如磨石、粗合金熔炉）</li>
- *   <li>实现 {@link RebarVirtualInventoryBlock} 且有 "input" 前缀虚拟库存的 Pylon 机器（如成型台）</li>
+ *   <li>实现 {@link LogisticRebarBlock} 且有 INPUT / BOTH 类型逻辑组的 Pylon 机器（如磨石、粗合金熔炉）</li>
+ *   <li>实现 {@link VirtualInventoryRebarBlock} 且有 "input" 前缀虚拟库存的 Pylon 机器（如成型台）</li>
  * </ul>
  *
- * <p>若机器同时实现 {@link RebarRecipeProcessor} 且存在 {@code tryStartRecipe()} 或
+ * <p>若机器同时实现 {@link RecipeProcessorRebarBlock} 且存在 {@code tryStartRecipe()} 或
  * {@code getNextRecipe()} + {@code tryStartRecipe(recipe)} 方法，则自动触发配方处理；
  * 否则物品推入后等待玩家手动触发。</p>
  */
@@ -61,13 +61,13 @@ class PylonMachineMember implements ProductionLineMember, ManualInteractMember {
      */
     static boolean isPylonMachine(@NotNull RebarBlock rb) {
         if (!"pylon".equals(rb.getKey().getNamespace())) return false;
-        if (rb instanceof RebarLogisticBlock logistic) {
+        if (rb instanceof LogisticRebarBlock logistic) {
             for (LogisticGroup g : logistic.getLogisticGroups().values()) {
                 LogisticGroupType t = g.getSlotType();
                 if (t == LogisticGroupType.INPUT || t == LogisticGroupType.BOTH) return true;
             }
         }
-        if (rb instanceof RebarVirtualInventoryBlock vib) {
+        if (rb instanceof VirtualInventoryRebarBlock vib) {
             for (String name : vib.getVirtualInventories().keySet()) {
                 if (name.startsWith("input")) return true;
             }
@@ -168,8 +168,8 @@ class PylonMachineMember implements ProductionLineMember, ManualInteractMember {
 
     @Override
     public boolean acceptFromLine(@NotNull ItemStack item) {
-        // 优先：RebarLogisticBlock 的 INPUT / BOTH 逻辑组
-        if (rebarBlock instanceof RebarLogisticBlock logistic) {
+        // 优先：LogisticRebarBlock 的 INPUT / BOTH 逻辑组
+        if (rebarBlock instanceof LogisticRebarBlock logistic) {
             for (LogisticGroup group : logistic.getLogisticGroups().values()) {
                 LogisticGroupType type = group.getSlotType();
                 if (type != LogisticGroupType.INPUT && type != LogisticGroupType.BOTH) continue;
@@ -177,8 +177,8 @@ class PylonMachineMember implements ProductionLineMember, ManualInteractMember {
                 if (pushToLogisticGroup(group, item)) return true;
             }
         }
-        // 回退：RebarVirtualInventoryBlock 中名称以 "input" 开头的虚拟库存
-        if (rebarBlock instanceof RebarVirtualInventoryBlock vib) {
+        // 回退：VirtualInventoryRebarBlock 中名称以 "input" 开头的虚拟库存
+        if (rebarBlock instanceof VirtualInventoryRebarBlock vib) {
             for (Map.Entry<String, VirtualInventory> e : vib.getVirtualInventories().entrySet()) {
                 if (!e.getKey().startsWith("input")) continue;
                 if (pushToVirtualInventory(e.getValue(), item)) return true;
@@ -245,12 +245,12 @@ class PylonMachineMember implements ProductionLineMember, ManualInteractMember {
      * <p>优先尝试无参 {@code tryStartRecipe()}（Kiln、CrudeAlloyFurnace、Press 等），
      * 若无则尝试 {@code getNextRecipe()} + {@code tryStartRecipe(recipe)}（Grindstone）。</p>
      *
-     * <p>仅对实现了 {@link RebarRecipeProcessor} 的机器生效；
+     * <p>仅对实现了 {@link RecipeProcessorRebarBlock} 的机器生效；
      * 若机器不实现该接口（如成型台），物品推入后等待玩家手动操作。</p>
      */
     @Override
     public void performAutoInteract() {
-        if (!(rebarBlock instanceof RebarRecipeProcessor<?>)) return;
+        if (!(rebarBlock instanceof RecipeProcessorRebarBlock<?>)) return;
         try {
             // 1. 无参 tryStartRecipe()（Kiln / CrudeAlloyFurnace / Press 等模式）
             Method noArg = findMethodByName(rebarBlock.getClass(), "tryStartRecipe", 0);
@@ -291,7 +291,7 @@ class PylonMachineMember implements ProductionLineMember, ManualInteractMember {
      */
     @Override
     public @NotNull Set<Block> getOwnedMultiblockComponentBlocks() {
-        if (!(rebarBlock instanceof RebarSimpleMultiblock multiblock)) return Set.of();
+        if (!(rebarBlock instanceof SimpleRebarMultiblock multiblock)) return Set.of();
         if (!multiblock.isFormedAndFullyLoaded()) return Set.of();
         Set<Block> result = new HashSet<>();
         for (Vector3i pos : multiblock.getComponents().keySet()) {

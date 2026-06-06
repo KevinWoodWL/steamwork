@@ -3,8 +3,8 @@ package io.github.steamwork.content.machines;
 /**
  * Steamwork 内部接口：标识机器可被蒸汽涡轮加速。
  *
- * <p>之所以不直接复用 Rebar 的 {@code RebarProcessor}：
- * Rebar 0.37 的 {@code RebarProcessor$Companion.onLoad} 会在反序列化失败的方块上抛 NPE
+ * <p>之所以不直接复用 Rebar 的 {@code ProcessorRebarBlock}：
+ * Rebar 0.37 的 {@code ProcessorRebarBlock$Companion.onLoad} 会在反序列化失败的方块上抛 NPE
  * （chunk load → onLoad 用 {@code processorBlocks[block]!!}，旧 PDC 缺字段时为 null）。
  * 自定义一个轻量接口可以彻底绕开这个 bug 路径，同时保留"涡轮加速自家机器"的玩法。</p>
  */

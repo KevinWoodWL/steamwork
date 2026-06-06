@@ -1,0 +1,2 @@
+# 蒸汽压力传感器：每 tick 修正 Barrel 库存，使比较器读取真实 0-15 模拟量
+tick-interval: 1

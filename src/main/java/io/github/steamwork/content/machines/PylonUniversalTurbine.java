@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
  * <p>
  * 加速对象：
  * <ul>
- *   <li>任何实现 {@link io.github.pylonmc.rebar.block.base.RebarProcessor} 或
- *       {@link io.github.pylonmc.rebar.block.base.RebarRecipeProcessor} 的 Rebar/Pylon 机器</li>
+ *   <li>任何实现 {@link io.github.pylonmc.rebar.block.interfaces.ProcessorRebarBlock} 或
+ *       {@link io.github.pylonmc.rebar.block.interfaces.RecipeProcessorRebarBlock} 的 Rebar/Pylon 机器</li>
  *   <li>排除液压系列（包路径 {@code hydraulics.*}）和柴油系列（包路径 {@code diesel.*}），
  *       它们分别由 {@link HydraulicTurbine} 和 {@link DieselTurbine} 负责</li>
  *   <li>排除 Steamwork 自家机器（{@link SteamBoostable}）</li>

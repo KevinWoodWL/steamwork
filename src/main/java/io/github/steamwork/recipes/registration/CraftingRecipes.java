@@ -22,6 +22,62 @@ public final class CraftingRecipes {
     }
 
     public static void register() {
+        // ── 汽动逻辑（PneumaticCraft 灵感）──────────────────────────────
+        // 蒸汽涡流分离器：铜 + 压力表 + 黄铜齿轮 + 加热线圈（核心）
+        ShapedRecipe steamVortexTube = new ShapedRecipe(
+                SteamworkKeys.STEAM_VORTEX_TUBE, SteamworkItems.STEAM_VORTEX_TUBE);
+        steamVortexTube.shape("CPC", "GHG", "CPC");
+        steamVortexTube.setIngredient('C', new RecipeChoice.MaterialChoice(Material.COPPER_INGOT));
+        steamVortexTube.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamVortexTube.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
+        steamVortexTube.setIngredient('H', rebarChoice(SteamworkItems.HEATING_COIL));
+        steamVortexTube.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamVortexTube);
+
+        // 汽动逻辑门：因瓦 + 压力表 + 黄铜齿轮 + 比较器（逻辑核心）
+        ShapedRecipe pneumaticLogicGate = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_LOGIC_GATE, SteamworkItems.PNEUMATIC_LOGIC_GATE);
+        pneumaticLogicGate.shape("IPI", "GCG", "IPI");
+        pneumaticLogicGate.setIngredient('I', rebarChoice(SteamworkItems.INVAR_INGOT));
+        pneumaticLogicGate.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        pneumaticLogicGate.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
+        pneumaticLogicGate.setIngredient('C', new RecipeChoice.MaterialChoice(Material.COMPARATOR));
+        pneumaticLogicGate.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticLogicGate);
+
+        // 蒸汽振荡器：压力表 + 时钟 + 黄铜齿轮，把连续蒸汽整形成节拍蒸汽
+        ShapedRecipe steamOscillator = new ShapedRecipe(
+                SteamworkKeys.STEAM_OSCILLATOR, SteamworkItems.STEAM_OSCILLATOR);
+        steamOscillator.shape("CPC", "GKG", "CRC");
+        steamOscillator.setIngredient('C', new RecipeChoice.MaterialChoice(Material.COPPER_INGOT));
+        steamOscillator.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamOscillator.setIngredient('G', rebarChoice(SteamworkItems.BRASS_GEAR));
+        steamOscillator.setIngredient('K', new RecipeChoice.MaterialChoice(Material.CLOCK));
+        steamOscillator.setIngredient('R', new RecipeChoice.MaterialChoice(Material.REDSTONE));
+        steamOscillator.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamOscillator);
+
+        // 汽动截止阀：导管 + 黄铜阀芯 + 红石，红石控制气动物品网络通断
+        ShapedRecipe pneumaticGateValve = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_GATE_VALVE, SteamworkItems.PNEUMATIC_GATE_VALVE);
+        pneumaticGateValve.shape(" D ", "RVR", " D ");
+        pneumaticGateValve.setIngredient('D', rebarChoice(SteamworkItems.PNEUMATIC_DUCT));
+        pneumaticGateValve.setIngredient('R', new RecipeChoice.MaterialChoice(Material.REDSTONE));
+        pneumaticGateValve.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        pneumaticGateValve.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticGateValve);
+
+        // 蒸汽压力传感器：压力表 + 比较器 + 桶，输出真实 0-15 模拟红石
+        ShapedRecipe steamPressureTransducer = new ShapedRecipe(
+                SteamworkKeys.STEAM_PRESSURE_TRANSDUCER, SteamworkItems.STEAM_PRESSURE_TRANSDUCER);
+        steamPressureTransducer.shape("BPB", "BCB", "BRB");
+        steamPressureTransducer.setIngredient('B', rebarChoice(SteamworkItems.BRASS_INGOT));
+        steamPressureTransducer.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        steamPressureTransducer.setIngredient('C', new RecipeChoice.MaterialChoice(Material.COMPARATOR));
+        steamPressureTransducer.setIngredient('R', new RecipeChoice.MaterialChoice(Material.BARREL));
+        steamPressureTransducer.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(steamPressureTransducer);
+
         // 橡胶垫圈基础路径：单产，需要硫化橡胶。
         ShapelessRecipe rubberGasket = new ShapelessRecipe(
                 SteamworkKeys.RUBBER_GASKET, SteamworkItems.RUBBER_GASKET);

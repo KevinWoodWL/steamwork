@@ -2,13 +2,13 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarProcessor;
-import io.github.pylonmc.rebar.block.base.RebarRecipeProcessor;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.ProcessorRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.RecipeProcessorRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
@@ -67,11 +67,11 @@ import java.util.WeakHashMap;
  * </ul>
  */
 public abstract class AbstractSteamBooster extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarInventoryBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock,
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GuiRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock,
         UpgradeableMachine {
 
     protected final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
@@ -128,11 +128,11 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
         VANILLA_FURNACE,
         /** Steamwork 自家加工机器（实现 {@link SteamBoostable}）。 */
         STEAMWORK_BOOSTABLE,
-        /** 任何实现 {@link RebarProcessor} 的 Rebar/Pylon 机器。 */
+        /** 任何实现 {@link ProcessorRebarBlock} 的 Rebar/Pylon 机器。 */
         REBAR_PROCESSOR,
         /**
-         * 任何实现 {@link RebarRecipeProcessor} 的 Rebar/Pylon 机器。
-         * <p>这是与 {@link RebarProcessor} 并列的独立接口（不存在继承关系），
+         * 任何实现 {@link RecipeProcessorRebarBlock} 的 Rebar/Pylon 机器。
+         * <p>这是与 {@link ProcessorRebarBlock} 并列的独立接口（不存在继承关系），
          * 主要用于液压表锯、液压管道弯折机、柴油炉、柴油砂轮等配方型机器。
          */
         REBAR_RECIPE_PROCESSOR
@@ -166,8 +166,8 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
      * 若两者都不实现则返回 {@code null}。
      */
     protected static @Nullable TargetType processorTargetType(@NotNull RebarBlock rb) {
-        if (rb instanceof RebarProcessor) return TargetType.REBAR_PROCESSOR;
-        if (rb instanceof RebarRecipeProcessor) return TargetType.REBAR_RECIPE_PROCESSOR;
+        if (rb instanceof ProcessorRebarBlock) return TargetType.REBAR_PROCESSOR;
+        if (rb instanceof RecipeProcessorRebarBlock) return TargetType.REBAR_RECIPE_PROCESSOR;
         return null;
     }
 
@@ -252,9 +252,9 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull io.github.pylonmc.rebar.block.context.BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
-        RebarFluidBufferBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull io.github.pylonmc.rebar.block.context.BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
     }
 
     @Override
@@ -417,10 +417,10 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
                     return BlockStorage.get(block) instanceof SteamBoostable;
                 case REBAR_PROCESSOR:
                     RebarBlock rb = BlockStorage.get(block);
-                    return rb instanceof RebarProcessor processor && processor.isProcessing();
+                    return rb instanceof ProcessorRebarBlock processor && processor.isProcessing();
                 case REBAR_RECIPE_PROCESSOR:
                     RebarBlock rb2 = BlockStorage.get(block);
-                    return rb2 instanceof RebarRecipeProcessor<?> rp && rp.isProcessingRecipe();
+                    return rb2 instanceof RecipeProcessorRebarBlock<?> rp && rp.isProcessingRecipe();
                 default:
                     return false;
             }
@@ -444,13 +444,13 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
                     break;
                 case REBAR_PROCESSOR:
                     RebarBlock rb = BlockStorage.get(block);
-                    if (rb instanceof RebarProcessor processor) {
+                    if (rb instanceof ProcessorRebarBlock processor) {
                         processor.progressProcess(boostTicks);
                     }
                     break;
                 case REBAR_RECIPE_PROCESSOR:
                     RebarBlock rb2 = BlockStorage.get(block);
-                    if (rb2 instanceof RebarRecipeProcessor<?> rp) {
+                    if (rb2 instanceof RecipeProcessorRebarBlock<?> rp) {
                         rp.progressRecipe(boostTicks);
                     }
                     break;
@@ -629,7 +629,7 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 

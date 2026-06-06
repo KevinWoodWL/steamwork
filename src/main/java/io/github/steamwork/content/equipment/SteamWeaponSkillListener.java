@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 蒸汽剑右键技能监听器。
  *
- * <p>{@code RebarBlockInteractor.onUsedToClickBlock} 的分发器开头有
+ * <p>{@code BlockInteractRebarItemHandler.onInteractWithBlock} 的分发器开头有
  * {@code if (!event.hasBlock()) return;}，因此右键<b>空气</b>不会回调——剑作为武器
  * 通常对空/对怪右键，故无法触发蒸汽喷射。本监听器直接处理 {@code RIGHT_CLICK_AIR}
  * 与 {@code RIGHT_CLICK_BLOCK}，统一驱动蒸汽剑的右键技能。</p>

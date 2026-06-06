@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.entity.display.transform.LineBuilder;
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.steamwork.content.machines.PneumaticDuct;
+import io.github.steamwork.content.machines.PneumaticGateValve;
 import io.github.steamwork.content.machines.PneumaticInput;
 import io.github.steamwork.content.machines.PneumaticOutput;
 import org.bukkit.Material;
@@ -20,6 +21,7 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -42,6 +44,19 @@ public final class PneumaticEndpointSupport {
 
     private PneumaticEndpointSupport() {}
 
+    public static boolean isChunkLoaded(@NotNull Block block) {
+        return block.getWorld().isChunkLoaded(block.getX() >> 4, block.getZ() >> 4);
+    }
+
+    public static @Nullable RebarBlock loadedRebarBlock(@NotNull Block block) {
+        if (!isChunkLoaded(block)) return null;
+        try {
+            return BlockStorage.get(block);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+    }
+
     public static @NotNull BlockFace resolvePlacementFacing(@NotNull BlockCreateContext context) {
         BlockFace vertical = context.getFacingVertical();
         return vertical != BlockFace.SELF ? vertical : context.getFacing();
@@ -53,8 +68,10 @@ public final class PneumaticEndpointSupport {
      * <p>Priority:
      * <ol>
      *   <li>Adjacent {@link PneumaticDuct} — normal networked setup.</li>
+     *   <li>Adjacent aligned {@link PneumaticGateValve} — treated like a duct.</li>
      *   <li>Adjacent {@link PneumaticInput} or {@link PneumaticOutput} — direct
      *       endpoint-to-endpoint connection without a duct in between.</li>
+     *   <li>Adjacent vanilla container — auto-orient so the endpoint pushes/pulls from it.</li>
      *   <li>Fallback: the back side of the endpoint body ({@code facing.getOppositeFace()}).</li>
      * </ol>
      * </p>
@@ -62,16 +79,33 @@ public final class PneumaticEndpointSupport {
     public static @NotNull BlockFace pneumaticConnectionFace(@NotNull Block block, @NotNull BlockFace facing) {
         BlockFace directEndpointFace = null;
         for (BlockFace face : ALL_FACES) {
-            RebarBlock rb = BlockStorage.get(block.getRelative(face));
+            RebarBlock rb = loadedRebarBlock(block.getRelative(face));
             if (rb instanceof PneumaticDuct) {
                 return face;          // duct always takes priority
+            }
+            if (rb instanceof PneumaticGateValve valve && valve.isPneumaticAligned(face.getOppositeFace())) {
+                return face;          // aligned gate valve treated like a duct
             }
             if (directEndpointFace == null
                     && (rb instanceof PneumaticInput || rb instanceof PneumaticOutput)) {
                 directEndpointFace = face;   // remember first direct endpoint hit
             }
         }
-        return directEndpointFace != null ? directEndpointFace : facing.getOppositeFace();
+        if (directEndpointFace != null) return directEndpointFace;
+        // No network blocks found — auto-detect adjacent container to correct orientation.
+        Block facingBlock = block.getRelative(facing);
+        if (isChunkLoaded(facingBlock)
+                && facingBlock.getState() instanceof org.bukkit.block.Container) {
+            return facing.getOppositeFace();
+        }
+        for (BlockFace face : ALL_FACES) {
+            Block neighbor = block.getRelative(face);
+            if (isChunkLoaded(neighbor)
+                    && neighbor.getState() instanceof org.bukkit.block.Container) {
+                return face.getOppositeFace();
+            }
+        }
+        return facing.getOppositeFace();
     }
 
     /**
@@ -107,7 +141,7 @@ public final class PneumaticEndpointSupport {
     }
 
     public static boolean isDirectEndpoint(@NotNull Block block, @NotNull BlockFace face) {
-        RebarBlock neighbor = BlockStorage.get(block.getRelative(face));
+        RebarBlock neighbor = loadedRebarBlock(block.getRelative(face));
         return neighbor instanceof PneumaticInput || neighbor instanceof PneumaticOutput;
     }
 
@@ -174,5 +208,42 @@ public final class PneumaticEndpointSupport {
         for (ItemDisplay display : findManagedDisplays(block, markerKey, ownerKey)) {
             if (display.isValid()) display.remove();
         }
+    }
+
+    // ── 容器访问面（独立于导管位置）────────────────────────────────────────────
+
+    /**
+     * 返回端点应当推入/抽取的相邻容器/机器所在面。
+     *
+     * <p>与 {@link #pneumaticConnectionFace} 的区别：本方法完全不依赖相邻导管的位置，
+     * 因此平行放置的导管不会把容器识别方向搞错。
+     *
+     * <p>优先级：
+     * <ol>
+     *   <li>放置朝向（{@code facing}）有合法物品目标，且不是气动网络方块。</li>
+     *   <li>扫描全部 6 个面，跳过所有气动网络方块，返回第一个合法物品目标面。</li>
+     *   <li>回退：放置朝向（无容器时的默认值）。</li>
+     * </ol>
+     * </p>
+     */
+    public static @NotNull BlockFace containerAccessFace(@NotNull Block block, @NotNull BlockFace facing) {
+        Block facingBlock = block.getRelative(facing);
+        if (!isPneumaticNetworkBlock(facingBlock) && PneumaticUtils.isItemTarget(facingBlock)) {
+            return facing;
+        }
+        for (BlockFace face : ALL_FACES) {
+            Block neighbor = block.getRelative(face);
+            if (isPneumaticNetworkBlock(neighbor)) continue;
+            if (PneumaticUtils.isItemTarget(neighbor)) return face;
+        }
+        return facing;
+    }
+
+    private static boolean isPneumaticNetworkBlock(@NotNull Block block) {
+        RebarBlock rb = loadedRebarBlock(block);
+        return rb instanceof PneumaticDuct
+                || rb instanceof PneumaticGateValve
+                || rb instanceof PneumaticInput
+                || rb instanceof PneumaticOutput;
     }
 }

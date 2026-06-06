@@ -1,8 +1,8 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
@@ -40,8 +40,8 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * 蒸汽消耗、目标管理全部由下方的货运站承担。
  */
 public class SteamCatapult extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarTickingBlock {
+        DirectionalRebarBlock,
+        TickingRebarBlock {
 
     private static final NamespacedKey MARKER_KEY = steamworkKey("catapult_projectile");
 
@@ -146,7 +146,7 @@ public class SteamCatapult extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 

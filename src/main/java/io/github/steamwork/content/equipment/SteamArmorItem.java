@@ -1,6 +1,6 @@
 package io.github.steamwork.content.equipment;
 
-import io.github.pylonmc.rebar.item.base.RebarInventoryTicker;
+import io.github.pylonmc.rebar.item.interfaces.InventoryTickerRebarItem;
 import io.github.steamwork.util.SteamCharge;
 import io.github.steamwork.util.SteamworkUtils;
 import net.kyori.adventure.text.Component;
@@ -47,7 +47,7 @@ import java.util.UUID;
  * 前 2 秒为点火升压阶段，不能向上推进但会持续耗汽并播放高强度特效；
  * 点火完成后快速进入推进，蒸汽耗尽、松开跳跃或套装不完整时停止。</p>
  */
-public class SteamArmorItem extends SteamEquipment implements RebarInventoryTicker {
+public class SteamArmorItem extends SteamEquipment implements InventoryTickerRebarItem {
 
     // ── 消耗常量 ──────────────────────────────────────────────────────────────
 
@@ -79,6 +79,7 @@ public class SteamArmorItem extends SteamEquipment implements RebarInventoryTick
     private static final double BRAKE_DECEL_PER_TICK = 0.14;
 
     private static final int BUFF_DURATION            = 40;
+    private static final int NIGHT_VISION_DURATION    = 400;
     private static final int DEPLETED_PENALTY_DURATION = 60;
 
     // ── 飞行追踪 ──────────────────────────────────────────────────────────────
@@ -265,7 +266,7 @@ public class SteamArmorItem extends SteamEquipment implements RebarInventoryTick
 
         switch (profile.part()) {
             case HELMET -> {
-                addBuff(player, PotionEffectType.NIGHT_VISION, 0);
+                addBuff(player, PotionEffectType.NIGHT_VISION, 0, NIGHT_VISION_DURATION);
                 addBuff(player, PotionEffectType.WATER_BREATHING, 0);
                 if (tier >= 1) {  // BRONZE+: 火焰抗性
                     addBuff(player, PotionEffectType.FIRE_RESISTANCE, 0);
@@ -295,6 +296,10 @@ public class SteamArmorItem extends SteamEquipment implements RebarInventoryTick
 
     private void addBuff(@NotNull Player player, @NotNull PotionEffectType type, int amplifier) {
         player.addPotionEffect(new PotionEffect(type, BUFF_DURATION, amplifier, true, false, true));
+    }
+
+    private void addBuff(@NotNull Player player, @NotNull PotionEffectType type, int amplifier, int duration) {
+        player.addPotionEffect(new PotionEffect(type, duration, amplifier, true, false, true));
     }
 
     // ── 耗尽惩罚 ──────────────────────────────────────────────────────────────

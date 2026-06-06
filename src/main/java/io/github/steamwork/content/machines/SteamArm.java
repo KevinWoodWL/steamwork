@@ -3,7 +3,7 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.*;
+import io.github.pylonmc.rebar.block.interfaces.*;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -63,12 +63,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class SteamArm extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarInventoryBlock,
-        RebarVirtualInventoryBlock,
-        RebarTickingBlock,
-        RebarInteractBlock {
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GuiRebarBlock,
+        VirtualInventoryRebarBlock,
+        TickingRebarBlock,
+        InteractRebarBlockHandler {
 
     /**
      * 注册 SteamArm 的全局选择模式监听器。
@@ -460,7 +460,7 @@ public class SteamArm extends RebarBlock implements
     }
 
     @Override
-    public void onInteract(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
+    public void onInteractedWith(@NotNull PlayerInteractEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.LOWEST) return;
 
         Block clickedBlock = event.getClickedBlock();
@@ -624,9 +624,9 @@ public class SteamArm extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarFluidBufferBlock.super.onBreak(drops, context);
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
     @Override
@@ -670,7 +670,7 @@ public class SteamArm extends RebarBlock implements
         // Update motor state change
         if (lastHasMotor != hasMotor) {
             lastHasMotor = hasMotor;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
 
         // Check if motor is installed
@@ -744,7 +744,7 @@ public class SteamArm extends RebarBlock implements
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         boolean hasMotor = hasMotor();
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.STEAM),
                         fluidCapacity(SteamworkFluids.STEAM),
                         16,
@@ -1270,7 +1270,7 @@ public class SteamArm extends RebarBlock implements
     }
 
     private Map<String, LogisticGroup> getLogisticGroups(Block candidate) {
-        RebarLogisticBlock logisticBlock = BlockStorage.getAs(RebarLogisticBlock.class, candidate);
+        LogisticRebarBlock logisticBlock = BlockStorage.getAs(LogisticRebarBlock.class, candidate);
         if (logisticBlock != null) {
             return logisticBlock.getLogisticGroups();
         }
@@ -1412,7 +1412,7 @@ public class SteamArm extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 

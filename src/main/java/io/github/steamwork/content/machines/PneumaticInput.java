@@ -1,14 +1,13 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarBreakHandler;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarEntityCulledBlock;
-import io.github.pylonmc.rebar.block.base.RebarFacadeBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.EntityCulledRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FacadeRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -65,13 +64,13 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * 网络推送时（{@link PneumaticUtils}）会先调用 {@link #isAllowed(ItemStack)} 检查过滤。</p>
  */
 public class PneumaticInput extends RebarBlock implements
-        RebarBreakHandler,
-        RebarDirectionalBlock,
-        RebarEntityCulledBlock,
-        RebarFacadeBlock,
-        RebarInventoryBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock {
+        BlockBreakRebarBlockHandler,
+        DirectionalRebarBlock,
+        EntityCulledRebarBlock,
+        FacadeRebarBlock,
+        GuiRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock {
 
     // ── 过滤模式 ──────────────────────────────────────────────────────────────
 
@@ -169,8 +168,8 @@ public class PneumaticInput extends RebarBlock implements
         org.bukkit.Bukkit.getScheduler().runTaskLater(
                 io.github.steamwork.Steamwork.getInstance(),
                 () -> {
-                    if (!getBlock().getChunk().isLoaded()) return;
-                    if (BlockStorage.get(getBlock()) != this) return;
+                    if (!PneumaticEndpointSupport.isChunkLoaded(getBlock())) return;
+                    if (PneumaticEndpointSupport.loadedRebarBlock(getBlock()) != this) return;
                     refreshDisplays();
                     PneumaticDuct.notifyNeighboringDucts(getBlock());
                 },
@@ -178,13 +177,13 @@ public class PneumaticInput extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
         clearDisplays();
     }
 
     @Override
-    public void postBreak(@NotNull BlockBreakContext context) {
+    public void onPostBlockBreak(@NotNull BlockBreakContext context) {
         PneumaticDuct.notifyNeighboringDucts(getBlock());
     }
 
@@ -272,6 +271,14 @@ public class PneumaticInput extends RebarBlock implements
         return PneumaticEndpointSupport.pneumaticConnectionFace(getBlock(), getFacing());
     }
 
+    /**
+     * 返回相邻容器/机器所在的面，不受平行导管干扰。
+     * tick() 和 GUI 辅助方法使用此值来推送物品，而非 containerFace()。
+     */
+    private @NotNull BlockFace containerFace() {
+        return PneumaticEndpointSupport.containerAccessFace(getBlock(), getFacing());
+    }
+
     // ── 栏位模式辅助 ──────────────────────────────────────────────────────────
 
     /**
@@ -285,8 +292,9 @@ public class PneumaticInput extends RebarBlock implements
      * </ul>
      */
     private @NotNull List<SlotMode> getAvailableModes() {
-        Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
-        if (BlockStorage.get(target) instanceof ProductionLineInlet) {
+        Block target = getBlock().getRelative(containerFace());
+        if (!PneumaticEndpointSupport.isChunkLoaded(target)) return List.of(SlotMode.AUTO);
+        if (PneumaticEndpointSupport.loadedRebarBlock(target) instanceof ProductionLineInlet) {
             return List.of(SlotMode.AUTO, SlotMode.INGREDIENT, SlotMode.FUEL);
         }
         if (target.getState() instanceof org.bukkit.block.Container c) {
@@ -303,8 +311,11 @@ public class PneumaticInput extends RebarBlock implements
      * 返回输出侧容器类型对应的翻译 key，用于 GUI lore 显示。
      */
     private @NotNull String getConnectedContainerKey() {
-        Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
-        if (BlockStorage.get(target) instanceof ProductionLineInlet) {
+        Block target = getBlock().getRelative(containerFace());
+        if (!PneumaticEndpointSupport.isChunkLoaded(target)) {
+            return "steamwork.gui.pneumatic_input.container_none";
+        }
+        if (PneumaticEndpointSupport.loadedRebarBlock(target) instanceof ProductionLineInlet) {
             return "steamwork.gui.pneumatic_input.container_line_inlet";
         }
         if (!(target.getState() instanceof org.bukkit.block.Container c)) {
@@ -324,10 +335,11 @@ public class PneumaticInput extends RebarBlock implements
 
     @Override
     public void tick() {
-        Block target = getBlock().getRelative(pneumaticConnectionFace().getOppositeFace());
+        Block target = getBlock().getRelative(containerFace());
 
         // 产线入口特殊处理：FUEL 模式推燃料槽，其他模式推原料槽
-        if (BlockStorage.get(target) instanceof ProductionLineInlet inlet) {
+        if (!PneumaticEndpointSupport.isChunkLoaded(target)) return;
+        if (PneumaticEndpointSupport.loadedRebarBlock(target) instanceof ProductionLineInlet inlet) {
             VirtualInventory dest = (slotMode == SlotMode.FUEL)
                     ? inlet.getFuelBuffer()
                     : inlet.getIngredientBuffer();

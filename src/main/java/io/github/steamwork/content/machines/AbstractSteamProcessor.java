@@ -2,13 +2,13 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.steamwork.content.line.ProductionLineMember;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
@@ -81,12 +81,12 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * - {@link #additionalProgressLore(SteamProcessRecipe)} 在进度条 lore 末尾追加内容（例如洗选槽显示产出数量）
  */
 public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarInventoryBlock,
-        RebarLogisticBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock,
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        GuiRebarBlock,
+        LogisticRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock,
         SteamBoostable,
         UpgradeableMachine,
         ProductionLineMember {
@@ -436,9 +436,9 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
-        RebarFluidBufferBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
     }
 
     @Override
@@ -1149,7 +1149,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 
@@ -1163,7 +1163,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(steamFluid()),
                         fluidCapacity(steamFluid()),
                         16,

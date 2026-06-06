@@ -2,9 +2,9 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
@@ -67,9 +67,9 @@ import java.util.Map;
  * 无论玩家放置主方块时面朝哪个方向。</p>
  */
 public class SteamChargingChamber extends RebarBlock implements
-        RebarSimpleMultiblock,
-        RebarFluidBufferBlock,
-        RebarTickingBlock {
+        SimpleRebarMultiblock,
+        FluidBufferRebarBlock,
+        TickingRebarBlock {
 
     private final int tickInterval   = getSettings().getOrThrow("tick-interval",         ConfigAdapter.INTEGER);
     private final double steamBuffer = getSettings().getOrThrow("steam-buffer",           ConfigAdapter.DOUBLE);
@@ -332,7 +332,7 @@ public class SteamChargingChamber extends RebarBlock implements
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("structure", Component.translatable(
                         "steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
                         fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),
                         16, TextColor.fromHexString("#18c0d8")))

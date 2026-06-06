@@ -1,8 +1,8 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.PylonKeys;
-import io.github.pylonmc.rebar.block.base.RebarGhostBlockHolder;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock.MultiblockComponent;
+import io.github.pylonmc.rebar.block.interfaces.GhostBlockHolderRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock.MultiblockComponent;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
@@ -41,7 +41,7 @@ import java.util.Set;
  * </p>
  */
 public class PrecisionCentrifuge extends AbstractSteamProcessor<SteamCentrifugationRecipe>
-        implements RebarGhostBlockHolder, PrecisionSteamBoostable {
+        implements GhostBlockHolderRebarBlock, PrecisionSteamBoostable {
 
     public static class Item extends BaseItem {
         public Item(@NotNull ItemStack stack) { super(stack); }
@@ -140,8 +140,8 @@ public class PrecisionCentrifuge extends AbstractSteamProcessor<SteamCentrifugat
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        super.onBlockBreak(drops, context);
         for (Vector3i offset : getBeamOffsets()) {
             if (hasGhostBlockAt(offset)) {
                 removeGhostBlock(offset);

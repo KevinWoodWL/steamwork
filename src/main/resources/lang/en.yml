@@ -863,7 +863,7 @@ item:
     name: "Steam Sorter"
     lore: |-
       <arrow> Consumes <white>pressurized steam</white> to push items into the pneumatic network
-      <arrow> Each face must connect to a <white>Pneumatic Output</white> or a <white>Pneumatic Input</white> via ducts
+      <arrow> Each face must connect directly to a <white>Pneumatic Input</white> or reach one through ducts
       <arrow> Set filter slots to restrict which items go to which face
       <arrow> Faces with no filter accept any item (round-robin)
       <arrow> <attr>Pressurized steam buffer:</attr> %steam-buffer%
@@ -902,7 +902,7 @@ item:
       <arrow> Network entry adapter with a built-in <white>9-slot storage</white>
       <arrow> Each tick automatically pulls items from the adjacent source-side container into storage
       <arrow> Every <white>%interval% ticks</white> sends up to <white>%extract% items</white> from storage into the network
-      <arrow> Compatible with vanilla containers, Rebar machines, and <white>Pneumatic Input</white> via ducts
+      <arrow> Pulls from vanilla containers or Rebar machines on the source side; connects to <white>Pneumatic Input</white> directly or through ducts
     waila: "Pneumatic Output | %extract% items every %interval% ticks | %state%"
 
   production_line_inlet:
@@ -956,7 +956,7 @@ item:
     name: "Pneumatic Distributor"
     lore: |-
       <arrow> Consumes pressurized steam to route items into the pneumatic network
-      <arrow> Each face must connect to a <white>Pneumatic Output</white> or a <white>Pneumatic Input</white> via ducts
+      <arrow> Each face must connect directly to a <white>Pneumatic Input</white> or reach one through ducts
       <arrow> Supports 1�? output directions (N/S/E/W/Up/Down) �?toggle each in the GUI
       <arrow> Multiple enabled directions are served round-robin
       <arrow> <attr>Pressurized buffer:</attr> %pressurized-buffer%
@@ -1241,6 +1241,51 @@ item:
     name: "Distillation Condenser"
     lore: <arrow> The copper cap that completes a distillation tower
 
+  steam_vortex_tube:
+    name: "Steam Vortex Tube"
+    lore: |-
+      <arrow> North face: superheated steam in; south face: pressurized steam out; east face: distilled water out
+      <arrow> Each cycle consumes %input% superheated steam, yields %pressurized% pressurized + %water% distilled water
+      <arrow> ~10% conversion loss; distilled water is used in downstream chemistry recipes
+      <arrow> The only way to upgrade superheated steam to pressurized steam
+
+  pneumatic_logic_gate:
+    name: "Pneumatic Logic Gate"
+    lore: |-
+      <arrow> Right-click to open GUI — assign faces A, B (inputs) and output, then pick a gate type
+      <arrow> A/B faces must be adjacent to steam machines; steam ≥ threshold = HIGH, below = LOW
+      <arrow> Signal threshold defaults to 1 mB, adjustable in GUI (1–1000 mB)
+      <arrow> When logic passes, steam is physically moved from A/B into the output-face machine
+      <arrow> NOT mode: B face powered blocks A→output; all three steam tiers evaluated independently
+
+  steam_oscillator:
+    name: "Steam Oscillator"
+    lore: |-
+      <arrow> Draws steam from the input face and charges; bursts to the output face for <white>%ticks% ticks</white> once full
+      <arrow> After the burst ends or pressure drops below the lower threshold, charging resumes
+      <arrow> Higher supply rate = higher pulse frequency; no steam = stopped
+      <arrow> Connect output face to a steam machine or logic gate to drive timed automation
+      <arrow> <attr>Upper threshold:</attr> %threshold% <attr>Burst duration:</attr> %ticks% ticks
+    waila: "Steam Oscillator | %fluid% %pressure-bar% | %state%"
+
+  pneumatic_gate_valve:
+    name: "Pneumatic Gate Valve"
+    lore: |-
+      <arrow> Place inline in a <white>pneumatic duct</white> chain; faces align with the duct direction
+      <arrow> <white>Normally open</white> — items pass freely; closes immediately when powered by redstone
+      <arrow> While closed the duct network treats it as disconnected; items do not pile up at the valve
+      <arrow> Pair with a pressure transducer or logic gate for steam-gated item flow
+    waila: "Pneumatic Gate Valve | %state%"
+
+  steam_pressure_transducer:
+    name: "Steam Pressure Transducer"
+    lore: |-
+      <arrow> Place against any steam machine; select the <white>read face</white> and steam tier in the GUI
+      <arrow> Maps the adjacent machine's steam fill ratio to a <white>0–15 analog redstone signal</white>
+      <arrow> Place a <white>comparator</white> against the transducer to read the signal directly
+      <arrow> The only true analog redstone output in the steam system
+    waila: "Steam Pressure Transducer | %fluid% %pressure-bar% | Redstone %level%"
+
   # Distillation byproducts and intermediates
   refined_resin:
     name: "Refined Resin"
@@ -1348,6 +1393,32 @@ item:
     lore: <arrow> Spent material left over after a research analysis cycle
 
 gui:
+  common:
+    steam_tier: "<aqua>Steam Tier"
+    current: "<gray>Current: <reset>%value%"
+    input_face: "<gold>Input Face: %face%"
+    output_face: "<gold>Output Face: %face%"
+    read_face: "<gold>Read Face: %face%"
+    connected_fluid_buffer: "<green>Adjacent steam buffer available"
+    no_fluid_buffer: "<red>No adjacent steam buffer"
+    left_click_cycle: "<dark_gray>LMB to cycle"
+    left_click_cycle_steam: "<dark_gray>LMB to switch regular / superheated / pressurized"
+    left_click_cycle_right_clear: "<dark_gray>LMB cycle / RMB clear"
+    signal: "<gray>Signal: %value%"
+    pressure: "<gray>Pressure: <aqua>%amount% <gray>/ <aqua>%capacity%"
+    steam_kind:
+      steam: "Regular Steam"
+      superheated: "Superheated Steam"
+      pressurized: "Pressurized Steam"
+    face:
+      north: "North"
+      south: "South"
+      east: "East"
+      west: "West"
+      up: "Up"
+      down: "Down"
+      unset: "Unset"
+
   steam_arm:
     title: "<dark_gray>Steam Arm"
     steam_gauge: "<aqua>Steam Storage"
@@ -1698,6 +1769,11 @@ gui:
     status:
       active: "<green>Crafting"
       idle: "<gray>Idle"
+      assembling: "<aqua>Assembling…"
+      structure_missing: "<red>Structure incomplete"
+      no_steam: "<gold>Insufficient superheated steam"
+      no_ingredients: "<gray>Add the correct materials"
+      ready: "<green>Ready to assemble"
     reason:
       ready: "<gray>Template and ingredients ready"
       structure_missing: "<red>Structure incomplete: needs 4 bronze blocks at the corners"
@@ -1707,6 +1783,24 @@ gui:
       no_steam: "<red>Insufficient steam"
       output_full: "<yellow>Output slot full"
       processing: "<green>Crafting"
+    craft:
+      start: "Start Assembly"
+      steam_cost: "<gray>Requires <gold>%steam%</gold> mB superheated steam"
+    result:
+      no_match: "<red>No matching recipe"
+      switch_hint: "<yellow>▸ Click to switch (%index%/%total%)"
+    waila:
+      assembling: "<aqua>Assembling…"
+      can_craft: "<green>Can assemble → "
+      open_gui: "<gray>Right-click to open"
+      structure_missing: "<gray>Structure incomplete"
+    fluid_amount: "<aqua>%steam% <gray>/ <aqua>%capacity% mB"
+    actionbar:
+      crafting: "<gray>Assembly in progress…"
+      structure_missing: "<red>Structure incomplete"
+      no_recipe: "<red>Platform items don't match any assembly recipe"
+      no_steam: "<red>Insufficient superheated steam (needs pipe supply from behind)"
+      started: "<aqua>Assembly started…"
 
   pressurized_furnace:
     title: "<dark_gray>Steam Pressurized Furnace"
@@ -1799,6 +1893,64 @@ gui:
     status:
       active: "<green>Active"
       idle: "<gray>Idle"
+
+  steam_vortex_tube:
+    title: "<dark_gray>Steam Vortex Tube"
+    ratio: "<gray>Split: <#ff8c00>%input%<gray> → <#18c0d8>%pressurized%<gray> pressurized <gray>+ <#29b6d6>%water%<gray> water"
+    input_gauge: "<#ff8c00>Superheated Input"
+    pressurized_gauge: "<#18c0d8>Pressurized Output"
+    water_gauge: "<#29b6d6>Distilled Water Output"
+    fluid_amount: "<gray><reset><aqua>%amount% <gray>/ <aqua>%capacity% mB"
+    waila: "Steam Vortex Tube | SH %superheated-bar% | Pres %pressurized-bar% | %state%"
+    status:
+      active: "<green>Active"
+      idle: "<gray>Idle"
+
+  pneumatic_logic_gate:
+    title: "<dark_gray>Pneumatic Logic Gate"
+    waila: "Pneumatic Logic Gate | Gate: %mode% | %state%"
+    mode_label: "<light_purple>Gate Type"
+    mode_hint: "<dark_gray>LMB to cycle AND / OR / XOR / NOT"
+    threshold: "<yellow>Signal Threshold"
+    threshold_value: "<gray>Current: <aqua>%value% <gray>mB"
+    threshold_desc: "<gray>Adjacent steam ≥ this value counts as HIGH"
+    threshold_hint: "<dark_gray>LMB +1 | RMB -1 | Shift ×10"
+    input_a: "<gold>Input A: %face%"
+    input_a_not: "<gold>Main Input A: %face%"
+    input_b: "<gold>Input B: %face%"
+    control_b: "<gold>Control B: %face%"
+    output_hint: "<gray>Steam is routed here when logic passes"
+    all_steam_kinds: "<dark_gray>Acts on all three steam tiers independently"
+    mode:
+      and: "AND"
+      or: "OR"
+      xor: "XOR"
+      not: "NOT / Inhibit"
+    signal:
+      high: "<green>HIGH"
+      low: "<gray>LOW"
+    state:
+      passing: "<green>Passing"
+      blocked: "<gray>Blocked"
+
+  steam_oscillator:
+    title: "<dark_gray>Steam Oscillator"
+    burst_left: "<gray>Burst left: <reset>%ticks% tick"
+    state:
+      charging: "<yellow>Charging"
+      bursting: "<green>Bursting"
+      blocked: "<red>Burst blocked"
+
+  pneumatic_gate_valve:
+    state:
+      open: "<green>Open"
+      closed: "<red>Closed"
+
+  steam_pressure_transducer:
+    title: "<dark_gray>Steam Pressure Transducer"
+    signal_item: "<aqua>Pressure Transducer Comparator Filler"
+    comparator_output: "<red>Comparator Output: %level%"
+    inventory_repairs: "<dark_gray>Barrel filler is repaired every tick"
 
   steam_compressor:
     title: "<dark_gray>Steam Compressor"
@@ -2166,6 +2318,7 @@ research:
   # Tier 2 - mid-tier processing
   precision_steam_automation: "Steam Automation"
   precision_production_line: "Steam Production Line"
+  precision_pneumatic_logic: "Pneumatic Logic"
   chemistry_basic_research: "Basic Steam Research"
   # Tier 3 - advanced alloys & fluids
   material_advanced_ingots: "Advanced Ingots"

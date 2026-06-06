@@ -2,12 +2,12 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock.MultiblockComponent;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock.MultiblockComponent;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -61,7 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
 
 /**
  * 蒸汽装配祭坛。竖直 3×3 多方块：中心是装配台，四周 8 个锰钢块作为底座。
@@ -71,12 +71,12 @@ import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
  * 数秒后消耗原料并产出成品。</p>
  */
 public class SteamAssemblyBench extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarSimpleMultiblock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock,
-        RebarInventoryBlock {
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        SimpleRebarMultiblock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock,
+        GuiRebarBlock {
 
     /** 8 个底座相对中心（装配台）的位置：竖直平面（北向默认），物品朝 facing 方向展示。
      *  X 顺序按"玩家视角从左到右"排列（+1→-1），使底座物理顺序与 GUI 槽位顺序一致。 */
@@ -251,20 +251,20 @@ public class SteamAssemblyBench extends RebarBlock implements
 
     private void tryStartCraft(@NotNull Player player) {
         if (crafting) {
-            player.sendActionBar(Component.text("装配进行中…", NamedTextColor.GRAY));
+            player.sendActionBar(Component.translatable("steamwork.gui.steam_assembly_bench.actionbar.crafting"));
             return;
         }
         if (!isFormedAndFullyLoaded()) {
-            player.sendActionBar(Component.text("祭坛结构不完整", NamedTextColor.RED));
+            player.sendActionBar(Component.translatable("steamwork.gui.steam_assembly_bench.actionbar.structure_missing"));
             return;
         }
         SteamAssemblyRecipe recipe = findMatch();
         if (recipe == null) {
-            player.sendActionBar(Component.text("底座物品未匹配任何装配配方", NamedTextColor.RED));
+            player.sendActionBar(Component.translatable("steamwork.gui.steam_assembly_bench.actionbar.no_recipe"));
             return;
         }
         if (fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) < steamPerCraft) {
-            player.sendActionBar(Component.text("过热蒸汽不足（需从背后管道供给）", NamedTextColor.RED));
+            player.sendActionBar(Component.translatable("steamwork.gui.steam_assembly_bench.actionbar.no_steam"));
             return;
         }
         startCraftAnimation(recipe, player);
@@ -274,7 +274,7 @@ public class SteamAssemblyBench extends RebarBlock implements
         crafting = true;
         Location center = centerFront();
         center.getWorld().playSound(center, Sound.BLOCK_BEACON_ACTIVATE, 0.7f, 1.2f);
-        player.sendActionBar(Component.text("开始装配…", NamedTextColor.AQUA));
+        player.sendActionBar(Component.translatable("steamwork.gui.steam_assembly_bench.actionbar.started"));
 
         new BukkitRunnable() {
             int tick = 0;
@@ -588,31 +588,35 @@ public class SteamAssemblyBench extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
         // 归还底座上的物品
         for (int i = 0; i < PEDESTALS.size(); i++) {
             ItemStack s = pedestals.getItem(i);
             if (s != null && !s.getType().isAir()) drops.add(s.clone());
         }
         clearDisplays();
-        RebarFluidBufferBlock.super.onBreak(drops, context);
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+        FluidBufferRebarBlock.super.onBlockBreak(drops, context);
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         SteamAssemblyRecipe match = isFormedAndFullyLoaded() ? findMatch() : null;
-        Component state = crafting
-                ? Component.text("装配中…", NamedTextColor.AQUA)
-                : match != null
-                        ? Component.text("可装配 → ", NamedTextColor.GREEN)
-                                .append(match.producedStack().effectiveName())
-                        : Component.text(isFormedAndFullyLoaded() ? "右键打开界面装配" : "结构不完整",
-                                NamedTextColor.GRAY);
+        Component state;
+        if (crafting) {
+            state = Component.translatable("steamwork.gui.steam_assembly_bench.waila.assembling");
+        } else if (match != null) {
+            state = Component.translatable("steamwork.gui.steam_assembly_bench.waila.can_craft")
+                    .append(match.producedStack().effectiveName());
+        } else {
+            state = Component.translatable(isFormedAndFullyLoaded()
+                    ? "steamwork.gui.steam_assembly_bench.waila.open_gui"
+                    : "steamwork.gui.steam_assembly_bench.waila.structure_missing");
+        }
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("structure", Component.translatable("steamwork.structure."
                         + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
                         fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
                         12,
@@ -648,11 +652,15 @@ public class SteamAssemblyBench extends RebarBlock implements
                     && fluidAmount(SteamworkFluids.SUPERHEATED_STEAM) >= steamPerCraft;
             Material mat = crafting ? Material.CLOCK
                     : ready ? Material.LIME_DYE : Material.GRAY_DYE;
+            Component title = Component.translatable(crafting
+                    ? "steamwork.gui.steam_assembly_bench.status.assembling"
+                    : "steamwork.gui.steam_assembly_bench.craft.start");
+            if (!crafting) title = title.color(ready ? NamedTextColor.GREEN : NamedTextColor.GRAY);
+            Component costLore = Component.translatable("steamwork.gui.steam_assembly_bench.craft.steam_cost",
+                    RebarArgument.of("steam", String.format("%.0f", steamPerCraft)));
             return ItemStackBuilder.of(mat)
-                    .name(noItalic(Component.text(crafting ? "装配中…" : "开始装配",
-                            crafting ? NamedTextColor.AQUA : ready ? NamedTextColor.GREEN : NamedTextColor.GRAY)))
-                    .lore(List.of(noItalic(Component.text(
-                            String.format("需要过热蒸汽 %.0f mB", steamPerCraft), NamedTextColor.GRAY))));
+                    .name(noItalic(title))
+                    .lore(List.of(noItalic(costLore)));
         }
 
         @Override
@@ -668,7 +676,7 @@ public class SteamAssemblyBench extends RebarBlock implements
             List<SteamAssemblyRecipe> matches = isFormedAndFullyLoaded() ? findAllMatches() : List.of();
             if (matches.isEmpty()) {
                 return ItemStackBuilder.of(Material.BARRIER)
-                        .name(noItalic(Component.text("无匹配配方", NamedTextColor.RED)));
+                        .name(noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.result.no_match")));
             }
             int idx = Math.floorMod(selectedRecipe, matches.size());
             ItemStack preview = matches.get(idx).producedStack();
@@ -676,9 +684,9 @@ public class SteamAssemblyBench extends RebarBlock implements
                 var meta = preview.getItemMeta();
                 List<Component> lore = meta.lore() != null
                         ? new ArrayList<>(meta.lore()) : new ArrayList<>();
-                lore.add(noItalic(Component.text(
-                        "▸ 点击切换配方 (" + (idx + 1) + "/" + matches.size() + ")",
-                        NamedTextColor.YELLOW)));
+                lore.add(noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.result.switch_hint",
+                        RebarArgument.of("index", String.valueOf(idx + 1)),
+                        RebarArgument.of("total", String.valueOf(matches.size())))));
                 meta.lore(lore);
                 preview.setItemMeta(meta);
             }
@@ -708,19 +716,19 @@ public class SteamAssemblyBench extends RebarBlock implements
             Component text;
             if (crafting) {
                 mat = Material.GREEN_STAINED_GLASS_PANE;
-                text = Component.text("装配中…", NamedTextColor.AQUA);
+                text = Component.translatable("steamwork.gui.steam_assembly_bench.status.assembling");
             } else if (!formed) {
                 mat = Material.RED_STAINED_GLASS_PANE;
-                text = Component.text("结构不完整", NamedTextColor.RED);
+                text = Component.translatable("steamwork.gui.steam_assembly_bench.status.structure_missing");
             } else if (!hasSteam) {
                 mat = Material.ORANGE_STAINED_GLASS_PANE;
-                text = Component.text("过热蒸汽不足", NamedTextColor.GOLD);
+                text = Component.translatable("steamwork.gui.steam_assembly_bench.status.no_steam");
             } else if (findMatch() == null) {
                 mat = Material.GRAY_STAINED_GLASS_PANE;
-                text = Component.text("放入正确原料", NamedTextColor.GRAY);
+                text = Component.translatable("steamwork.gui.steam_assembly_bench.status.no_ingredients");
             } else {
                 mat = Material.GREEN_STAINED_GLASS_PANE;
-                text = Component.text("就绪，可装配", NamedTextColor.GREEN);
+                text = Component.translatable("steamwork.gui.steam_assembly_bench.status.ready");
             }
             return ItemStackBuilder.of(mat).name(noItalic(text));
         }
@@ -737,8 +745,9 @@ public class SteamAssemblyBench extends RebarBlock implements
             double capacity = fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM);
             return ItemStackBuilder.of(Material.ORANGE_STAINED_GLASS)
                     .name(noItalic(Component.translatable("steamwork.fluid.superheated_steam")))
-                    .lore(List.of(noItalic(Component.text(
-                            String.format("%.0f / %.0f mB", steam, capacity), NamedTextColor.AQUA))));
+                    .lore(List.of(noItalic(Component.translatable("steamwork.gui.steam_assembly_bench.fluid_amount",
+                            RebarArgument.of("steam", String.format("%.0f", steam)),
+                            RebarArgument.of("capacity", String.format("%.0f", capacity))))));
         }
 
         @Override

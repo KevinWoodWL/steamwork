@@ -25,6 +25,11 @@ import io.github.steamwork.content.machines.SteamGrinder;
 import io.github.steamwork.content.machines.SteamCanisterBench;
 import io.github.steamwork.content.machines.SteamChargingChamber;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
+import io.github.steamwork.content.machines.SteamVortexTube;
+import io.github.steamwork.content.machines.PneumaticLogicGate;
+import io.github.steamwork.content.machines.SteamOscillator;
+import io.github.steamwork.content.machines.PneumaticGateValve;
+import io.github.steamwork.content.machines.SteamPressureTransducer;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
 import io.github.steamwork.content.machines.SteamScienceInterface;
@@ -180,6 +185,18 @@ public final class SteamworkItems {
     public static final ItemStack STEAM_DISTILLATION_TOWER = ItemStackBuilder.rebar(Material.CAULDRON, SteamworkKeys.STEAM_DISTILLATION_TOWER).build();
     public static final ItemStack DISTILLATION_TOWER_SECTION = ItemStackBuilder.rebar(Material.LIGHT_GRAY_STAINED_GLASS, SteamworkKeys.DISTILLATION_TOWER_SECTION).build();
     public static final ItemStack DISTILLATION_CONDENSER = ItemStackBuilder.rebar(Material.CUT_COPPER, SteamworkKeys.DISTILLATION_CONDENSER).build();
+
+    // 汽动逻辑（PneumaticCraft 灵感）
+    public static final ItemStack STEAM_VORTEX_TUBE = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_VORTEX_TUBE)
+            .set(DataComponentTypes.ITEM_MODEL, Material.COPPER_BULB.getKey())
+            .build();
+    public static final ItemStack PNEUMATIC_LOGIC_GATE = ItemStackBuilder.rebar(Material.IRON_BLOCK, SteamworkKeys.PNEUMATIC_LOGIC_GATE)
+            .build();
+    public static final ItemStack STEAM_OSCILLATOR = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_OSCILLATOR).build();
+    public static final ItemStack PNEUMATIC_GATE_VALVE = ItemStackBuilder.rebar(Material.STRUCTURE_VOID, SteamworkKeys.PNEUMATIC_GATE_VALVE)
+            .set(DataComponentTypes.ITEM_MODEL, Material.GRAY_CONCRETE.getKey())
+            .build();
+    public static final ItemStack STEAM_PRESSURE_TRANSDUCER = ItemStackBuilder.rebar(Material.BARREL, SteamworkKeys.STEAM_PRESSURE_TRANSDUCER).build();
 
     // Alloy blocks
     public static final ItemStack INVAR_BLOCK = ItemStackBuilder.rebar(Material.IRON_BLOCK, SteamworkKeys.INVAR_BLOCK).build();
@@ -345,7 +362,7 @@ public final class SteamworkItems {
     // Portable steam canisters (the "battery"). Capacity baked into the template PDC via
     // SteamCharge.initIfMissing — crafting copies the PDC, so each crafted stack starts at 0/capacity.
     // All three use music disc materials: non-stackable (max 1), and SteamCanister implements
-    // RebarBlockInteractor to cancel any attempt to insert them into a jukebox.
+    // BlockInteractRebarItemHandler to cancel any attempt to insert them into a jukebox.
     public static final ItemStack STEAM_CANISTER_BRASS = withSteamCapacity(
             ItemStackBuilder.rebar(Material.MUSIC_DISC_13, SteamworkKeys.STEAM_CANISTER_BRASS).build(), 2000.0);
     public static final ItemStack STEAM_CANISTER_INVAR = withSteamCapacity(
@@ -491,48 +508,53 @@ public final class SteamworkItems {
         RebarItem.register(SteamDistillationTower.Item.class, STEAM_DISTILLATION_TOWER, SteamworkKeys.STEAM_DISTILLATION_TOWER);
         RebarItem.register(RebarItem.class, DISTILLATION_TOWER_SECTION, SteamworkKeys.DISTILLATION_TOWER_SECTION);
         RebarItem.register(RebarItem.class, DISTILLATION_CONDENSER, SteamworkKeys.DISTILLATION_CONDENSER);
+        RebarItem.register(SteamVortexTube.Item.class, STEAM_VORTEX_TUBE, SteamworkKeys.STEAM_VORTEX_TUBE);
+        RebarItem.register(PneumaticLogicGate.Item.class, PNEUMATIC_LOGIC_GATE, SteamworkKeys.PNEUMATIC_LOGIC_GATE);
+        RebarItem.register(SteamOscillator.Item.class, STEAM_OSCILLATOR, SteamworkKeys.STEAM_OSCILLATOR);
+        RebarItem.register(PneumaticGateValve.Item.class, PNEUMATIC_GATE_VALVE, SteamworkKeys.PNEUMATIC_GATE_VALVE);
+        RebarItem.register(SteamPressureTransducer.Item.class, STEAM_PRESSURE_TRANSDUCER, SteamworkKeys.STEAM_PRESSURE_TRANSDUCER);
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STERILIZER)
-                .addButton(new MachineRecipesButton(STEAM_STERILIZER, SteamSterilizingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamSterilizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STEEPING_VAT)
-                .addButton(new MachineRecipesButton(STEAM_STEEPING_VAT, SteamSteepingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamSteepingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STEEPING_VAT)
                 .addButton(new PylonCompatPageButton(SteamSteepingVat::pylonRecipesForItem));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_WASHING_TROUGH)
-                .addButton(new MachineRecipesButton(STEAM_WASHING_TROUGH, SteamWashingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamWashingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_PRESS)
-                .addButton(new MachineRecipesButton(STEAM_PRESS, SteamPressingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamPressingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_GRINDER)
-                .addButton(new MachineRecipesButton(STEAM_GRINDER, SteamGrindingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamGrindingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_GRINDER)
                 .addButton(new PylonCompatPageButton(SteamGrinder::pylonRecipesForItem));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_PRESSURIZED_FURNACE)
-                .addButton(new MachineRecipesButton(STEAM_PRESSURIZED_FURNACE, SteamPressurizingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamPressurizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_SCIENCE_INTERFACE)
-                .addButton(new MachineRecipesButton(STEAM_SCIENCE_INTERFACE, SteamResearchRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamResearchRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_PRECISION_MILL)
-                .addButton(new MachineRecipesButton(STEAM_PRECISION_MILL, io.github.steamwork.recipes.SteamMillingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(io.github.steamwork.recipes.SteamMillingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_FOUNDRY)
-                .addButton(new MachineRecipesButton(PRECISION_FOUNDRY, SteamFoundryRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamFoundryRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_FOUNDRY)
                 .addButton(new PylonCompatPageButton(PrecisionFoundry::pylonRecipesForItem));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_CATALYTIC_REACTOR)
-                .addButton(new MachineRecipesButton(PRECISION_CATALYTIC_REACTOR, SteamCatalyticReactionRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamCatalyticReactionRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_CATALYTIC_REACTOR)
                 .addButton(new PylonCompatPageButton(PrecisionCatalyticReactor::pylonRecipesForItem));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.HEAVY_IMPACT_CRUSHER)
-                .addButton(new MachineRecipesButton(HEAVY_IMPACT_CRUSHER, SteamCrushingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamCrushingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.HEAVY_IMPACT_CRUSHER)
                 .addButton(new PylonCompatPageButton(HeavyImpactCrusher::pylonRecipesForItem));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.HYDRAULIC_FORGE)
-                .addButton(new MachineRecipesButton(HYDRAULIC_FORGE, SteamForgingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamForgingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_CRYSTALLIZER)
-                .addButton(new MachineRecipesButton(PRECISION_CRYSTALLIZER, SteamCrystallizingRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamCrystallizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.PRECISION_CENTRIFUGE)
-                .addButton(new MachineRecipesButton(PRECISION_CENTRIFUGE, SteamCentrifugationRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamCentrifugationRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_ASSEMBLY_BENCH)
-                .addButton(new MachineRecipesButton(STEAM_ASSEMBLY_BENCH, SteamAssemblyRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamAssemblyRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_DISTILLATION_TOWER)
-                .addButton(new MachineRecipesButton(STEAM_DISTILLATION_TOWER, SteamDistillationRecipe.RECIPE_TYPE));
+                .addButton(new MachineRecipesButton(SteamDistillationRecipe.RECIPE_TYPE));
         var sequencedWorkpiecePage = RebarGuide.getOrCreateInfoPage(SteamworkKeys.SEQUENCED_WORKPIECE);
         // 仅展示钯合金工序链的 4 步配方，而非机器的全部配方
         sequencedWorkpiecePage.addButton(new SequencedChainButton(java.util.List.of(
@@ -623,21 +645,21 @@ public final class SteamworkItems {
 
 
         // 通用 Pylon 涡轮：非液压非柴油的 Pylon/Rebar 处理机器。
-        // 支持列表来自 Pylon 源码确认（simple.* 和 smelting.* 包下实现 RebarProcessor/RebarRecipeProcessor 的机器）。
+        // 支持列表来自 Pylon 源码确认（simple.* 和 smelting.* 包下实现 ProcessorRebarBlock/RecipeProcessorRebarBlock 的机器）。
         io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage pylonUniversalTurbinePage =
                 RebarGuide.getOrCreateInfoPage(SteamworkKeys.PYLON_UNIVERSAL_TURBINE);
-        // simple 包 — RebarProcessor
+        // simple 包 — ProcessorRebarBlock
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "MANUAL_CORE_DRILL");
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "IMPROVED_MANUAL_CORE_DRILL");
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "COLLIMATOR");
-        // simple 包 — RebarRecipeProcessor
+        // simple 包 — RecipeProcessorRebarBlock
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "CRUDE_ALLOY_FURNACE");
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "GRINDSTONE");
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "PRESS");
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "SHIMMER_ALTAR");
-        // smelting 包 — RebarProcessor
+        // smelting 包 — ProcessorRebarBlock
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "SMELTERY_BURNER");
-        // smelting 包 — RebarRecipeProcessor
+        // smelting 包 — RecipeProcessorRebarBlock
         addOptionalPylonGuideItem(pylonUniversalTurbinePage, "KILN");
 
         // 精密全能涡轮：全部机器类型。

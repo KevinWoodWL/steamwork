@@ -1,10 +1,9 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarBreakHandler;
-import io.github.pylonmc.rebar.block.base.RebarEntityCulledBlock;
-import io.github.pylonmc.rebar.block.base.RebarFacadeBlock;
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler;
+import io.github.pylonmc.rebar.block.interfaces.EntityCulledRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FacadeRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
@@ -16,6 +15,7 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkKeys;
+import io.github.steamwork.util.PneumaticEndpointSupport;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -46,9 +46,9 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * Steamwork's multi-branch network behavior.
  */
 public class PneumaticDuct extends RebarBlock implements
-        RebarBreakHandler,
-        RebarEntityCulledBlock,
-        RebarFacadeBlock {
+        BlockBreakRebarBlockHandler,
+        EntityCulledRebarBlock,
+        FacadeRebarBlock {
 
     private static final BlockFace[] FACES = {
             BlockFace.NORTH, BlockFace.SOUTH,
@@ -78,6 +78,9 @@ public class PneumaticDuct extends RebarBlock implements
      * volatile + 不可变快照：主线程写，culling 协程（异步）只读，无需同步块。
      */
     private volatile List<UUID> displayUuids = List.of();
+
+    private List<BlockFace> lastConnectedFaces = List.of();
+    private boolean refreshing = false;
 
     public static class Item extends RebarItem {
         public Item(@NotNull ItemStack stack) {
@@ -110,8 +113,8 @@ public class PneumaticDuct extends RebarBlock implements
         org.bukkit.Bukkit.getScheduler().runTaskLater(
                 io.github.steamwork.Steamwork.getInstance(),
                 () -> {
-                    if (!getBlock().getChunk().isLoaded()) return;
-                    if (io.github.pylonmc.rebar.block.BlockStorage.get(getBlock()) != this) return;
+                    if (!PneumaticEndpointSupport.isChunkLoaded(getBlock())) return;
+                    if (PneumaticEndpointSupport.loadedRebarBlock(getBlock()) != this) return;
                     refreshDisplays();
                     notifyNeighbors();
                 },
@@ -135,8 +138,10 @@ public class PneumaticDuct extends RebarBlock implements
 
     private boolean canConnectRaw(@NotNull BlockFace face) {
         Block neighbor = getBlock().getRelative(face);
-        RebarBlock rb = BlockStorage.get(neighbor);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(neighbor);
         return rb instanceof PneumaticDuct
+                || rb instanceof PneumaticGateValve valve
+                        && valve.acceptsPneumaticConnection(face.getOppositeFace())
                 || rb instanceof SteamCatapult
                 || rb instanceof PneumaticInput input
                         && input.acceptsPneumaticConnection(face.getOppositeFace())
@@ -171,9 +176,12 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     private boolean hasReciprocalConnection(@NotNull BlockFace face) {
-        RebarBlock rb = BlockStorage.get(getBlock().getRelative(face));
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(getBlock().getRelative(face));
         if (rb instanceof PneumaticDuct duct) {
             return duct.getPreferredConnectableFaces().contains(face.getOppositeFace());
+        }
+        if (rb instanceof PneumaticGateValve valve) {
+            return valve.acceptsPneumaticConnection(face.getOppositeFace());
         }
         return true;
     }
@@ -184,12 +192,12 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
         clearDisplays();
     }
 
     @Override
-    public void postBreak(@NotNull BlockBreakContext context) {
+    public void onPostBlockBreak(@NotNull BlockBreakContext context) {
         notifyNeighbors();
     }
 
@@ -201,9 +209,11 @@ public class PneumaticDuct extends RebarBlock implements
     public static void notifyNeighboringDucts(@NotNull Block origin) {
         for (BlockFace face : FACES) {
             Block neighbor = origin.getRelative(face);
-            RebarBlock rb = BlockStorage.get(neighbor);
+            RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(neighbor);
             if (rb instanceof PneumaticDuct duct) {
                 duct.refreshDisplays();
+            } else if (rb instanceof PneumaticGateValve valve) {
+                valve.refreshDisplays();
             } else if (rb instanceof PneumaticInput input) {
                 input.refreshDisplays();
             } else if (rb instanceof PneumaticOutput output) {
@@ -213,21 +223,32 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     private void refreshDisplays() {
-        clearDisplays();
+        if (refreshing) return;
+        refreshing = true;
+        try {
+            clearDisplays();
 
-        List<BlockFace> connectedFaces = getConnectedFaces();
-        List<UUID> newUuids = new ArrayList<>();
+            List<BlockFace> connectedFaces = getConnectedFaces();
+            List<UUID> newUuids = new ArrayList<>();
 
-        if (connectedFaces.isEmpty()) {
-            newUuids.add(createSingleDisplay().getUniqueId());
-        } else {
-            for (int i = 0; i < connectedFaces.size(); i++) {
-                newUuids.add(createFaceDisplay(connectedFaces.get(i), i).getUniqueId());
+            if (connectedFaces.isEmpty()) {
+                newUuids.add(createSingleDisplay().getUniqueId());
+            } else {
+                for (int i = 0; i < connectedFaces.size(); i++) {
+                    newUuids.add(createFaceDisplay(connectedFaces.get(i), i).getUniqueId());
+                }
             }
-        }
 
-        // 原子性地替换快照，异步 culling 线程读到的永远是完整列表
-        displayUuids = List.copyOf(newUuids);
+            // 原子性地替换快照，异步 culling 线程读到的永远是完整列表
+            displayUuids = List.copyOf(newUuids);
+
+            if (!connectedFaces.equals(lastConnectedFaces)) {
+                lastConnectedFaces = List.copyOf(connectedFaces);
+                notifyNeighbors();
+            }
+        } finally {
+            refreshing = false;
+        }
     }
 
     private void clearDisplays() {
@@ -271,7 +292,7 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     private double faceSegmentLength(@NotNull BlockFace face) {
-        RebarBlock rb = BlockStorage.get(getBlock().getRelative(face));
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(getBlock().getRelative(face));
         return rb instanceof PneumaticInput || rb instanceof PneumaticOutput
                 ? ENDPOINT_SEGMENT
                 : HALF_SEGMENT;
@@ -323,8 +344,8 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     public static boolean isNetworkDuct(@NotNull Block block) {
-        RebarBlock rb = BlockStorage.get(block);
-        return rb instanceof PneumaticDuct;
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
+        return rb instanceof PneumaticDuct || rb instanceof PneumaticGateValve;
     }
 
     public static @NotNull List<Block> findReachableEndpoints(@NotNull Block origin) {
@@ -343,8 +364,11 @@ public class PneumaticDuct extends RebarBlock implements
                 }
                 visited.add(neighbor);
 
-                RebarBlock rb = BlockStorage.get(neighbor);
+                RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(neighbor);
                 if (rb instanceof PneumaticDuct) {
+                    queue.add(neighbor);
+                } else if (rb instanceof PneumaticGateValve valve
+                        && valve.acceptsPneumaticConnection(face.getOppositeFace())) {
                     queue.add(neighbor);
                 } else if (rb instanceof SteamCatapult
                         || rb instanceof PneumaticInput input
@@ -357,9 +381,11 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     private static @NotNull Iterable<BlockFace> getTraversalFaces(@NotNull Block block) {
-        RebarBlock rb = BlockStorage.get(block);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
         if (rb instanceof PneumaticDuct duct) {
             return duct.getConnectedFaces();
+        } else if (rb instanceof PneumaticGateValve valve) {
+            return valve.getTraversalFaces();
         }
         return List.of(FACES);
     }
@@ -370,8 +396,9 @@ public class PneumaticDuct extends RebarBlock implements
     }
 
     public static boolean isNetworkConnector(@NotNull Block block) {
-        RebarBlock rb = BlockStorage.get(block);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
         return rb instanceof PneumaticDuct
+                || rb instanceof PneumaticGateValve
                 || rb instanceof PneumaticInput
                 || rb instanceof PneumaticOutput;
     }

@@ -3,10 +3,10 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.pylon.PylonFluids;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractSteamBoiler extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarFluidBufferBlock,
-        RebarSimpleMultiblock,
-        RebarTickingBlock {
+        DirectionalRebarBlock,
+        FluidBufferRebarBlock,
+        SimpleRebarMultiblock,
+        TickingRebarBlock {
 
     private final int tickInterval = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     private final double waterBuffer = getSettings().getOrThrow("water-buffer", ConfigAdapter.DOUBLE);
@@ -106,7 +106,7 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
 
     protected AbstractSteamBoiler(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
-        // Rebar 不会在 PDC 构造器里自动恢复朝向，但 getFacing() 会在 onMultiblockFormed → scheduleBlockTextureItemRefresh 里被调用。
+        // Rebar 不会在 PDC 构造器里自动恢复朝向，但 getFacing() 会在 onMultiblockFormed -> refreshBlockTextureItem 里被调用。
         // 如果旧存档没有方向数据就会 IllegalStateException，这里兜底设一个默认方向。
         try {
             getFacing();
@@ -160,7 +160,7 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
 
         removeFluid(PylonFluids.WATER, waterPerCycle);
         addFluid(producedSteam(), effectiveSteam);
-        scheduleBlockTextureItemRefresh();
+        refreshBlockTextureItem();
         spawnRunningFx();
     }
 
@@ -221,14 +221,14 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
 
     @Override
     public void onMultiblockFormed() {
-        RebarSimpleMultiblock.super.onMultiblockFormed();
-        scheduleBlockTextureItemRefresh();
+        SimpleRebarMultiblock.super.onMultiblockFormed();
+        refreshBlockTextureItem();
     }
 
     @Override
     public void onMultiblockUnformed(boolean partUnloaded) {
-        RebarSimpleMultiblock.super.onMultiblockUnformed(partUnloaded);
-        scheduleBlockTextureItemRefresh();
+        SimpleRebarMultiblock.super.onMultiblockUnformed(partUnloaded);
+        refreshBlockTextureItem();
     }
 
     @Override
@@ -242,13 +242,13 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("water-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("water-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(PylonFluids.WATER),
                         fluidCapacity(PylonFluids.WATER),
                         16,
                         TextColor.fromHexString("#3f7ee8")
                 )),
-                RebarArgument.of("steam-bar", PylonUtils.createFluidAmountBar(
+                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(producedSteam()),
                         fluidCapacity(producedSteam()),
                         16,

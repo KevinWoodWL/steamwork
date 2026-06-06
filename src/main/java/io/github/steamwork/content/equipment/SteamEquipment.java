@@ -1,6 +1,6 @@
 package io.github.steamwork.content.equipment;
 
-import io.github.pylonmc.rebar.item.base.RebarItemDamageable;
+import io.github.pylonmc.rebar.item.interfaces.DurabilityRebarItemHandler;
 import io.github.pylonmc.rebar.item.RebarItem;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerItemDamageEvent;
@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * <p>具体的攻击/挖掘/穿戴增益由子类 {@link SteamToolItem} / {@link SteamArmorItem} 实现。
  * 便携蒸汽罐本身是 {@link SteamCanister}（带固定容量，可被充汽舱充能、可装入装备）。</p>
  */
-public class SteamEquipment extends RebarItem implements RebarItemDamageable {
+public class SteamEquipment extends RebarItem implements DurabilityRebarItemHandler {
 
     public SteamEquipment(@NotNull ItemStack stack) {
         super(stack);

@@ -2,12 +2,12 @@ package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarEntityCulledBlock;
-import io.github.pylonmc.rebar.block.base.RebarFacadeBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.EntityCulledRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FacadeRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
@@ -63,12 +63,12 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * </p>
  */
 public class PneumaticOutput extends RebarBlock implements
-        RebarDirectionalBlock,
-        RebarEntityCulledBlock,
-        RebarFacadeBlock,
-        RebarInventoryBlock,
-        RebarTickingBlock,
-        RebarVirtualInventoryBlock {
+        DirectionalRebarBlock,
+        EntityCulledRebarBlock,
+        FacadeRebarBlock,
+        GuiRebarBlock,
+        TickingRebarBlock,
+        VirtualInventoryRebarBlock {
 
     public static final int MIN_EXTRACT = 1;
     public static final int MAX_EXTRACT = 64;
@@ -172,13 +172,13 @@ public class PneumaticOutput extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
         clearDisplays();
     }
 
     @Override
-    public void postBreak(@NotNull BlockBreakContext context) {
+    public void onPostBlockBreak(@NotNull BlockBreakContext context) {
         PneumaticDuct.notifyNeighboringDucts(getBlock());
     }
 
@@ -241,13 +241,11 @@ public class PneumaticOutput extends RebarBlock implements
     }
 
     /**
-     * 来源侧：Output 朝向（{@link #getFacing()}）始终指向需要抽取物品的容器。
-     *
-     * <p>注意：不要从 {@link #pneumaticConnectionFace()} 反推来源侧——后者现在会
-     * 优先识别直连的 {@link PneumaticInput}，导致在直连场景下来源侧被反转。</p>
+     * Source side: the face with the adjacent container/machine to pull items from.
+     * Uses containerAccessFace() so a parallel duct does not displace container detection.
      */
     private @NotNull BlockFace sourceFace() {
-        return getFacing();
+        return PneumaticEndpointSupport.containerAccessFace(getBlock(), getFacing());
     }
 
     // ── tick ─────────────────────────────────────────────────────────────────
@@ -336,7 +334,7 @@ public class PneumaticOutput extends RebarBlock implements
 
     private int countSpaceFor(@NotNull Block block, @NotNull ItemStack item, int max) {
         RebarBlock rb = BlockStorage.get(block);
-        if (rb instanceof RebarVirtualInventoryBlock vib) {
+        if (rb instanceof VirtualInventoryRebarBlock vib) {
             VirtualInventory vi = vib.getVirtualInventories().get("input");
             if (vi != null) {
                 int space = 0;
@@ -370,6 +368,11 @@ public class PneumaticOutput extends RebarBlock implements
             if (face == src) continue;
             Block neighbor = getBlock().getRelative(face);
 
+            if (BlockStorage.get(neighbor) instanceof PneumaticInput && seen.add(neighbor)) {
+                destinations.add(neighbor);
+                continue;
+            }
+
             if (PneumaticDuct.isNetworkDuct(neighbor)) {
                 for (Block endpoint : PneumaticDuct.findReachableEndpoints(neighbor)) {
                     if (BlockStorage.get(endpoint) instanceof PneumaticInput && seen.add(endpoint)) {
@@ -377,12 +380,6 @@ public class PneumaticOutput extends RebarBlock implements
                     }
                 }
                 continue;
-            }
-
-            if (!(BlockStorage.get(neighbor) instanceof PneumaticOutput)
-                    && PneumaticUtils.isItemTarget(neighbor)
-                    && seen.add(neighbor)) {
-                destinations.add(neighbor);
             }
         }
 
@@ -412,7 +409,7 @@ public class PneumaticOutput extends RebarBlock implements
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;
-            scheduleBlockTextureItemRefresh();
+            refreshBlockTextureItem();
         }
     }
 
@@ -420,7 +417,7 @@ public class PneumaticOutput extends RebarBlock implements
 
     @Override
     public @NotNull Map<@NotNull String, @NotNull VirtualInventory> getVirtualInventories() {
-        return Map.of("input", storageInventory);
+        return Map.of("output", storageInventory);
     }
 
     // ── GUI ───────────────────────────────────────────────────────────────────

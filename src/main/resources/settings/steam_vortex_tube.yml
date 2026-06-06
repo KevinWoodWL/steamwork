@@ -1,0 +1,8 @@
+# 蒸汽涡流分离器：过热蒸汽 → 加压蒸汽（热端）+ 蒸馏水（冷端），约 10% 分离损耗
+tick-interval: 5
+superheated-buffer: 2000.0
+pressurized-buffer: 2000.0
+water-buffer: 2000.0
+input-per-cycle: 40.0          # 每周期消耗过热蒸汽
+pressurized-per-cycle: 24.0    # 热端产出加压蒸汽
+water-per-cycle: 12.0          # 冷端产出蒸馏水

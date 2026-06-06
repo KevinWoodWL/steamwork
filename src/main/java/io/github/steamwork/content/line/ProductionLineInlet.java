@@ -1,11 +1,11 @@
 package io.github.steamwork.content.line;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock;
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock;
-import io.github.pylonmc.rebar.block.base.RebarLogisticBlock;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
-import io.github.pylonmc.rebar.block.base.RebarVirtualInventoryBlock;
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.item.RebarItem;
@@ -55,9 +55,9 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * <p>燃料分发支持轮询（默认）和单目标两种模式，通过 GUI 内的扫描按钮和模式切换按钮控制。</p>
  */
 public class ProductionLineInlet extends RebarBlock implements
-        RebarDirectionalBlock, RebarTickingBlock,
-        RebarVirtualInventoryBlock, RebarInventoryBlock,
-        RebarLogisticBlock, ProductionLineMember, UpgradeableMachine {
+        DirectionalRebarBlock, TickingRebarBlock,
+        VirtualInventoryRebarBlock, GuiRebarBlock,
+        LogisticRebarBlock, ProductionLineMember, UpgradeableMachine {
 
     enum FuelMode { ROUND_ROBIN, SINGLE_TARGET }
 
@@ -229,8 +229,8 @@ public class ProductionLineInlet extends RebarBlock implements
     }
 
     @Override
-    public void onBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
-        RebarVirtualInventoryBlock.super.onBreak(drops, context);
+    public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
     // ===== tick =====
