@@ -227,7 +227,11 @@ public class PneumaticDistributor extends RebarBlock implements
 
                 Block target = findTargetInDirection(FACES[faceIndex], current);
                 if (target == null) continue;
-                if (!PneumaticUtils.tryPushItem(target, current)) continue;
+                if (!PneumaticUtils.tryPushItem(target, current)) {
+                    PneumaticDuct.notifyPassage(getBlock(), target, 1, false);
+                    continue;
+                }
+                PneumaticDuct.notifyPassage(getBlock(), target, 1, true);
 
                 consumeItem(current);
                 removeFluid(SteamworkFluids.PRESSURIZED_STEAM, steamPerItem);

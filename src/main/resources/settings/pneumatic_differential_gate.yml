@@ -1,0 +1,5 @@
+# 汽动差压门：比较后面（源A）与右侧（参考B）的蒸汽量差值，A-B ≥ 阈值时放行
+tick-interval: 2
+transfer-per-tick: 50.0   # 每 tick 每种蒸汽最多搬运量（mB）
+signal-threshold: 100.0   # 默认差压阈值（mB），可在 GUI 调整（1–10000）
+buffer: 1000.0            # 自身输出缓存容量（mB）

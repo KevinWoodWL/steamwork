@@ -1,0 +1,5 @@
+# 汽动锁存器（SR 锁存器）：SET 端有汽→锁住，RESET 端有汽→解锁，两者消失后维持状态
+tick-interval: 2
+transfer-per-tick: 50.0   # 锁住时每 tick 每种蒸汽从供汽源抽取量（mB）
+signal-threshold: 1.0     # SET/RESET 面蒸汽量 ≥ 此值才算触发（1–1000，GUI 可调）
+buffer: 1000.0            # 输出缓存容量（mB）

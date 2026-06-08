@@ -248,13 +248,40 @@ public class PneumaticOutput extends RebarBlock implements
         return PneumaticEndpointSupport.containerAccessFace(getBlock(), getFacing());
     }
 
+    /**
+     * 轮询抽取：当同一个源容器被<b>多个</b>汽动输出端接入时，让它们按服务器 tick 严格轮流抽取，
+     * 避免「先 tick 的把源抽空、后 tick 的抢不到」。仅自己接入（无竞争）时始终允许。
+     *
+     * <p>纯确定性、无共享状态：扫描源的 6 个相邻面收集所有以该源为抽取源的输出端（含自己），
+     * 按坐标排序得到稳定序号，本 tick 仅序号 == {@code tick % 数量} 的那个允许抽取。</p>
+     */
+    private boolean shouldExtractThisTick(@NotNull Block source) {
+        List<Block> peers = new ArrayList<>();
+        for (BlockFace face : FACES) {
+            Block neighbor = source.getRelative(face);
+            if (!PneumaticEndpointSupport.isChunkLoaded(neighbor)) continue;
+            if (PneumaticEndpointSupport.loadedRebarBlock(neighbor) instanceof PneumaticOutput other
+                    && source.equals(other.getBlock().getRelative(other.sourceFace()))) {
+                peers.add(neighbor);
+            }
+        }
+        if (peers.size() <= 1) return true;
+        peers.sort(Comparator
+                .<Block>comparingInt(Block::getX)
+                .thenComparingInt(Block::getY)
+                .thenComparingInt(Block::getZ));
+        int myIndex = peers.indexOf(getBlock());
+        if (myIndex < 0) return true;
+        return Math.floorMod(org.bukkit.Bukkit.getCurrentTick(), peers.size()) == myIndex;
+    }
+
     // ── tick ─────────────────────────────────────────────────────────────────
 
     @Override
     public void tick() {
-        // 1. 每 tick 从来源侧容器补充存储仓
+        // 1. 每 tick 从来源侧容器补充存储仓（多端接入同一源时轮流抽取，避免抢物品）
         Block source = getBlock().getRelative(sourceFace());
-        if (!PneumaticDuct.isNetworkConnector(source)) {
+        if (!PneumaticDuct.isNetworkConnector(source) && shouldExtractThisTick(source)) {
             PneumaticUtils.pullFromContainer(source, storageInventory, 64);
         }
 
@@ -281,7 +308,12 @@ public class PneumaticOutput extends RebarBlock implements
             if (cur == null) break;
 
             Block dest = pickRoundRobinDestination(destinations, cur);
-            if (dest == null) break;
+            if (dest == null) {
+                for (Block blocked : destinations) {
+                    PneumaticDuct.notifyPassage(getBlock(), blocked, remaining, false);
+                }
+                break;
+            }
 
             int canPush = countSpaceFor(dest, cur, remaining);
             if (canPush <= 0) break;
@@ -289,6 +321,7 @@ public class PneumaticOutput extends RebarBlock implements
             int pushed = PneumaticUtils.tryPushItems(dest, cur, canPush);
             if (pushed <= 0) break;
 
+            PneumaticDuct.notifyPassage(getBlock(), dest, pushed, true);
             consumeFromStorage(cur, pushed);
             remaining -= pushed;
             totalPushed += pushed;

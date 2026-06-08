@@ -90,7 +90,8 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_VORTEX_TUBE,
             SteamworkKeys.PNEUMATIC_LOGIC_GATE,
             SteamworkKeys.STEAM_OSCILLATOR,
-            SteamworkKeys.STEAM_PRESSURE_TRANSDUCER);
+            SteamworkKeys.STEAM_PRESSURE_TRANSDUCER,
+            SteamworkKeys.STEAM_DIFFERENCE_ENGINE);
 
     /** 解锁蒸汽科研接口 —— 必须保持全局研究点可解锁，否则玩家无法建造接口来获取学科点数。 */
     public static final Research CHEMISTRY_BASIC_RESEARCH = new Research(
@@ -139,7 +140,8 @@ public final class SteamworkResearches {
             SteamworkKeys.PNEUMATIC_CARGO_HUB,
             SteamworkKeys.STEAM_CATAPULT, SteamworkKeys.STEAM_SORTER,
             SteamworkKeys.PNEUMATIC_DISTRIBUTOR,
-            SteamworkKeys.PNEUMATIC_GATE_VALVE);
+            SteamworkKeys.PNEUMATIC_GATE_VALVE,
+            SteamworkKeys.PNEUMATIC_PRESSURE_MODULE);
 
     /**
      * ★ 化学门控：需在蒸汽科研接口消耗 100 化学点数解锁。

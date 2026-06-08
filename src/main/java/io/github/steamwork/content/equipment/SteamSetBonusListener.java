@@ -1,5 +1,6 @@
 package io.github.steamwork.content.equipment;
 
+import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.steamwork.util.SteamCharge;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -90,10 +91,11 @@ public final class SteamSetBonusListener implements Listener {
         if (last != null && now - last < material.skillCooldownMillis()) {
             event.setCancelled(true);
             double remainingSeconds = (material.skillCooldownMillis() - (now - last)) / 1000.0;
-            player.sendActionBar(Component.text("套装技能冷却：", NamedTextColor.GRAY)
-                    .append(Component.text(
+            player.sendActionBar(Component.translatable(
+                    "steamwork.message.steam_set.skill_cooldown",
+                    RebarArgument.of("seconds", Component.text(
                             String.format(Locale.ROOT, "%.1fs", remainingSeconds),
-                            NamedTextColor.AQUA)));
+                            NamedTextColor.AQUA))));
             return;
         }
 
@@ -242,10 +244,9 @@ public final class SteamSetBonusListener implements Listener {
         Location loc = player.getLocation().add(0, 1, 0);
         player.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, loc, 12, 0.4, 0.4, 0.4, 0.05);
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_HIT, 0.5f, 1.4f);
-        // 护盾吸收提示：直接拼接数值，避免 translatable 占位符复杂度
-        player.sendActionBar(Component.text(
-                String.format("🛡 护盾吸收了 %.1f 伤害", incoming * BARRIER_ABSORB_RATIO),
-                NamedTextColor.AQUA));
+        player.sendActionBar(Component.translatable(
+                "steamwork.message.steam_set.barrier_absorb",
+                RebarArgument.of("absorbed", String.format(Locale.ROOT, "%.1f", incoming * BARRIER_ABSORB_RATIO))));
     }
 
     // ── TUNGSTEN：蒸汽地震 ────────────────────────────────────────────────────
@@ -271,9 +272,9 @@ public final class SteamSetBonusListener implements Listener {
             double dist = entity.getLocation().distance(center);
             if (dist > radius) continue;
 
-            // 距离衰减伤害：近处最高 15，边缘最低 5
-            double damage = 15.0 * Math.max(0, 1.0 - dist / radius);
-            le.damage(Math.max(5.0, damage), player);
+            // 距离衰减伤害：近处最高 18，边缘最低 6
+            double damage = 18.0 * Math.max(0, 1.0 - dist / radius);
+            le.damage(Math.max(6.0, damage), player);
 
             // 击退方向：远离玩家，带上扬（强度 1.3，原 1.8，收敛）
             Vector kb = entity.getLocation().toVector()

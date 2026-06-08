@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
+import io.github.pylonmc.rebar.entity.display.BlockDisplayBuilder;
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder;
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder;
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder;
@@ -27,6 +28,10 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Lightable;
+import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
@@ -178,11 +183,14 @@ public class PneumaticGateValve extends RebarBlock implements
 
         List<UUID> ids = new ArrayList<>();
         if (open) {
+            // 放行：导管完整连通 + 熄灭的红石灯核心（让阀门在不工作时也能被一眼认出）
             ids.add(createLineDisplay(negEnd, posEnd, Material.GRAY_CONCRETE).getUniqueId());
+            ids.add(createCoreDisplay(false).getUniqueId());
         } else {
+            // 截断：导管断开 + 点亮的红石灯核心
             ids.add(createLineDisplay(negEnd, -0.18D, Material.GRAY_CONCRETE).getUniqueId());
             ids.add(createLineDisplay(0.18D, posEnd, Material.GRAY_CONCRETE).getUniqueId());
-            ids.add(createCoreDisplay().getUniqueId());
+            ids.add(createCoreDisplay(true).getUniqueId());
         }
         displayUuids = List.copyOf(ids);
     }
@@ -212,9 +220,13 @@ public class PneumaticGateValve extends RebarBlock implements
         return display;
     }
 
-    private @NotNull ItemDisplay createCoreDisplay() {
-        ItemDisplay display = new ItemDisplayBuilder()
-                .itemStack(new ItemStack(Material.REDSTONE_BLOCK))
+    private @NotNull BlockDisplay createCoreDisplay(boolean lit) {
+        BlockData lampData = Material.REDSTONE_LAMP.createBlockData();
+        if (lampData instanceof Lightable lightable) {
+            lightable.setLit(lit);
+        }
+        BlockDisplay display = new BlockDisplayBuilder()
+                .blockData(lampData)
                 .transformation(new TransformBuilder().scale(0.42))
                 .persistent(true)
                 .build(center());
@@ -227,13 +239,13 @@ public class PneumaticGateValve extends RebarBlock implements
     }
 
     private void clearDisplays() {
-        for (ItemDisplay display : findManagedDisplays()) {
+        for (Display display : findManagedDisplays()) {
             if (display.isValid()) display.remove();
         }
         displayUuids = List.of();
     }
 
-    private void markDisplay(@NotNull ItemDisplay display) {
+    private void markDisplay(@NotNull Entity display) {
         PersistentDataContainer pdc = display.getPersistentDataContainer();
         pdc.set(DISPLAY_MARKER_KEY, RebarSerializers.BOOLEAN, true);
         pdc.set(DISPLAY_OWNER_KEY, RebarSerializers.INTEGER_ARRAY, new int[] {
@@ -241,11 +253,11 @@ public class PneumaticGateValve extends RebarBlock implements
         });
     }
 
-    private @NotNull List<ItemDisplay> findManagedDisplays() {
+    private @NotNull List<Display> findManagedDisplays() {
         BoundingBox box = BoundingBox.of(getBlock()).expand(DISPLAY_SCAN_RADIUS);
-        List<ItemDisplay> displays = new ArrayList<>();
+        List<Display> displays = new ArrayList<>();
         for (Entity entity : getBlock().getWorld().getNearbyEntities(box)) {
-            if (!(entity instanceof ItemDisplay display)) continue;
+            if (!(entity instanceof Display display)) continue;
             PersistentDataContainer pdc = display.getPersistentDataContainer();
             if (!Boolean.TRUE.equals(pdc.get(DISPLAY_MARKER_KEY, RebarSerializers.BOOLEAN))) continue;
             int[] owner = pdc.get(DISPLAY_OWNER_KEY, RebarSerializers.INTEGER_ARRAY);

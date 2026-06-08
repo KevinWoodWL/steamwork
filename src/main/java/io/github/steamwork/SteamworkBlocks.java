@@ -27,6 +27,8 @@ import io.github.steamwork.content.machines.SteamChargingChamber;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
 import io.github.steamwork.content.machines.SteamOscillator;
 import io.github.steamwork.content.machines.SteamPressureTransducer;
+import io.github.steamwork.content.machines.SteamDifferenceEngine;
+import io.github.steamwork.content.machines.PneumaticPressureModule;
 import io.github.steamwork.content.machines.SteamPrecisionMill;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
@@ -108,10 +110,18 @@ public final class SteamworkBlocks {
         // 汽动逻辑（PneumaticCraft 灵感）
         RebarBlock.register(SteamworkKeys.STEAM_VORTEX_TUBE, Material.COPPER_BLOCK,
                 io.github.steamwork.content.machines.SteamVortexTube.class);
-        RebarBlock.register(SteamworkKeys.PNEUMATIC_LOGIC_GATE, Material.IRON_BLOCK,
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_LOGIC_GATE, Material.WAXED_CUT_COPPER_SLAB,
                 io.github.steamwork.content.machines.PneumaticLogicGate.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_DIFFERENTIAL_GATE, Material.WAXED_CHISELED_COPPER,
+                io.github.steamwork.content.machines.PneumaticDifferentialGate.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_PULSER, Material.WAXED_COPPER_BULB,
+                io.github.steamwork.content.machines.PneumaticPulser.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_LATCH, Material.POLISHED_BLACKSTONE,
+                io.github.steamwork.content.machines.PneumaticLatch.class);
         RebarBlock.register(SteamworkKeys.STEAM_OSCILLATOR, Material.COPPER_BLOCK, SteamOscillator.class);
         RebarBlock.register(SteamworkKeys.PNEUMATIC_GATE_VALVE, Material.STRUCTURE_VOID, PneumaticGateValve.class);
         RebarBlock.register(SteamworkKeys.STEAM_PRESSURE_TRANSDUCER, Material.BARREL, SteamPressureTransducer.class);
+        RebarBlock.register(SteamworkKeys.STEAM_DIFFERENCE_ENGINE, Material.BARREL, SteamDifferenceEngine.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_PRESSURE_MODULE, Material.BARREL, PneumaticPressureModule.class);
     }
 }

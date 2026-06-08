@@ -1,0 +1,14 @@
+# 气动管道模块：嵌在气动导管链中段的在线节点，三种模式作用于经过它的物品流。
+tick-interval: 1
+# 流量计：统计窗口长度（tick）。20 tick = 1 秒
+flow-window-ticks: 20
+# 流量计：对应红石 15 的满量程速率（物品/秒）
+flow-rate-full: 20.0
+# 限流阀：配额窗口长度（tick）
+throttle-window-ticks: 20
+# 限流阀：每个窗口允许通过的物品数（GUI 可调）
+default-throttle-limit: 10
+min-throttle-limit: 1
+max-throttle-limit: 256
+# 溢流报警：一次被拒后红石报警维持的衰减时长（tick）
+alarm-decay-ticks: 20

@@ -89,6 +89,11 @@ public final class SteamworkKeys {
     public static final NamespacedKey STEAM_OSCILLATOR = steamworkKey("steam_oscillator");
     public static final NamespacedKey PNEUMATIC_GATE_VALVE = steamworkKey("pneumatic_gate_valve");
     public static final NamespacedKey STEAM_PRESSURE_TRANSDUCER = steamworkKey("steam_pressure_transducer");
+    public static final NamespacedKey STEAM_DIFFERENCE_ENGINE = steamworkKey("steam_difference_engine");
+    public static final NamespacedKey PNEUMATIC_PRESSURE_MODULE = steamworkKey("pneumatic_pressure_module");
+    public static final NamespacedKey PNEUMATIC_DIFFERENTIAL_GATE = steamworkKey("pneumatic_differential_gate");
+    public static final NamespacedKey PNEUMATIC_PULSER = steamworkKey("pneumatic_pulser");
+    public static final NamespacedKey PNEUMATIC_LATCH = steamworkKey("pneumatic_latch");
 
     // Steam tools and weapons
     public static final NamespacedKey STEAM_SWORD = steamworkKey("steam_sword");

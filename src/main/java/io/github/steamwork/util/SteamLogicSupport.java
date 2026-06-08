@@ -1,8 +1,10 @@
 package io.github.steamwork.util;
 
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
+import io.github.pylonmc.rebar.util.RebarUtils;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.steamwork.SteamworkFluids;
 import net.kyori.adventure.text.Component;
@@ -106,6 +108,30 @@ public final class SteamLogicSupport {
 
     public static @NotNull Component faceComponent(@Nullable BlockFace face) {
         return Component.translatable("steamwork.gui.common.face." + faceName(face));
+    }
+
+    /** 水平朝向循环：NORTH → EAST → SOUTH → WEST → NORTH。 */
+    public static @NotNull BlockFace nextHorizontal(@NotNull BlockFace facing) {
+        return switch (facing) {
+            case NORTH -> BlockFace.EAST;
+            case EAST  -> BlockFace.SOUTH;
+            case SOUTH -> BlockFace.WEST;
+            default    -> BlockFace.NORTH;
+        };
+    }
+
+    /**
+     * 把以"正前 = NORTH"定义的标准面，按基准朝向 {@code facing} 旋转到世界坐标面。
+     * 与 {@code createFluidPoint(..., context, ...)} 的旋转规则一致（NORTH 为恒等）。
+     */
+    public static @NotNull BlockFace rotate(@NotNull BlockFace facing, @NotNull BlockFace canonical) {
+        return RebarUtils.rotateFaceToReference(facing, canonical);
+    }
+
+    /** 流体端点持有实体名（与 rebar {@code getFluidPointName} 规则一致）。 */
+    public static @NotNull String fluidPointName(@NotNull FluidPointType type, @NotNull BlockFace face) {
+        String prefix = type == FluidPointType.OUTPUT ? "fluid_point_output_" : "fluid_point_input_";
+        return prefix + face.name().toLowerCase(Locale.ROOT);
     }
 
     public static @Nullable BlockFace nextFace(@Nullable BlockFace current) {

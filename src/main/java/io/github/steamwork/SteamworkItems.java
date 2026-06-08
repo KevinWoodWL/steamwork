@@ -26,10 +26,15 @@ import io.github.steamwork.content.machines.SteamCanisterBench;
 import io.github.steamwork.content.machines.SteamChargingChamber;
 import io.github.steamwork.content.machines.SteamHeatingChamber;
 import io.github.steamwork.content.machines.SteamVortexTube;
+import io.github.steamwork.content.machines.PneumaticDifferentialGate;
+import io.github.steamwork.content.machines.PneumaticLatch;
 import io.github.steamwork.content.machines.PneumaticLogicGate;
+import io.github.steamwork.content.machines.PneumaticPulser;
 import io.github.steamwork.content.machines.SteamOscillator;
 import io.github.steamwork.content.machines.PneumaticGateValve;
 import io.github.steamwork.content.machines.SteamPressureTransducer;
+import io.github.steamwork.content.machines.SteamDifferenceEngine;
+import io.github.steamwork.content.machines.PneumaticPressureModule;
 import io.github.steamwork.content.machines.SteamPress;
 import io.github.steamwork.content.machines.SteamPressurizedFurnace;
 import io.github.steamwork.content.machines.SteamScienceInterface;
@@ -190,13 +195,21 @@ public final class SteamworkItems {
     public static final ItemStack STEAM_VORTEX_TUBE = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_VORTEX_TUBE)
             .set(DataComponentTypes.ITEM_MODEL, Material.COPPER_BULB.getKey())
             .build();
-    public static final ItemStack PNEUMATIC_LOGIC_GATE = ItemStackBuilder.rebar(Material.IRON_BLOCK, SteamworkKeys.PNEUMATIC_LOGIC_GATE)
+    public static final ItemStack PNEUMATIC_LOGIC_GATE = ItemStackBuilder.rebar(Material.WAXED_CUT_COPPER_SLAB, SteamworkKeys.PNEUMATIC_LOGIC_GATE)
+            .build();
+    public static final ItemStack PNEUMATIC_DIFFERENTIAL_GATE = ItemStackBuilder.rebar(Material.WAXED_CHISELED_COPPER, SteamworkKeys.PNEUMATIC_DIFFERENTIAL_GATE)
+            .build();
+    public static final ItemStack PNEUMATIC_PULSER = ItemStackBuilder.rebar(Material.WAXED_COPPER_BULB, SteamworkKeys.PNEUMATIC_PULSER)
+            .build();
+    public static final ItemStack PNEUMATIC_LATCH = ItemStackBuilder.rebar(Material.POLISHED_BLACKSTONE, SteamworkKeys.PNEUMATIC_LATCH)
             .build();
     public static final ItemStack STEAM_OSCILLATOR = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_OSCILLATOR).build();
     public static final ItemStack PNEUMATIC_GATE_VALVE = ItemStackBuilder.rebar(Material.STRUCTURE_VOID, SteamworkKeys.PNEUMATIC_GATE_VALVE)
             .set(DataComponentTypes.ITEM_MODEL, Material.GRAY_CONCRETE.getKey())
             .build();
     public static final ItemStack STEAM_PRESSURE_TRANSDUCER = ItemStackBuilder.rebar(Material.BARREL, SteamworkKeys.STEAM_PRESSURE_TRANSDUCER).build();
+    public static final ItemStack STEAM_DIFFERENCE_ENGINE = ItemStackBuilder.rebar(Material.BARREL, SteamworkKeys.STEAM_DIFFERENCE_ENGINE).build();
+    public static final ItemStack PNEUMATIC_PRESSURE_MODULE = ItemStackBuilder.rebar(Material.BARREL, SteamworkKeys.PNEUMATIC_PRESSURE_MODULE).build();
 
     // Alloy blocks
     public static final ItemStack INVAR_BLOCK = ItemStackBuilder.rebar(Material.IRON_BLOCK, SteamworkKeys.INVAR_BLOCK).build();
@@ -510,9 +523,14 @@ public final class SteamworkItems {
         RebarItem.register(RebarItem.class, DISTILLATION_CONDENSER, SteamworkKeys.DISTILLATION_CONDENSER);
         RebarItem.register(SteamVortexTube.Item.class, STEAM_VORTEX_TUBE, SteamworkKeys.STEAM_VORTEX_TUBE);
         RebarItem.register(PneumaticLogicGate.Item.class, PNEUMATIC_LOGIC_GATE, SteamworkKeys.PNEUMATIC_LOGIC_GATE);
+        RebarItem.register(PneumaticDifferentialGate.Item.class, PNEUMATIC_DIFFERENTIAL_GATE, SteamworkKeys.PNEUMATIC_DIFFERENTIAL_GATE);
+        RebarItem.register(PneumaticPulser.Item.class, PNEUMATIC_PULSER, SteamworkKeys.PNEUMATIC_PULSER);
+        RebarItem.register(PneumaticLatch.Item.class, PNEUMATIC_LATCH, SteamworkKeys.PNEUMATIC_LATCH);
         RebarItem.register(SteamOscillator.Item.class, STEAM_OSCILLATOR, SteamworkKeys.STEAM_OSCILLATOR);
         RebarItem.register(PneumaticGateValve.Item.class, PNEUMATIC_GATE_VALVE, SteamworkKeys.PNEUMATIC_GATE_VALVE);
         RebarItem.register(SteamPressureTransducer.Item.class, STEAM_PRESSURE_TRANSDUCER, SteamworkKeys.STEAM_PRESSURE_TRANSDUCER);
+        RebarItem.register(SteamDifferenceEngine.Item.class, STEAM_DIFFERENCE_ENGINE, SteamworkKeys.STEAM_DIFFERENCE_ENGINE);
+        RebarItem.register(PneumaticPressureModule.Item.class, PNEUMATIC_PRESSURE_MODULE, SteamworkKeys.PNEUMATIC_PRESSURE_MODULE);
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STERILIZER)
                 .addButton(new MachineRecipesButton(SteamSterilizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STEEPING_VAT)

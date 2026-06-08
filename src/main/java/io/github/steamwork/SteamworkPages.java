@@ -178,6 +178,7 @@ public final class SteamworkPages {
         STEAM_MACHINES.addItem(SteamworkItems.STEAM_HEATING_CHAMBER);
 
         ROOT.addPage(SteamworkItems.STEAM_SWORD, EQUIPMENT);
+        EQUIPMENT.addItem(SteamworkItems.STEAM_ASSEMBLY_BENCH);
         EQUIPMENT.addItem(SteamworkItems.STEAM_CANISTER_BENCH);
         EQUIPMENT.addItem(SteamworkItems.STEAM_CHARGING_CHAMBER);
         EQUIPMENT.addItem(SteamworkItems.STEAM_CANISTER_BRASS);
@@ -231,11 +232,10 @@ public final class SteamworkPages {
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_INPUT);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_OUTPUT);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_GATE_VALVE);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_PRESSURE_MODULE);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_DISTRIBUTOR);
 
         ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
-        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_ARM);
-        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_ASSEMBLY_BENCH);
         // ★ PRECISION_ADVANCED_AUTOMATION_1（学科门控）
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_PRECISION_MILL);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_FOUNDRY);
@@ -244,6 +244,7 @@ public final class SteamworkPages {
         STEAM_AUTOMATION.addItem(SteamworkItems.HYDRAULIC_FORGE);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_CRYSTALLIZER);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRECISION_CENTRIFUGE);
+        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_ARM);
         STEAM_AUTOMATION.addItem(SteamworkItems.MACHINE_CALIBRATOR);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_INLET);
         STEAM_AUTOMATION.addItem(SteamworkItems.PRODUCTION_LINE_BUFFER_CHEST);
@@ -252,8 +253,12 @@ public final class SteamworkPages {
         // 汽动逻辑（Stage 2）
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_VORTEX_TUBE);
         STEAM_AUTOMATION.addItem(SteamworkItems.PNEUMATIC_LOGIC_GATE);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PNEUMATIC_DIFFERENTIAL_GATE);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PNEUMATIC_PULSER);
+        STEAM_AUTOMATION.addItem(SteamworkItems.PNEUMATIC_LATCH);
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_OSCILLATOR);
         STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_PRESSURE_TRANSDUCER);
+        STEAM_AUTOMATION.addItem(SteamworkItems.STEAM_DIFFERENCE_ENGINE);
 
         ROOT.addPage(SteamworkItems.MACHINE_CALIBRATOR, STEAM_CALIBRATION);
         STEAM_CALIBRATION.addItem(SteamworkItems.MACHINE_CALIBRATOR);

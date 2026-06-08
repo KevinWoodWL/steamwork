@@ -793,7 +793,7 @@ item:
     lore: |-
       <arrow> 根据 3×3 模板自动合成原版工作台配方
       <arrow> 需要 3×1×3 多方块结构：主方块 + 四角青铜块
-      <arrow> 气动输入会填充材料缓存，气动输出会抽取成品
+      <arrow> 汽动输入会填充材料缓存，汽动输出会抽取成品
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
       <arrow> <attr>每次合成耗汽：</attr> %steam-per-craft%
     waila: "蒸汽装配台 | %structure% | 过热蒸汽 %steam-bar% | %state%"
@@ -914,7 +914,7 @@ item:
     name: "产线入口"
     lore: |-
       <arrow> 蒸汽产线的物料入口，内置 <white>7 格原料槽</white>和 <white>7 格燃料槽</white>
-      <arrow> 气动网络（ingredient/fuel INPUT 组）或玩家可直接放入物品
+      <arrow> 汽动网络（ingredient/fuel INPUT 组）或玩家可直接放入物品
       <arrow> 每 tick 推送原料；燃料支持轮询或单目标绑定模式
       <arrow> 兼容原版熔炉、高炉、烟熏炉作为产线中间机器
     waila_idle: "产线入口 | 未激活"
@@ -944,7 +944,7 @@ item:
     lore: |-
       <arrow> 蒸汽产线的成品出口，内置 9 格缓冲仓
       <arrow> 接收产线末台机器推来的成品
-      <arrow> 气动网络（OUTPUT 组）或玩家可从缓冲仓取走成品
+      <arrow> 汽动网络（OUTPUT 组）或玩家可从缓冲仓取走成品
     waila_idle: "产线出口 | 未激活"
     waila: "产线出口 #%number% | %state% | 制作人：%creator%"
 
@@ -985,7 +985,7 @@ item:
     lore: |-
       <arrow> 使用金属、助熔剂与过热蒸汽直接成型合金锭
       <arrow> 跳过粉末到烧炼流程，适合高阶合金产线
-      <arrow> 气动输入会填充材料缓存，气动输出会抽取成品锭
+      <arrow> 汽动输入会填充材料缓存，汽动输出会抽取成品锭
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
     waila: "精密铸造炉 | 过热蒸汽 %steam-bar% | %state%"
 
@@ -994,7 +994,7 @@ item:
     lore: |-
       <arrow> 消耗催化芯合成高级材料
       <arrow> 可产出钯合金锭、高分子聚合物等全新材料
-      <arrow> 气动输入会填充反应物，气动输出会抽取产物
+      <arrow> 汽动输入会填充反应物，汽动输出会抽取产物
       <arrow> <attr>过热蒸汽缓存：</attr> %steam-buffer%
     waila: "精密催化反应釜 | 过热蒸汽 %steam-bar% | %state%"
 
@@ -1178,7 +1178,7 @@ item:
     lore: |-
       <arrow> 用于多步骤产线的带数据半成品
       <arrow> 耐久条显示当前工序进度
-      <arrow> 可由气动自动化在匹配机器之间转运
+      <arrow> 可由汽动自动化在匹配机器之间转运
     tooltip:
       header: "<gray>蒸汽工坊 · 工序中间品"
       line: "<dark_gray>工序：<gold>%line%"
@@ -1257,11 +1257,34 @@ item:
   pneumatic_logic_gate:
     name: "汽动逻辑门"
     lore: |-
-      <arrow> 右键打开 GUI，分别指定 A 面、B 面（输入）和输出面，并选择门类型
-      <arrow> A/B 面需<white>贴着蒸汽机器</white>；蒸汽量 ≥ 阈值 = HIGH，低于 = LOW
-      <arrow> 信号阈值默认 1 mB，可在 GUI 中手动调节（1–1000 mB）
-      <arrow> 逻辑成立时，把 A/B 面的蒸汽<white>实际搬运</white>到输出面相邻机器
-      <arrow> NOT 模式：B 面有汽即截断 A→输出；三种蒸汽各自独立计算
+      <arrow> <white>正前输出</white>，<white>正后 + 左 + 右 = 输入</white>；蒸汽 ≥ 阈值 = HIGH
+      <arrow> GUI 选门类型（AND/OR/XOR/NOT）；阈值可调（1–1000 mB）
+      <arrow> 逻辑成立时蒸汽搬入自身缓存供给下游，可串联
+    waila: "汽动逻辑门 <dark_gray>|</dark_gray> %mode% <dark_gray>|</dark_gray> 过滤 %kind% <dark_gray>|</dark_gray> %state%"
+
+  pneumatic_differential_gate:
+    name: "汽动差压门"
+    lore: |-
+      <arrow> <white>正前输出</white>，<white>正后 = 源A</white>，<white>右侧 = 参考B</white>
+      <arrow> A − B ≥ 阈值时放行；防止回流浪费
+      <arrow> 三种蒸汽独立计算；阈值 GUI 可调
+    waila: "汽动差压门 <dark_gray>|</dark_gray> 阈值 %threshold% <dark_gray>|</dark_gray> 过滤 %kind% <dark_gray>|</dark_gray> %state%"
+
+  pneumatic_pulser:
+    name: "汽动脉冲器"
+    lore: |-
+      <arrow> <white>正后充汽</white>，<white>正前脉冲输出</white>
+      <arrow> 蓄能达阈值后释放脉冲；脉冲量 GUI 可调
+      <arrow> 顶部重复器显示蓄能进度
+    waila: "汽动脉冲器 <dark_gray>|</dark_gray> 蓄能 %charge%% <dark_gray>|</dark_gray> 过滤 %kind% <dark_gray>|</dark_gray> %state%"
+
+  pneumatic_latch:
+    name: "汽动锁存器"
+    lore: |-
+      <arrow> <white>正前输出</white>，<white>正后供汽</white>，<white>左SET</white>，<white>右RESET</white>
+      <arrow> SET 有汽→锁住持续供汽；RESET 有汽→解锁
+      <arrow> 无信号时维持上次状态；RESET 优先
+    waila: "汽动锁存器 <dark_gray>|</dark_gray> 过滤 %kind% <dark_gray>|</dark_gray> %state%"
 
   steam_oscillator:
     name: "蒸汽振荡器"
@@ -1290,6 +1313,26 @@ item:
       <arrow> 在传感器侧面放置<white>红石比较器</white>即可直接读出信号强度
       <arrow> 是蒸汽体系中唯一的真模拟量红石输出
     waila: "蒸汽压力传感器 | %fluid% %pressure-bar% | 红石 %level%"
+
+  steam_difference_engine:
+    name: "蒸汽差分机"
+    lore: |-
+      <arrow> 致敬巴贝奇差分机：可编程<white>最多 %order% 阶</white>差分寄存器
+      <arrow> 每个工作冲程消耗 <white>%steam%</white> 蒸汽，把各阶差分逐级累加，吐出序列下一项
+      <arrow> 一阶=等差斜坡，二阶=抛物线，三阶=三次曲线；所有寄存器模回绕，序列循环
+      <arrow> 输出三选一：<white>0–15 模拟红石</white> / <white>蒸汽脉冲量</white> / <white>分频脉冲间隔</white>
+      <arrow> 让产线节奏渐快渐慢、生成非线性供汽波形、或作分频器
+    waila: "蒸汽差分机 | %mode% | 序列值 %value% | %state%"
+
+  pneumatic_pressure_module:
+    name: "汽动管道模块"
+    lore: |-
+      <arrow> 嵌入<white>汽动导管</white>链中段，借鉴 PneumaticCraft 管道模块
+      <arrow> 在 GUI 中三选一：<white>流量计</white> / <white>限流阀</white> / <white>溢流报警</white>
+      <arrow> 流量计：统计过站物品速率 → <white>0–15 模拟红石</white>（侧面接比较器）
+      <arrow> 限流阀：限制每窗口通过的物品数，超额自动断开网络
+      <arrow> 溢流报警：下游满载导致传输被拒时输出红石报警
+    waila: "汽动管道模块 | %mode% | %detail%"
 
   # 蒸馏副产物与中间产物
   refined_resin:
@@ -1409,9 +1452,12 @@ gui:
     left_click_cycle: "<dark_gray>左键循环选择"
     left_click_cycle_steam: "<dark_gray>左键切换普通 / 过热 / 加压"
     left_click_cycle_right_clear: "<dark_gray>左键循环 / 右键清除"
+    orientation: "<aqua>朝向"
+    orientation_hint: "<dark_gray>左键旋转朝向（顺时针，红色输出面随之转向）"
     signal: "<gray>信号：%value%"
     pressure: "<gray>压力：<aqua>%amount% <gray>/ <aqua>%capacity%"
     steam_kind:
+      all: "<gray>全部"
       steam: "普通蒸汽"
       superheated: "过热蒸汽"
       pressurized: "加压蒸汽"
@@ -1921,23 +1967,51 @@ gui:
     threshold_value: "<gray>当前：<aqua>%value% <gray>mB"
     threshold_desc: "<gray>相邻蒸汽量 ≥ 此值才算 HIGH"
     threshold_hint: "<dark_gray>左键 +1 | 右键 -1 | Shift ×10"
-    input_a: "<gold>输入 A：%face%"
-    input_a_not: "<gold>主进汽 A：%face%"
-    input_b: "<gold>输入 B：%face%"
-    control_b: "<gold>控制 B：%face%"
-    output_hint: "<gray>逻辑成立时把蒸汽搬到此面"
+    layout_hint: "<dark_gray>正前输出 · 正后/左/右输入（未连接自动忽略）"
     all_steam_kinds: "<dark_gray>作用于普通/过热/加压三种蒸汽"
+    steam_filter: "<aqua>蒸汽过滤"
+    steam_filter_hint: "<dark_gray>左键循环：全部 / 普通 / 过热 / 加压"
     mode:
       and: "与 (AND)"
       or: "或 (OR)"
       xor: "异或 (XOR)"
       not: "非 / 抑制 (NOT)"
-    signal:
-      high: "<green>HIGH"
-      low: "<gray>LOW"
     state:
       passing: "<green>放行中"
       blocked: "<gray>截断"
+
+  pneumatic_differential_gate:
+    title: "<dark_gray>汽动差压门"
+    waila: "汽动差压门 | 阈值 %threshold% mB | %state%"
+    threshold: "<yellow>差压阈值"
+    threshold_desc: "<gray>A（后面）−B（右侧）≥ 此值才放行"
+    threshold_hint: "<dark_gray>左键 +10 | 右键 -10 | Shift ×10"
+    layout_hint: "<dark_gray>正后→源A · 右侧→参考B · 正前→输出"
+
+  pneumatic_pulser:
+    title: "<dark_gray>汽动脉冲器"
+    waila: "汽动脉冲器 | 蓄能 %charge%% | %state%"
+    charge_threshold: "<yellow>蓄能阈值"
+    charge_current: "<gray>当前进度：<aqua>%pct%%%"
+    charge_value: "<gray>阈值：<aqua>%value% <gray>mB"
+    charge_hint: "<dark_gray>左键 +10 | 右键 -10 | Shift ×100"
+    discharge_amount: "<yellow>脉冲释放量"
+    discharge_value: "<gray>每次释放：<aqua>%value% <gray>mB"
+    discharge_hint: "<dark_gray>左键 +10 | 右键 -10 | Shift ×100"
+    layout_hint: "<dark_gray>正后→充汽 · 正前→脉冲输出"
+    state:
+      charging: "<yellow>蓄能中"
+      pulsing: "<green>脉冲放行"
+
+  pneumatic_latch:
+    title: "<dark_gray>汽动锁存器"
+    waila: "汽动锁存器 | %state%"
+    threshold: "<yellow>触发阈值"
+    threshold_desc: "<gray>SET/RESET 面蒸汽量 ≥ 此值才算触发"
+    layout_hint: "<dark_gray>正后→供汽 · 左→SET · 右→RESET · 正前→输出"
+    state:
+      latched: "<green>已锁住（供汽中）"
+      unlatched: "<gray>已解锁"
 
   steam_oscillator:
     title: "<dark_gray>蒸汽振荡器"
@@ -1957,6 +2031,66 @@ gui:
     signal_item: "<aqua>压力传感器比较器占位物"
     comparator_output: "<red>比较器输出：%level%"
     inventory_repairs: "<dark_gray>桶内占位物会自动修正"
+
+  steam_difference_engine:
+    title: "<dark_gray>蒸汽差分机"
+    signal_item: "<aqua>差分机比较器占位物"
+    output_mode: "<gray>输出模式"
+    mode:
+      redstone: "<red>模拟红石"
+      steam_pulse: "<#18c0d8>蒸汽脉冲量"
+      frequency: "<#ffd166>分频脉冲"
+    mode_desc:
+      redstone: "<dark_gray>序列值归一化为 0–15，写入底层桶供比较器读取"
+      steam_pulse: "<dark_gray>每冲程向输出面推送「序列值」mB 蒸汽"
+      frequency: "<dark_gray>每隔「序列值」tick 发一次红石脉冲"
+    face_only_pulse: "<dark_gray>仅蒸汽脉冲模式使用此面"
+    order: "<gray>差分阶数：<reset>%order%"
+    order_desc: "<dark_gray>1=斜坡 2=抛物线 3=三次（上限 %max%）"
+    ceiling: "<gray>回绕上限：<reset>%ceiling%"
+    ceiling_desc: "<dark_gray>所有寄存器模此值循环；设 16 则序列值正好对应红石 0–15"
+    adjust_hint: "<dark_gray>左键 +1 / 右键 -1 / Shift 加大步长"
+    reset: "<yellow>复位寄存器"
+    reset_desc: "<dark_gray>把运行态恢复到当前初始配置"
+    running_on: "<green>运行中（点击暂停）"
+    running_off: "<gray>已暂停（点击启动）"
+    running_hint: "<dark_gray>暂停时保留当前序列进度"
+    reg_v: "<gray>初始项 v0：<reset>%value%"
+    reg_d1: "<gray>一阶差分 d1：<reset>%value%"
+    reg_d2: "<gray>二阶差分 d2：<reset>%value%"
+    reg_d3: "<gray>三阶差分 d3：<reset>%value%"
+    reg_active: "<dark_gray>当前阶数下参与递推"
+    reg_inactive: "<dark_gray>当前阶数下不生效（提高阶数以启用）"
+    cur_value: "<gray>当前序列值：<reset>%value%"
+    cur_level: "<gray>红石等级：<reset>%level%"
+    state:
+      running: "运行中"
+      stopped: "已暂停"
+      starved: "蒸汽不足"
+
+  pneumatic_pressure_module:
+    title: "<dark_gray>汽动管道模块"
+    signal_item: "<aqua>汽动模块比较器占位物"
+    mode_title: "<gray>工作模式"
+    mode:
+      flow_meter: "<#4caf50>流量计"
+      throttle: "<#ffd166>限流阀"
+      overflow_alarm: "<#ff5555>溢流报警"
+    mode_desc:
+      flow_meter: "<dark_gray>统计过站物品速率，映射为 0–15 模拟红石"
+      throttle: "<dark_gray>限制每窗口通过的物品数，超额则断开网络"
+      overflow_alarm: "<dark_gray>下游满载传输被拒时输出红石报警"
+    throttle_limit: "<gray>限流上限：<reset>%limit% <gray>个 / %window% tick"
+    throttle_desc: "<dark_gray>本窗口通过达上限后暂时断开，下个窗口恢复"
+    adjust_hint: "<dark_gray>左键 +1 / 右键 -1 / Shift 加大步长"
+    param_readonly: "<gray>本模式无可调参数"
+    redstone_level: "<gray>红石等级：<reset>%level%"
+    total_passed: "<gray>累计通过：<reset>%total% 个"
+    detail:
+      flow: "<#4caf50>流量 %rate%/s · 红石 %level%"
+      throttle: "<#ffd166>限流 %used%/%limit%"
+      alarm_on: "<#ff5555>报警：下游溢流"
+      alarm_off: "<gray>报警待命"
 
   steam_compressor:
     title: "<dark_gray>蒸汽加压机"
@@ -2321,6 +2455,7 @@ research:
   # Tier 1 - 早期机械与合金
   material_basic_machines: "蒸汽基础机器"
   # Tier 2 - 中期加工
+  precision_steam_assembly: "精密蒸汽装配"
   precision_steam_calibration: "蒸汽调校系统"
   precision_steam_automation: "蒸汽自动化"
   precision_production_line: "蒸汽自动化产线"
@@ -2394,12 +2529,34 @@ message:
     analysis_research_bonus: "<gray>分析研究奖励：获得 <yellow>+%points%</yellow> 全局研究点数"
     discipline_unlock_bonus: "<yellow>学科研究奖励：额外获得 <white>%points%</white> 全局研究点数"
   steam_set:
+    skill_cooldown: "<gray>套装技能冷却：%seconds%"
     dash: "<aqua>⚡ 蒸汽冲刺！"
     fire_nova: "<gold>🔥 熔炉吐息！"
     barrier_activate: "<aqua>🛡 蒸汽护盾已激活（5 秒）"
     barrier_absorb: "<aqua>🛡 护盾吸收了 %absorbed% 伤害"
     barrier_broken: "<gray>🛡 护盾蒸汽耗尽，护盾破碎！"
     quake: "<white>💥 蒸汽地震！"
+  steam_flight:
+    mode_changed: "<gold>飞行模式：<reset>%mode%"
+    landed: "<gold>落地 · 飞行模式：<reset>%mode%"
+    hover_depleted: "<red>蒸汽耗尽，悬浮飞行中断"
+    ignition: "<gray>喷气点火：<gold>%seconds%"
+    thrust: "<gray>喷气推进：<aqua>%percent%"
+    mode:
+      jetpack: "喷气推进"
+      hover: "悬浮自由飞行"
+      hover_unavailable: "悬浮飞行（需在喷气推进飞行中切换，点火阶段无效）"
+      "off": "关闭"
+  steam_charging_chamber:
+    item_count: "  [%count% 件]"
+  steam_charge:
+    canister_label: "罐体 "
+    steam_label: "蒸汽 "
+    bar_label: "蒸汽条 "
+    socket:
+      brass: "黄铜"
+      invar: "因瓦"
+      tungsten: "钨"
   steam_canister_bench:
     installed: "<green>已安装 <aqua>%canister%</aqua>，装备已激活"
     removed: "<yellow>已拆卸蒸汽罐，装备回到未激活状态"

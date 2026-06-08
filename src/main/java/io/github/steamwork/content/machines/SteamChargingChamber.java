@@ -319,7 +319,9 @@ public class SteamChargingChamber extends RebarBlock implements
                 .append(Component.text((int) totalCapacity + " mB", NamedTextColor.AQUA))
                 .append(Component.text("  +", NamedTextColor.GRAY))
                 .append(Component.text((int) added + " mB", NamedTextColor.GREEN))
-                .append(Component.text("  [" + itemCount + " 件]", NamedTextColor.GRAY));
+                .append(Component.translatable("steamwork.message.steam_charging_chamber.item_count",
+                        RebarArgument.of("count", itemCount))
+                        .color(NamedTextColor.GRAY));
 
         // ActionBar 显示充汽状态；原生自带约 3s 淡出，每 tick（500ms）刷新一次不会闪烁
         player.sendActionBar(subtitle);

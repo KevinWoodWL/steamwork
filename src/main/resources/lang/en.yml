@@ -1252,11 +1252,34 @@ item:
   pneumatic_logic_gate:
     name: "Pneumatic Logic Gate"
     lore: |-
-      <arrow> Right-click to open GUI — assign faces A, B (inputs) and output, then pick a gate type
-      <arrow> A/B faces must be adjacent to steam machines; steam ≥ threshold = HIGH, below = LOW
-      <arrow> Signal threshold defaults to 1 mB, adjustable in GUI (1–1000 mB)
-      <arrow> When logic passes, steam is physically moved from A/B into the output-face machine
-      <arrow> NOT mode: B face powered blocks A→output; all three steam tiers evaluated independently
+      <arrow> <white>Front = output</white>, <white>back + left + right = inputs</white>; steam ≥ threshold = HIGH
+      <arrow> GUI to pick gate type (AND/OR/XOR/NOT); threshold adjustable (1–1000 mB)
+      <arrow> When logic passes, steam moves into buffer and supplies downstream; chainable
+    waila: "Pneumatic Logic Gate <dark_gray>|</dark_gray> %mode% <dark_gray>|</dark_gray> Filter %kind% <dark_gray>|</dark_gray> %state%"
+
+  pneumatic_differential_gate:
+    name: "Pneumatic Differential Gate"
+    lore: |-
+      <arrow> <white>Front = output</white>, <white>back = source A</white>, <white>right = reference B</white>
+      <arrow> Passes steam when A − B ≥ threshold; prevents backfeed
+      <arrow> All three steam tiers independent; threshold adjustable in GUI
+    waila: "Pneumatic Differential Gate <dark_gray>|</dark_gray> Threshold %threshold% <dark_gray>|</dark_gray> Filter %kind% <dark_gray>|</dark_gray> %state%"
+
+  pneumatic_pulser:
+    name: "Pneumatic Pulser"
+    lore: |-
+      <arrow> <white>Back = charging input</white>, <white>front = pulse output</white>
+      <arrow> Releases pulse when charge reaches threshold; amount adjustable in GUI
+      <arrow> Repeater on top shows charge progress
+    waila: "Pneumatic Pulser <dark_gray>|</dark_gray> Charge %charge%% <dark_gray>|</dark_gray> Filter %kind% <dark_gray>|</dark_gray> %state%"
+
+  pneumatic_latch:
+    name: "Pneumatic Latch"
+    lore: |-
+      <arrow> <white>Front = output</white>, <white>back = supply</white>, <white>left = SET</white>, <white>right = RESET</white>
+      <arrow> SET has steam → latched (supply flows); RESET has steam → unlatched
+      <arrow> Retains last state when idle; RESET takes priority
+    waila: "Pneumatic Latch <dark_gray>|</dark_gray> Filter %kind% <dark_gray>|</dark_gray> %state%"
 
   steam_oscillator:
     name: "Steam Oscillator"
@@ -1285,6 +1308,26 @@ item:
       <arrow> Place a <white>comparator</white> against the transducer to read the signal directly
       <arrow> The only true analog redstone output in the steam system
     waila: "Steam Pressure Transducer | %fluid% %pressure-bar% | Redstone %level%"
+
+  steam_difference_engine:
+    name: "Steam Difference Engine"
+    lore: |-
+      <arrow> A tribute to Babbage's Difference Engine: a programmable <white>up to order-%order%</white> difference register
+      <arrow> Each work stroke consumes <white>%steam%</white> steam, cascading the differences to emit the next term
+      <arrow> Order 1 = linear ramp, 2 = parabola, 3 = cubic; all registers wrap modularly, so the sequence loops
+      <arrow> Pick one output: <white>0–15 analog redstone</white> / <white>steam pulse amount</white> / <white>frequency-divided pulses</white>
+      <arrow> Ramp production cadence up or down, shape nonlinear steam waveforms, or act as a clock divider
+    waila: "Steam Difference Engine | %mode% | Value %value% | %state%"
+
+  pneumatic_pressure_module:
+    name: "Pneumatic Pressure Module"
+    lore: |-
+      <arrow> Slots inline in a <white>pneumatic duct</white> chain, inspired by PneumaticCraft tube modules
+      <arrow> Pick one of three modes in the GUI: <white>Flow Meter</white> / <white>Throttle</white> / <white>Overflow Alarm</white>
+      <arrow> Flow Meter: measures item throughput → <white>0–15 analog redstone</white> (comparator on its side)
+      <arrow> Throttle: caps items passing per window; disconnects the network when exceeded
+      <arrow> Overflow Alarm: emits a redstone alert when transfers are rejected by a full downstream
+    waila: "Pneumatic Pressure Module | %mode% | %detail%"
 
   # Distillation byproducts and intermediates
   refined_resin:
@@ -1404,9 +1447,12 @@ gui:
     left_click_cycle: "<dark_gray>LMB to cycle"
     left_click_cycle_steam: "<dark_gray>LMB to switch regular / superheated / pressurized"
     left_click_cycle_right_clear: "<dark_gray>LMB cycle / RMB clear"
+    orientation: "<aqua>Orientation"
+    orientation_hint: "<dark_gray>LMB to rotate clockwise (red output face turns with it)"
     signal: "<gray>Signal: %value%"
     pressure: "<gray>Pressure: <aqua>%amount% <gray>/ <aqua>%capacity%"
     steam_kind:
+      all: "<gray>All"
       steam: "Regular Steam"
       superheated: "Superheated Steam"
       pressurized: "Pressurized Steam"
@@ -1915,23 +1961,51 @@ gui:
     threshold_value: "<gray>Current: <aqua>%value% <gray>mB"
     threshold_desc: "<gray>Adjacent steam ≥ this value counts as HIGH"
     threshold_hint: "<dark_gray>LMB +1 | RMB -1 | Shift ×10"
-    input_a: "<gold>Input A: %face%"
-    input_a_not: "<gold>Main Input A: %face%"
-    input_b: "<gold>Input B: %face%"
-    control_b: "<gold>Control B: %face%"
-    output_hint: "<gray>Steam is routed here when logic passes"
+    layout_hint: "<dark_gray>Front outputs · back/left/right input (unconnected ignored)"
     all_steam_kinds: "<dark_gray>Acts on all three steam tiers independently"
+    steam_filter: "<aqua>Steam Filter"
+    steam_filter_hint: "<dark_gray>LMB to cycle: All / Regular / Superheated / Pressurized"
     mode:
       and: "AND"
       or: "OR"
       xor: "XOR"
       not: "NOT / Inhibit"
-    signal:
-      high: "<green>HIGH"
-      low: "<gray>LOW"
     state:
       passing: "<green>Passing"
       blocked: "<gray>Blocked"
+
+  pneumatic_differential_gate:
+    title: "<dark_gray>Differential Gate"
+    waila: "Differential Gate | Threshold %threshold% mB | %state%"
+    threshold: "<yellow>Pressure Difference Threshold"
+    threshold_desc: "<gray>A (back) − B (right) ≥ this value to open"
+    threshold_hint: "<dark_gray>Left +10 | Right -10 | Shift ×10"
+    layout_hint: "<dark_gray>Back→Source A · Right→Ref B · Front→Output"
+
+  pneumatic_pulser:
+    title: "<dark_gray>Steam Pulser"
+    waila: "Steam Pulser | Charge %charge%% | %state%"
+    charge_threshold: "<yellow>Charge Threshold"
+    charge_current: "<gray>Current: <aqua>%pct%%%"
+    charge_value: "<gray>Threshold: <aqua>%value% <gray>mB"
+    charge_hint: "<dark_gray>Left +10 | Right -10 | Shift ×100"
+    discharge_amount: "<yellow>Pulse Release Amount"
+    discharge_value: "<gray>Per pulse: <aqua>%value% <gray>mB"
+    discharge_hint: "<dark_gray>Left +10 | Right -10 | Shift ×100"
+    layout_hint: "<dark_gray>Back→Charge In · Front→Pulse Out"
+    state:
+      charging: "<yellow>Charging"
+      pulsing: "<green>Pulsing"
+
+  pneumatic_latch:
+    title: "<dark_gray>Steam Latch"
+    waila: "Steam Latch | %state%"
+    threshold: "<yellow>Trigger Threshold"
+    threshold_desc: "<gray>SET/RESET face steam ≥ this value to trigger"
+    layout_hint: "<dark_gray>Back→Supply · Left→SET · Right→RESET · Front→Out"
+    state:
+      latched: "<green>Latched (supplying)"
+      unlatched: "<gray>Unlatched"
 
   steam_oscillator:
     title: "<dark_gray>Steam Oscillator"
@@ -1951,6 +2025,66 @@ gui:
     signal_item: "<aqua>Pressure Transducer Comparator Filler"
     comparator_output: "<red>Comparator Output: %level%"
     inventory_repairs: "<dark_gray>Barrel filler is repaired every tick"
+
+  steam_difference_engine:
+    title: "<dark_gray>Steam Difference Engine"
+    signal_item: "<aqua>Difference Engine Comparator Filler"
+    output_mode: "<gray>Output Mode"
+    mode:
+      redstone: "<red>Analog Redstone"
+      steam_pulse: "<#18c0d8>Steam Pulse"
+      frequency: "<#ffd166>Frequency Divider"
+    mode_desc:
+      redstone: "<dark_gray>Normalizes the value to 0–15 into the barrel for a comparator"
+      steam_pulse: "<dark_gray>Pushes 'value' mB of steam to the output face each stroke"
+      frequency: "<dark_gray>Emits a redstone pulse every 'value' ticks"
+    face_only_pulse: "<dark_gray>Only used in Steam Pulse mode"
+    order: "<gray>Difference Order: <reset>%order%"
+    order_desc: "<dark_gray>1=ramp 2=parabola 3=cubic (max %max%)"
+    ceiling: "<gray>Wrap Ceiling: <reset>%ceiling%"
+    ceiling_desc: "<dark_gray>All registers loop modulo this; set 16 so values map to redstone 0–15"
+    adjust_hint: "<dark_gray>Left +1 / Right -1 / Shift for bigger steps"
+    reset: "<yellow>Reset Registers"
+    reset_desc: "<dark_gray>Restore the running state to the current initial config"
+    running_on: "<green>Running (click to pause)"
+    running_off: "<gray>Paused (click to start)"
+    running_hint: "<dark_gray>Sequence progress is kept while paused"
+    reg_v: "<gray>Initial v0: <reset>%value%"
+    reg_d1: "<gray>1st difference d1: <reset>%value%"
+    reg_d2: "<gray>2nd difference d2: <reset>%value%"
+    reg_d3: "<gray>3rd difference d3: <reset>%value%"
+    reg_active: "<dark_gray>Active at the current order"
+    reg_inactive: "<dark_gray>Inactive at the current order (raise order to enable)"
+    cur_value: "<gray>Current Value: <reset>%value%"
+    cur_level: "<gray>Redstone Level: <reset>%level%"
+    state:
+      running: "Running"
+      stopped: "Paused"
+      starved: "Steam Starved"
+
+  pneumatic_pressure_module:
+    title: "<dark_gray>Pneumatic Pressure Module"
+    signal_item: "<aqua>Pressure Module Comparator Filler"
+    mode_title: "<gray>Mode"
+    mode:
+      flow_meter: "<#4caf50>Flow Meter"
+      throttle: "<#ffd166>Throttle"
+      overflow_alarm: "<#ff5555>Overflow Alarm"
+    mode_desc:
+      flow_meter: "<dark_gray>Measures item throughput, mapped to 0–15 analog redstone"
+      throttle: "<dark_gray>Caps items per window; disconnects the network when exceeded"
+      overflow_alarm: "<dark_gray>Emits redstone when transfers are rejected by a full downstream"
+    throttle_limit: "<gray>Throttle Limit: <reset>%limit% <gray>items / %window% ticks"
+    throttle_desc: "<dark_gray>Disconnects once the window limit is hit; resets next window"
+    adjust_hint: "<dark_gray>Left +1 / Right -1 / Shift for bigger steps"
+    param_readonly: "<gray>No adjustable parameter in this mode"
+    redstone_level: "<gray>Redstone Level: <reset>%level%"
+    total_passed: "<gray>Total Passed: <reset>%total%"
+    detail:
+      flow: "<#4caf50>Flow %rate%/s · Redstone %level%"
+      throttle: "<#ffd166>Throttle %used%/%limit%"
+      alarm_on: "<#ff5555>Alarm: Downstream Overflow"
+      alarm_off: "<gray>Alarm Standby"
 
   steam_compressor:
     title: "<dark_gray>Steam Compressor"
@@ -2314,6 +2448,7 @@ research:
   material_basic_construction: "Basic Construction"
   # Tier 1 - early machinery & alloys
   material_basic_machines: "Basic Steam Machines"
+  precision_steam_assembly: "Precision Steam Assembly"
   precision_steam_calibration: "Steam Calibration System"
   # Tier 2 - mid-tier processing
   precision_steam_automation: "Steam Automation"
@@ -2387,12 +2522,34 @@ message:
     analysis_research_bonus: "<gray>Analysis bonus: gained <yellow>+%points%</yellow> global research points"
     discipline_unlock_bonus: "<yellow>Research bonus: gained <white>%points%</white> global research points"
   steam_set:
+    skill_cooldown: "<gray>Set skill cooldown: %seconds%"
     dash: "<aqua>�?Steam Dash!"
     fire_nova: "<gold>🔥 Furnace Breath!"
     barrier_activate: "<aqua>🛡 Steam Barrier active (5s)"
     barrier_absorb: "<aqua>🛡 Barrier absorbed %absorbed% damage"
     barrier_broken: "<gray>🛡 Barrier steam depleted, shield broken!"
     quake: "<white>💥 Steam Quake!"
+  steam_flight:
+    mode_changed: "<gold>Flight Mode: <reset>%mode%"
+    landed: "<gold>Landed · Flight Mode: <reset>%mode%"
+    hover_depleted: "<red>Steam depleted; hover flight interrupted"
+    ignition: "<gray>Jet ignition: <gold>%seconds%"
+    thrust: "<gray>Jet thrust: <aqua>%percent%"
+    mode:
+      jetpack: "Jetpack"
+      hover: "Hover Free Flight"
+      hover_unavailable: "Hover Flight (switch while jetpack flying; disabled during ignition)"
+      "off": "Off"
+  steam_charging_chamber:
+    item_count: "  [%count% items]"
+  steam_charge:
+    canister_label: "Canister "
+    steam_label: "Steam "
+    bar_label: "Bar "
+    socket:
+      brass: "Brass"
+      invar: "Invar"
+      tungsten: "Tungsten"
   steam_canister_bench:
     installed: "<green>Installed <aqua>%canister%</aqua>; equipment activated"
     removed: "<yellow>Canister removed; equipment is now inactive"

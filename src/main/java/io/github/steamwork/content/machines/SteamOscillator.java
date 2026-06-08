@@ -3,12 +3,12 @@ package io.github.steamwork.content.machines;
 import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidTankRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
-import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
@@ -16,6 +16,7 @@ import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
+import io.github.steamwork.util.PneumaticEndpointSupport;
 import io.github.steamwork.util.SteamLogicSupport;
 import io.github.steamwork.util.SteamLogicSupport.SteamKind;
 import net.kyori.adventure.text.Component;
@@ -65,6 +66,7 @@ public class SteamOscillator extends RebarBlock implements
     }
 
     private static final String KEY_KIND = "osc_kind";
+    private static final String KEY_INPUT  = "osc_input";
     private static final String KEY_OUTPUT = "osc_output";
     private static final String KEY_STATE = "osc_state";
     private static final String KEY_BURST_LEFT = "osc_burst_left";
@@ -75,17 +77,20 @@ public class SteamOscillator extends RebarBlock implements
     private final double lowerThreshold = getSettings().getOrThrow("lower-threshold", ConfigAdapter.DOUBLE);
     private final int burstTicks = getSettings().getOrThrow("burst-ticks", ConfigAdapter.INTEGER);
     private final double burstTransferPerTick = getSettings().getOrThrow("burst-transfer-per-tick", ConfigAdapter.DOUBLE);
+    private final double chargeRate = getSettings().get("charge-rate", ConfigAdapter.DOUBLE, 100.0);
 
     private SteamKind steamKind = SteamKind.STEAM;
+    private BlockFace inputFace  = BlockFace.NORTH;
     private BlockFace outputFace = BlockFace.SOUTH;
     private CycleState state = CycleState.CHARGING;
     private int burstTicksLeft = 0;
     private boolean lastActive = false;
     private boolean outputBlocked = false;
 
-    private final SteamKindItem steamKindItem = new SteamKindItem();
+    private final SteamKindItem  steamKindItem  = new SteamKindItem();
+    private final InputFaceItem  inputFaceItem  = new InputFaceItem();
     private final OutputFaceItem outputFaceItem = new OutputFaceItem();
-    private final StatusItem statusItem = new StatusItem();
+    private final StatusItem     statusItem     = new StatusItem();
 
     public static class Item extends RebarItem {
         private final double upperThreshold = getSettings().getOrThrow("upper-threshold", ConfigAdapter.DOUBLE);
@@ -108,7 +113,7 @@ public class SteamOscillator extends RebarBlock implements
     public SteamOscillator(@NotNull Block block, @NotNull BlockCreateContext context) {
         super(block, context);
         setTickInterval(tickInterval);
-        createFluidPoint(FluidPointType.INPUT, BlockFace.NORTH, context, false);
+        // 不走导管网络，所有缓存均为 input=false/output=false，靠 tick 主动抽/推
         createBuffers();
     }
 
@@ -116,7 +121,8 @@ public class SteamOscillator extends RebarBlock implements
     public SteamOscillator(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
         super(block, pdc);
         setTickInterval(tickInterval);
-        steamKind = SteamKind.fromOrdinal(pdc.getOrDefault(steamworkKey(KEY_KIND), PersistentDataType.INTEGER, 0));
+        steamKind  = SteamKind.fromOrdinal(pdc.getOrDefault(steamworkKey(KEY_KIND), PersistentDataType.INTEGER, 0));
+        inputFace  = SteamLogicSupport.loadFace(pdc, steamworkKey(KEY_INPUT),  BlockFace.NORTH);
         outputFace = SteamLogicSupport.loadFace(pdc, steamworkKey(KEY_OUTPUT), BlockFace.SOUTH);
         int stateOrdinal = pdc.getOrDefault(steamworkKey(KEY_STATE), PersistentDataType.INTEGER, 0);
         state = stateOrdinal == CycleState.BURSTING.ordinal() ? CycleState.BURSTING : CycleState.CHARGING;
@@ -124,16 +130,18 @@ public class SteamOscillator extends RebarBlock implements
     }
 
     private void createBuffers() {
-        createFluidBuffer(SteamworkFluids.STEAM, buffer, true, false);
-        createFluidBuffer(SteamworkFluids.SUPERHEATED_STEAM, buffer, true, false);
-        createFluidBuffer(SteamworkFluids.PRESSURIZED_STEAM, buffer, true, false);
+        // input=false, output=false：不参与导管网络，仅供内部积攒使用
+        createFluidBuffer(SteamworkFluids.STEAM,            buffer, false, false);
+        createFluidBuffer(SteamworkFluids.SUPERHEATED_STEAM, buffer, false, false);
+        createFluidBuffer(SteamworkFluids.PRESSURIZED_STEAM, buffer, false, false);
     }
 
     @Override
     public void write(@NotNull PersistentDataContainer pdc) {
-        pdc.set(steamworkKey(KEY_KIND), PersistentDataType.INTEGER, steamKind.ordinal());
-        pdc.set(steamworkKey(KEY_OUTPUT), PersistentDataType.STRING, outputFace.name());
-        pdc.set(steamworkKey(KEY_STATE), PersistentDataType.INTEGER, state.ordinal());
+        pdc.set(steamworkKey(KEY_KIND),       PersistentDataType.INTEGER, steamKind.ordinal());
+        pdc.set(steamworkKey(KEY_INPUT),      PersistentDataType.STRING,  inputFace.name());
+        pdc.set(steamworkKey(KEY_OUTPUT),     PersistentDataType.STRING,  outputFace.name());
+        pdc.set(steamworkKey(KEY_STATE),      PersistentDataType.INTEGER, state.ordinal());
         pdc.set(steamworkKey(KEY_BURST_LEFT), PersistentDataType.INTEGER, burstTicksLeft);
     }
 
@@ -145,6 +153,9 @@ public class SteamOscillator extends RebarBlock implements
     @Override
     public void tick() {
         outputBlocked = false;
+
+        // 主动从输入面机器抽取选定蒸汽（不走导管网络）
+        pullFromInput();
 
         double amount = fluidAmount(steamKind.fluid());
         boolean active = false;
@@ -174,14 +185,54 @@ public class SteamOscillator extends RebarBlock implements
         notifyGuiItems();
     }
 
+    /**
+     * 从输入面相邻机器直接抽取选定蒸汽，不走导管网络。
+     * 兼容两类流体接口：
+     *   - {@link FluidBufferRebarBlock}（蒸汽工坊机器、大多数 rebar 机器）
+     *   - {@link FluidTankRebarBlock}（Pylon 储罐 / 便携储罐）
+     */
+    private void pullFromInput() {
+        if (state != CycleState.CHARGING) return;
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(getBlock().getRelative(inputFace));
+        double space = fluidSpaceRemaining(steamKind.fluid());
+        if (rb instanceof FluidBufferRebarBlock fb) {
+            if (!fb.hasFluid(steamKind.fluid())) return;
+            double amt = Math.min(chargeRate, Math.min(fb.fluidAmount(steamKind.fluid()), space));
+            if (amt <= 0) return;
+            fb.removeFluid(steamKind.fluid(), amt);
+            addFluid(steamKind.fluid(), amt);
+        } else if (rb instanceof FluidTankRebarBlock tank) {
+            if (tank.getFluidType() != steamKind.fluid()) return;
+            double amt = Math.min(chargeRate, Math.min(tank.getFluidAmount(), space));
+            if (amt <= 0) return;
+            tank.removeFluid(amt);
+            addFluid(steamKind.fluid(), amt);
+        }
+    }
+
+    /**
+     * 向输出面相邻机器推送蒸汽，兼容 {@link FluidBufferRebarBlock} 和 {@link FluidTankRebarBlock}。
+     */
     private double pushToOutput() {
-        var dst = SteamLogicSupport.fluidNeighbor(getBlock(), outputFace);
-        if (dst == null || !dst.hasFluid(steamKind.fluid())) return 0.0;
-        double amount = Math.min(burstTransferPerTick, Math.min(fluidAmount(steamKind.fluid()), dst.fluidSpaceRemaining(steamKind.fluid())));
-        if (amount <= 0.0) return 0.0;
-        removeFluid(steamKind.fluid(), amount);
-        dst.addFluid(steamKind.fluid(), amount);
-        return amount;
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(getBlock().getRelative(outputFace));
+        double own = fluidAmount(steamKind.fluid());
+        if (rb instanceof FluidBufferRebarBlock fb) {
+            if (!fb.hasFluid(steamKind.fluid())) return 0.0;
+            double amount = Math.min(burstTransferPerTick, Math.min(own, fb.fluidSpaceRemaining(steamKind.fluid())));
+            if (amount <= 0.0) return 0.0;
+            removeFluid(steamKind.fluid(), amount);
+            fb.addFluid(steamKind.fluid(), amount);
+            return amount;
+        } else if (rb instanceof FluidTankRebarBlock tank) {
+            // canAddFluid(fluid, 0) 检查流体类型兼容性（空罐或相同类型）
+            if (!tank.canAddFluid(steamKind.fluid(), 0.0)) return 0.0;
+            double amount = Math.min(burstTransferPerTick, Math.min(own, tank.getFluidSpaceRemaining()));
+            if (amount <= 0.0 || !tank.canAddFluid(steamKind.fluid(), amount)) return 0.0;
+            removeFluid(steamKind.fluid(), amount);
+            tank.onFluidAdded(steamKind.fluid(), amount); // 处理类型设定 + 显示更新
+            return amount;
+        }
+        return 0.0;
     }
 
     private void spawnBurstFx() {
@@ -201,6 +252,7 @@ public class SteamOscillator extends RebarBlock implements
 
     private void notifyGuiItems() {
         steamKindItem.notifyWindows();
+        inputFaceItem.notifyWindows();
         outputFaceItem.notifyWindows();
         statusItem.notifyWindows();
     }
@@ -235,11 +287,12 @@ public class SteamOscillator extends RebarBlock implements
         return Gui.builder()
                 .setStructure(
                         "# # # # # # # # #",
-                        "# # F # O # S # #",
+                        "# F # I # O # S #",
                         "# # # # # # # # #"
                 )
                 .addIngredient('#', GuiItems.background())
                 .addIngredient('F', steamKindItem)
+                .addIngredient('I', inputFaceItem)
                 .addIngredient('O', outputFaceItem)
                 .addIngredient('S', statusItem)
                 .build();
@@ -295,6 +348,12 @@ public class SteamOscillator extends RebarBlock implements
             steamKind = steamKind.next();
             notifyGuiItems();
         }
+    }
+
+    private final class InputFaceItem extends FaceItem {
+        @Override @NotNull BlockFace face() { return inputFace; }
+        @Override void set(@NotNull BlockFace face) { inputFace = face; }
+        @Override @NotNull String labelKey() { return "steamwork.gui.common.input_face"; }
     }
 
     private final class OutputFaceItem extends FaceItem {

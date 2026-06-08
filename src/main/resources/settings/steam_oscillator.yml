@@ -1,7 +1,9 @@
 # 蒸汽振荡器：蓄压到上阈值后喷发 N tick，把连续蒸汽整形成节拍蒸汽
+# 输入/输出均为面直连（不走导管网络），仅与相邻机器的蒸汽缓存直接交换
 tick-interval: 1
 buffer: 1000.0
 upper-threshold: 800.0
 lower-threshold: 100.0
 burst-ticks: 10
 burst-transfer-per-tick: 80.0
+charge-rate: 100.0   # 每 tick 从输入面机器最多抽取的蒸汽量（mB）

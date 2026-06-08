@@ -1,0 +1,6 @@
+# 汽动脉冲器：从后面积攒蒸汽到蓄能阈值后，一次性向前面输出脉冲
+tick-interval: 2
+charge-rate: 50.0         # 每 tick 每种蒸汽最多积攒量（mB）
+charge-threshold: 500.0   # 积攒多少 mB 触发一次脉冲（10–10000，GUI 可调）
+discharge-amount: 200.0   # 每次脉冲向输出缓存释放多少 mB（10–output-buffer，GUI 可调）
+output-buffer: 500.0      # 输出缓存容量（mB），下游持续抽取即可

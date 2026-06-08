@@ -194,14 +194,18 @@ public final class SteamCharge {
 
         List<Component> dynamicLore = new ArrayList<>();
         if (!SOCKET_NONE.equals(socket)) {
-            dynamicLore.add(noItalic(Component.text("\u7f50\u4f53 ", NamedTextColor.DARK_GRAY)
-                    .append(Component.text(socketDisplay(socket), NamedTextColor.GRAY))));
+            dynamicLore.add(noItalic(
+                    Component.translatable("steamwork.message.steam_charge.canister_label")
+                            .color(NamedTextColor.DARK_GRAY)
+                            .append(socketDisplayComponent(socket).color(NamedTextColor.GRAY))));
         }
-        dynamicLore.add(noItalic(Component.text("\u84b8\u6c7d ", NamedTextColor.GRAY)
-                .append(Component.text(formatAmount(amount), amountColor(amount / capacity)))
-                .append(Component.text(" / ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(formatAmount(capacity), NamedTextColor.AQUA))
-                .append(Component.text(" mB", NamedTextColor.DARK_GRAY))));
+        dynamicLore.add(noItalic(
+                Component.translatable("steamwork.message.steam_charge.steam_label")
+                        .color(NamedTextColor.GRAY)
+                        .append(Component.text(formatAmount(amount), amountColor(amount / capacity)))
+                        .append(Component.text(" / ", NamedTextColor.DARK_GRAY))
+                        .append(Component.text(formatAmount(capacity), NamedTextColor.AQUA))
+                        .append(Component.text(" mB", NamedTextColor.DARK_GRAY))));
         dynamicLore.add(noItalic(barComponent(amount, capacity)));
 
         updatedLore.addAll(dynamicLore);
@@ -214,7 +218,8 @@ public final class SteamCharge {
         int filled = (int) Math.round(ratio * BAR_SEGMENTS);
         NamedTextColor color = amountColor(ratio);
 
-        return Component.text("\u84b8\u6c7d\u6761 ", NamedTextColor.DARK_GRAY)
+        return Component.translatable("steamwork.message.steam_charge.bar_label")
+                .color(NamedTextColor.DARK_GRAY)
                 .append(Component.text("[", NamedTextColor.DARK_GRAY))
                 .append(Component.text("|".repeat(filled), color))
                 .append(Component.text("|".repeat(BAR_SEGMENTS - filled), NamedTextColor.DARK_GRAY))
@@ -229,12 +234,12 @@ public final class SteamCharge {
         return NamedTextColor.AQUA;
     }
 
-    private static @NotNull String socketDisplay(@NotNull String socket) {
+    private static @NotNull Component socketDisplayComponent(@NotNull String socket) {
         return switch (socket) {
-            case "brass" -> "\u9ec4\u94dc";
-            case "invar" -> "\u56e0\u74e6";
-            case "tungsten" -> "\u94a8";
-            default -> socket;
+            case "brass"    -> Component.translatable("steamwork.message.steam_charge.socket.brass");
+            case "invar"    -> Component.translatable("steamwork.message.steam_charge.socket.invar");
+            case "tungsten" -> Component.translatable("steamwork.message.steam_charge.socket.tungsten");
+            default         -> Component.text(socket);
         };
     }
 

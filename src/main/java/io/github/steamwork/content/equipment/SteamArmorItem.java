@@ -1,6 +1,7 @@
 package io.github.steamwork.content.equipment;
 
 import io.github.pylonmc.rebar.item.interfaces.InventoryTickerRebarItem;
+import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.steamwork.util.SteamCharge;
 import io.github.steamwork.util.SteamworkUtils;
 import net.kyori.adventure.text.Component;
@@ -25,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -480,13 +480,14 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
         }
 
         Component label = switch (next) {
-            case JETPACK -> Component.text("喷气推进", NamedTextColor.AQUA);
+            case JETPACK -> Component.translatable("steamwork.message.steam_flight.mode.jetpack").color(NamedTextColor.AQUA);
             case HOVER   -> engageHover
-                    ? Component.text("悬浮自由飞行", NamedTextColor.GREEN)
-                    : Component.text("悬浮飞行（需在喷气推进飞行中切换，点火阶段无效）", NamedTextColor.YELLOW);
-            case OFF      -> Component.text("关闭", NamedTextColor.GRAY);
+                    ? Component.translatable("steamwork.message.steam_flight.mode.hover").color(NamedTextColor.GREEN)
+                    : Component.translatable("steamwork.message.steam_flight.mode.hover_unavailable").color(NamedTextColor.YELLOW);
+            case OFF      -> Component.translatable("steamwork.message.steam_flight.mode.off").color(NamedTextColor.GRAY);
         };
-        player.sendActionBar(Component.text("飞行模式：", NamedTextColor.GOLD).append(label));
+        player.sendActionBar(Component.translatable("steamwork.message.steam_flight.mode_changed",
+                RebarArgument.of("mode", label)));
         player.playSound(player.getLocation(),
                 next == FlightMode.OFF ? Sound.BLOCK_LEVER_CLICK : Sound.BLOCK_BEACON_ACTIVATE,
                 0.6f, next == FlightMode.OFF ? 0.8f : 1.4f);
@@ -599,7 +600,7 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
         double share = HOVER_STEAM_PER_TICK / 4.0;
         if (!isFullSetPowered(player, SteamEquipmentMaterial.TUNGSTEN)
                 || !hasTungstenFlightSteam(player.getInventory(), share)) {
-            player.sendActionBar(Component.text("蒸汽耗尽，悬浮飞行中断", NamedTextColor.RED));
+            player.sendActionBar(Component.translatable("steamwork.message.steam_flight.hover_depleted"));
             endHover(player);
             // 同样自动切回普通（喷气推进）模式
             if (modeOf(player) == FlightMode.HOVER) {
@@ -625,8 +626,9 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
             endHover(player);
             if (modeOf(player) == FlightMode.HOVER) {
                 setMode(player, FlightMode.JETPACK);
-                player.sendActionBar(Component.text("落地 · 飞行模式：", NamedTextColor.GOLD)
-                        .append(Component.text("喷气推进", NamedTextColor.AQUA)));
+                player.sendActionBar(Component.translatable("steamwork.message.steam_flight.landed",
+                        RebarArgument.of("mode", Component.translatable("steamwork.message.steam_flight.mode.jetpack")
+                                .color(NamedTextColor.AQUA))));
                 player.playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 0.5f, 1.0f);
             }
             return;
@@ -716,8 +718,9 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
 
         if (flightTicks % 10 == 0) {
             double seconds = Math.max(0.0, (FLIGHT_IGNITION_TICKS - flightTicks) / 20.0);
-            player.sendActionBar(Component.text("\u55b7\u6c14\u70b9\u706b\uff1a", NamedTextColor.GRAY)
-                    .append(Component.text(String.format(Locale.ROOT, "%.1fs", seconds), NamedTextColor.GOLD)));
+            player.sendActionBar(Component.translatable("steamwork.message.steam_flight.ignition",
+                    RebarArgument.of("seconds", Component.text(String.format(java.util.Locale.ROOT, "%.1fs", seconds))
+                            .color(NamedTextColor.GOLD))));
         }
     }
 
@@ -757,8 +760,8 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
 
         if (flightTicks % 10 == 0) {
             int thrustPercent = (int) Math.round(ramp * 100.0);
-            player.sendActionBar(Component.text("\u55b7\u6c14\u63a8\u8fdb\uff1a", NamedTextColor.GRAY)
-                    .append(Component.text(thrustPercent + "%", NamedTextColor.AQUA)));
+            player.sendActionBar(Component.translatable("steamwork.message.steam_flight.thrust",
+                    RebarArgument.of("percent", Component.text(thrustPercent + "%").color(NamedTextColor.AQUA))));
         }
     }
 

@@ -205,7 +205,11 @@ public class SteamSorter extends RebarBlock implements
                 if (target == null) continue;
 
                 // Push one item into the target.
-                if (!PneumaticUtils.tryPushItem(target, stack)) continue;
+                if (!PneumaticUtils.tryPushItem(target, stack)) {
+                    PneumaticDuct.notifyPassage(getBlock(), target, 1, false);
+                    continue;
+                }
+                PneumaticDuct.notifyPassage(getBlock(), target, 1, true);
 
                 // Consume one item from the sorter input.
                 MachineUpdateReason reason = new MachineUpdateReason();

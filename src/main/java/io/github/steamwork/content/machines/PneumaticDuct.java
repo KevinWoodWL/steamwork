@@ -33,8 +33,10 @@ import org.bukkit.util.BoundingBox;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -142,6 +144,8 @@ public class PneumaticDuct extends RebarBlock implements
         return rb instanceof PneumaticDuct
                 || rb instanceof PneumaticGateValve valve
                         && valve.acceptsPneumaticConnection(face.getOppositeFace())
+                || rb instanceof PneumaticPressureModule module
+                        && module.acceptsPneumaticConnection(face.getOppositeFace())
                 || rb instanceof SteamCatapult
                 || rb instanceof PneumaticInput input
                         && input.acceptsPneumaticConnection(face.getOppositeFace())
@@ -183,6 +187,9 @@ public class PneumaticDuct extends RebarBlock implements
         if (rb instanceof PneumaticGateValve valve) {
             return valve.acceptsPneumaticConnection(face.getOppositeFace());
         }
+        if (rb instanceof PneumaticPressureModule module) {
+            return module.acceptsPneumaticConnection(face.getOppositeFace());
+        }
         return true;
     }
 
@@ -218,6 +225,8 @@ public class PneumaticDuct extends RebarBlock implements
                 input.refreshDisplays();
             } else if (rb instanceof PneumaticOutput output) {
                 output.refreshDisplays();
+            } else if (rb instanceof PneumaticPressureModule module) {
+                module.refreshDisplays();
             }
         }
     }
@@ -345,7 +354,9 @@ public class PneumaticDuct extends RebarBlock implements
 
     public static boolean isNetworkDuct(@NotNull Block block) {
         RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
-        return rb instanceof PneumaticDuct || rb instanceof PneumaticGateValve;
+        return rb instanceof PneumaticDuct
+                || rb instanceof PneumaticGateValve
+                || rb instanceof PneumaticPressureModule;
     }
 
     public static @NotNull List<Block> findReachableEndpoints(@NotNull Block origin) {
@@ -370,6 +381,9 @@ public class PneumaticDuct extends RebarBlock implements
                 } else if (rb instanceof PneumaticGateValve valve
                         && valve.acceptsPneumaticConnection(face.getOppositeFace())) {
                     queue.add(neighbor);
+                } else if (rb instanceof PneumaticPressureModule module
+                        && module.acceptsPneumaticConnection(face.getOppositeFace())) {
+                    queue.add(neighbor);
                 } else if (rb instanceof SteamCatapult
                         || rb instanceof PneumaticInput input
                                 && input.acceptsPneumaticConnection(face.getOppositeFace())) {
@@ -386,6 +400,8 @@ public class PneumaticDuct extends RebarBlock implements
             return duct.getConnectedFaces();
         } else if (rb instanceof PneumaticGateValve valve) {
             return valve.getTraversalFaces();
+        } else if (rb instanceof PneumaticPressureModule module) {
+            return module.getTraversalFaces();
         }
         return List.of(FACES);
     }
@@ -399,7 +415,82 @@ public class PneumaticDuct extends RebarBlock implements
         RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
         return rb instanceof PneumaticDuct
                 || rb instanceof PneumaticGateValve
+                || rb instanceof PneumaticPressureModule
                 || rb instanceof PneumaticInput
                 || rb instanceof PneumaticOutput;
+    }
+
+    // ===== 压力管道模块：传输路径感知 =====
+
+    /**
+     * 物品传输事件回调：找到 origin→dest 路径上经过的 {@link PneumaticPressureModule}，
+     * 通知它们物品通过（delivered=true）或被下游拒收（delivered=false）。
+     * 由 PneumaticOutput/SteamSorter/PneumaticDistributor 在每次 tryPushItem(s) 后调用。
+     */
+    public static void notifyPassage(@NotNull Block origin, @NotNull Block dest, int count, boolean delivered) {
+        if (count <= 0 || origin.equals(dest)) return;
+        for (PneumaticPressureModule module : modulesOnPath(origin, dest)) {
+            if (delivered) {
+                module.onItemsPassed(count);
+            } else {
+                module.onTransferBlocked(count);
+            }
+        }
+    }
+
+    /** 从端点 origin 经导管网络 BFS 找到到达端点 dest 的一条路径，返回路径上的压力模块。 */
+    private static @NotNull List<PneumaticPressureModule> modulesOnPath(@NotNull Block origin, @NotNull Block dest) {
+        Map<Block, Block> prev = new HashMap<>();
+        Set<Block> visited = new HashSet<>();
+        Queue<Block> queue = new ArrayDeque<>();
+        queue.add(origin);
+        visited.add(origin);
+        boolean found = false;
+
+        while (!queue.isEmpty()) {
+            Block current = queue.poll();
+            if (current.equals(dest)) {
+                found = true;
+                break;
+            }
+            for (BlockFace face : pathTraversalFaces(current, origin, dest)) {
+                Block neighbor = current.getRelative(face);
+                if (visited.contains(neighbor)) continue;
+                if (neighbor.equals(dest) || isNetworkRelay(neighbor)) {
+                    visited.add(neighbor);
+                    prev.put(neighbor, current);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        List<PneumaticPressureModule> modules = new ArrayList<>();
+        if (!found) return modules;
+        Block step = prev.get(dest);
+        while (step != null && !step.equals(origin)) {
+            if (PneumaticEndpointSupport.loadedRebarBlock(step) instanceof PneumaticPressureModule module) {
+                modules.add(module);
+            }
+            step = prev.get(step);
+        }
+        return modules;
+    }
+
+    /** 路径 BFS 的可遍历面：端点（origin/dest）走全部 6 面，网络中继走各自通行面。 */
+    private static @NotNull Iterable<BlockFace> pathTraversalFaces(@NotNull Block block,
+                                                                   @NotNull Block origin,
+                                                                   @NotNull Block dest) {
+        if (block.equals(origin) || block.equals(dest)) {
+            return List.of(FACES);
+        }
+        return getTraversalFaces(block);
+    }
+
+    /** 是否是可中继物品流的网络节点（导管/截止阀/压力模块）。 */
+    private static boolean isNetworkRelay(@NotNull Block block) {
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
+        return rb instanceof PneumaticDuct
+                || rb instanceof PneumaticGateValve
+                || rb instanceof PneumaticPressureModule;
     }
 }
