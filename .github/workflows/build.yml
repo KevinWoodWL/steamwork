@@ -18,20 +18,20 @@ jobs:
         with:
           path: steamwork
 
-      # --- Checkout rebar ---
+      # --- Checkout rebar (master — 自 v0.4.3 起需要 commit#786 之后的版本) ---
       - name: Checkout rebar
         uses: actions/checkout@v4
         with:
           repository: pylonmc/rebar
-          ref: '0.40.0-26.1'
+          ref: 'master'
           path: rebar
 
-      # --- Checkout pylon ---
+      # --- Checkout pylon (master — 跟随 rebar 接口变更) ---
       - name: Checkout pylon
         uses: actions/checkout@v4
         with:
           repository: pylonmc/pylon
-          ref: '0.38.0-26.1'
+          ref: 'master'
           path: pylon
 
       # --- Set up JDK 25 ---
