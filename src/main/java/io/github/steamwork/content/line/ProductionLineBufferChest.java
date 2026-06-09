@@ -8,7 +8,6 @@ import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
-import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.logistics.LogisticGroupType;
@@ -399,7 +398,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         if (!isInLine()) {
-            return WailaDisplay.of(Component.translatable("steamwork.item.production_line_buffer_chest.waila_idle"));
+            return WailaDisplay.of(this, player);
         }
         String stateKey = hasBufferedItems()
                 ? lastPushSucceeded ? "pushing" : "buffering"
@@ -407,12 +406,10 @@ public class ProductionLineBufferChest extends RebarBlock implements
         Component creatorComp = lineCreator != null
                 ? Component.text(lineCreator)
                 : Component.translatable("steamwork.line.unknown_creator");
-        return WailaDisplay.of(Component.translatable(
-                "steamwork.item.production_line_buffer_chest.waila",
-                RebarArgument.of("number", Component.text(lineNumber)),
-                RebarArgument.of("state", Component.translatable("steamwork.line.state." + stateKey)),
-                RebarArgument.of("creator", creatorComp)
-        ));
+        return WailaDisplay.of(this, player)
+                .add(Component.text(String.valueOf(lineNumber)))
+                .add(Component.translatable("steamwork.line.state." + stateKey))
+                .add(creatorComp);
     }
 
     @Override

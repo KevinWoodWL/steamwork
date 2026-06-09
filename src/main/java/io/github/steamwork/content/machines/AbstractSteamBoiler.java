@@ -14,6 +14,7 @@ import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -241,23 +242,11 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("water-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(PylonFluids.WATER),
-                        fluidCapacity(PylonFluids.WATER),
-                        16,
-                        TextColor.fromHexString("#3f7ee8")
-                )),
-                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(producedSteam()),
-                        fluidCapacity(producedSteam()),
-                        16,
-                        steamBarColor()
-                )),
-                RebarArgument.of("pressure", Component.translatable("steamwork.pressure." + pressureState())),
-                RebarArgument.of("structure", Component.translatable("steamwork.structure."
-                        + (isFormedAndFullyLoaded() ? "formed" : "missing")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(PylonFluids.WATER, fluidCapacity(PylonFluids.WATER), fluidAmount(PylonFluids.WATER)))
+                .add(ProgressBar.fluidContents(producedSteam(), fluidCapacity(producedSteam()), fluidAmount(producedSteam())))
+                .add(Component.translatable("steamwork.pressure." + pressureState()))
+                .add(Component.translatable("steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing")));
     }
 
     protected abstract @NotNull MultiblockComponent casingComponent();

@@ -159,9 +159,7 @@ public class SteamCatapult extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("state", Component.translatable(
-                        "steamwork.state." + (lastActive ? "active" : "idle")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 }

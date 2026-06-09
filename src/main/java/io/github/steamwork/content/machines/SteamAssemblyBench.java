@@ -20,6 +20,7 @@ import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
@@ -27,7 +28,6 @@ import io.github.steamwork.SteamworkKeys;
 import io.github.steamwork.recipes.SteamAssemblyRecipe;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -613,16 +613,10 @@ public class SteamAssemblyBench extends RebarBlock implements
                     ? "steamwork.gui.steam_assembly_bench.waila.open_gui"
                     : "steamwork.gui.steam_assembly_bench.waila.structure_missing");
         }
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("structure", Component.translatable("steamwork.structure."
-                        + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
-                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
-                        fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
-                        12,
-                        TextColor.fromHexString("#ff8c00"))),
-                RebarArgument.of("state", state)
-        ));
+        return WailaDisplay.of(this, player)
+                .add(Component.translatable("steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing")))
+                .add(ProgressBar.fluidContents(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
+                .add(state);
     }
 
     public static class Item extends RebarItem {

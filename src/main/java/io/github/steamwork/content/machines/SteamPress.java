@@ -20,6 +20,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.recipe.RecipeInput;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.pylonmc.pylon.recipes.FormingRecipe;
 import io.github.pylonmc.pylon.recipes.PipeBendingRecipe;
@@ -32,7 +33,6 @@ import io.github.steamwork.recipes.pylon.FormingRecipeWrapper;
 import io.github.steamwork.recipes.pylon.PipeBendingRecipeWrapper;
 import io.github.steamwork.recipes.pylon.TableSawRecipeWrapper;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -768,15 +768,9 @@ public class SteamPress extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.STEAM),
-                        fluidCapacity(SteamworkFluids.STEAM),
-                        16,
-                        TextColor.fromHexString("#d8edf0")
-                )),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + currentState.key()))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(Component.translatable("steamwork.state." + currentState.key()));
     }
 
     // ===== GUI inner items =====

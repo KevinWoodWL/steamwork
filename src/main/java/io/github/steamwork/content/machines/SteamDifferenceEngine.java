@@ -472,11 +472,10 @@ public class SteamDifferenceEngine extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("mode", outputMode.component()),
-                RebarArgument.of("value", String.valueOf(curV)),
-                RebarArgument.of("state", statusComponent())
-        ));
+        return WailaDisplay.of(this, player)
+                .add(outputMode.component())
+                .add(Component.text(String.valueOf(curV)))
+                .add(statusComponent());
     }
 
     private @NotNull Component statusComponent() {

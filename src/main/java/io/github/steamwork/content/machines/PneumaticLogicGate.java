@@ -311,14 +311,13 @@ public class PneumaticLogicGate extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("mode", mode.component().color(NamedTextColor.AQUA)),
-                RebarArgument.of("kind", steamKindLabel()),
-                RebarArgument.of("state", Component.translatable(lastActive
+        return WailaDisplay.of(this, player)
+                .add(mode.component().color(NamedTextColor.AQUA))
+                .add(steamKindLabel())
+                .add(Component.translatable(lastActive
                         ? "steamwork.gui.pneumatic_logic_gate.state.passing"
                         : "steamwork.gui.pneumatic_logic_gate.state.blocked")
-                        .color(lastActive ? NamedTextColor.GREEN : NamedTextColor.GRAY))
-        ));
+                        .color(lastActive ? NamedTextColor.GREEN : NamedTextColor.GRAY));
     }
 
     private void setActive(boolean active) {

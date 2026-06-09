@@ -23,12 +23,12 @@ import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.RebarUtils;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkKeys;
 import io.github.steamwork.recipes.SteamDistillationRecipe;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -444,19 +444,11 @@ public class SteamDistillationTower extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
-                        fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
-                        16,
-                        TextColor.fromHexString("#fff4d8")
-                )),
-                RebarArgument.of("sections", detectedSections),
-                RebarArgument.of("max-sections", MAX_SECTIONS),
-                RebarArgument.of("structure", Component.translatable("steamwork.structure."
-                        + (detectedSections > 0 ? "formed" : "missing"))),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + currentReason.key()))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
+                .add(Component.text(detectedSections + "/" + MAX_SECTIONS))
+                .add(Component.translatable("steamwork.structure." + (detectedSections > 0 ? "formed" : "missing")))
+                .add(Component.translatable("steamwork.state." + currentReason.key()));
     }
 
     private final class StatusItem extends AbstractItem {

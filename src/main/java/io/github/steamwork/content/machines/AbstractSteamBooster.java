@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.steamwork.SteamworkFluids;
@@ -587,12 +588,10 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", createSteamBar()),
-                RebarArgument.of("targets", lastTargetsFound),
-                RebarArgument.of("boosted", lastTargetsBoosted),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(boosterFluid(), fluidCapacity(boosterFluid()), fluidAmount(boosterFluid())))
+                .add(Component.text(lastTargetsFound + "/" + lastTargetsBoosted))
+                .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 
     @Override

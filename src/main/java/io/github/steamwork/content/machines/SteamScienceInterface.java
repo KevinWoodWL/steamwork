@@ -21,6 +21,7 @@ import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.RebarUtils;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.recipes.SteamResearchRecipe;
@@ -432,18 +433,10 @@ public class SteamScienceInterface extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.STEAM),
-                        fluidCapacity(SteamworkFluids.STEAM),
-                        16, TextColor.fromHexString("#d8edf0")
-                )),
-                RebarArgument.of("material-pts",  stored(SteamworkDiscipline.MATERIAL)),
-                RebarArgument.of("biology-pts",   stored(SteamworkDiscipline.BIOLOGY)),
-                RebarArgument.of("precision-pts", stored(SteamworkDiscipline.PRECISION)),
-                RebarArgument.of("chemistry-pts", stored(SteamworkDiscipline.CHEMISTRY)),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + currentReason.key()))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(Component.text(stored(SteamworkDiscipline.MATERIAL) + "/" + stored(SteamworkDiscipline.BIOLOGY) + "/" + stored(SteamworkDiscipline.PRECISION) + "/" + stored(SteamworkDiscipline.CHEMISTRY)))
+                .add(Component.translatable("steamwork.state." + currentReason.key()));
     }
 
     // ===== GUI 内部类 =====

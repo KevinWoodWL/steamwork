@@ -257,14 +257,13 @@ public class PneumaticPulser extends RebarBlock implements
             }
         }
         int pct = (int) (maxRatio * 100);
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("charge", pct),
-                RebarArgument.of("kind", steamKindLabel()),
-                RebarArgument.of("state", Component.translatable(pulseCooldown > 0
+        return WailaDisplay.of(this, player)
+                .add(Component.text(pct + "%"))
+                .add(steamKindLabel())
+                .add(Component.translatable(pulseCooldown > 0
                         ? "steamwork.gui.pneumatic_pulser.state.pulsing"
                         : "steamwork.gui.pneumatic_pulser.state.charging")
-                        .color(pulseCooldown > 0 ? NamedTextColor.GREEN : NamedTextColor.YELLOW))
-        ));
+                        .color(pulseCooldown > 0 ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
     }
 
     // ── Display：顶部重复器，延迟刻度 = 蓄能进度（1-4），放行瞬间 powered=true ──

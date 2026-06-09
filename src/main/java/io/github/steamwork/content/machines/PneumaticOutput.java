@@ -541,12 +541,9 @@ public class PneumaticOutput extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("extract",  String.valueOf(itemsPerExtract)),
-                RebarArgument.of("interval", String.valueOf(tickIntervalOverride)),
-                RebarArgument.of("state", Component.translatable(
-                        "steamwork.state." + (lastActive ? "active" : "idle")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(Component.text(itemsPerExtract + "x/" + tickIntervalOverride + "t"))
+                .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 
     // ── GUI 物品 ──────────────────────────────────────────────────────────────

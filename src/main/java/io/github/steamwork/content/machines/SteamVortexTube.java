@@ -16,11 +16,11 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.util.SteamLogicSupport;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -175,17 +175,10 @@ public class SteamVortexTube extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("superheated-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
-                        fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),
-                        12, TextColor.fromHexString("#ff8c00"))),
-                RebarArgument.of("pressurized-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
-                        fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),
-                        12, TextColor.fromHexString("#18c0d8"))),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
+                .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)))
+                .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 
     // ── GUI 元素 ──────────────────────────────────────────────────────────────

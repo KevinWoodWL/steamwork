@@ -476,10 +476,9 @@ public class PneumaticPressureModule extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("mode", mode.component()),
-                RebarArgument.of("detail", detailComponent())
-        ));
+        return WailaDisplay.of(this, player)
+                .add(mode.component())
+                .add(detailComponent());
     }
 
     private @NotNull Component detailComponent() {

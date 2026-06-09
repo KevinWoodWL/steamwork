@@ -248,13 +248,12 @@ public class PneumaticLatch extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("kind", steamKindLabel()),
-                RebarArgument.of("state", Component.translatable(latched
+        return WailaDisplay.of(this, player)
+                .add(steamKindLabel())
+                .add(Component.translatable(latched
                         ? "steamwork.gui.pneumatic_latch.state.latched"
                         : "steamwork.gui.pneumatic_latch.state.unlatched")
-                        .color(latched ? NamedTextColor.GREEN : NamedTextColor.GRAY))
-        ));
+                        .color(latched ? NamedTextColor.GREEN : NamedTextColor.GRAY));
     }
 
     // ── Display：顶部拉杆，powered = latched ─────────────────────────────────

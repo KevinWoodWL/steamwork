@@ -13,6 +13,7 @@ import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.util.SteamLogicSupport;
 import io.github.steamwork.util.SteamLogicSupport.SteamKind;
@@ -192,13 +193,10 @@ public class SteamPressureTransducer extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("fluid", steamKind.component()),
-                RebarArgument.of("level", String.valueOf(currentLevel())),
-                RebarArgument.of("pressure-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        currentAmount(), Math.max(1.0, currentCapacity()), 12,
-                        steamKind.color()))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(steamKind.component())
+                .add(Component.text(String.valueOf(currentLevel())))
+                .add(ProgressBar.fluidContents(steamKind.fluid(), Math.max(1.0, currentCapacity()), currentAmount()));
     }
 
     @Override

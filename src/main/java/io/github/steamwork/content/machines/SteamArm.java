@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.logistics.slot.LogisticSlot;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkKeys;
@@ -743,18 +744,10 @@ public class SteamArm extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         boolean hasMotor = hasMotor();
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.STEAM),
-                        fluidCapacity(SteamworkFluids.STEAM),
-                        16,
-                        TextColor.fromHexString("#d8edf0")
-                )),
-                RebarArgument.of("motor-status", Component.translatable(
-                        hasMotor ? "steamwork.gui.steam_arm.motor_installed" : "steamwork.gui.steam_arm.motor_missing"
-                )),
-                RebarArgument.of("state", Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(Component.translatable(hasMotor ? "steamwork.gui.steam_arm.motor_installed" : "steamwork.gui.steam_arm.motor_missing"))
+                .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 
     private boolean tryTransfer() {

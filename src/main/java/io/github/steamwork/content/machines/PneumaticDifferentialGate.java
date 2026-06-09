@@ -225,14 +225,13 @@ public class PneumaticDifferentialGate extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("threshold", String.valueOf((int) threshold)),
-                RebarArgument.of("kind", steamKindLabel()),
-                RebarArgument.of("state", Component.translatable(lastActive
+        return WailaDisplay.of(this, player)
+                .add(Component.text(String.valueOf((int) threshold)))
+                .add(steamKindLabel())
+                .add(Component.translatable(lastActive
                         ? "steamwork.gui.pneumatic_logic_gate.state.passing"
                         : "steamwork.gui.pneumatic_logic_gate.state.blocked")
-                        .color(lastActive ? NamedTextColor.GREEN : NamedTextColor.GRAY))
-        ));
+                        .color(lastActive ? NamedTextColor.GREEN : NamedTextColor.GRAY));
     }
 
     // ── Display：顶部 Observer（半大小）表示面朝向 ────────────────────────────

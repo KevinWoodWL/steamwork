@@ -18,12 +18,12 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -563,19 +563,12 @@ public class PneumaticCargoHub extends RebarBlock implements
         String targetStr = targetPos != null
                 ? targetPos[0] + ", " + targetPos[1] + ", " + targetPos[2]
                 : "—";
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("pressurized-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
-                        fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),
-                        12, TextColor.fromHexString("#00cfff")
-                )),
-                RebarArgument.of("catapult", Component.translatable(
-                        hasCatapult ? "steamwork.state.active" : "steamwork.state.missing")),
-                RebarArgument.of("target", Component.text(targetStr)),
-                RebarArgument.of("batch", String.valueOf(batchSize)),
-                RebarArgument.of("state", Component.translatable(
-                        "steamwork.state." + (lastActive ? "active" : "idle")))
-        ));
+        return WailaDisplay.of(this, player)
+                .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)))
+                .add(Component.translatable(hasCatapult ? "steamwork.state.active" : "steamwork.state.missing"))
+                .add(Component.text(targetStr))
+                .add(Component.text(String.valueOf(batchSize)))
+                .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 
     @Override

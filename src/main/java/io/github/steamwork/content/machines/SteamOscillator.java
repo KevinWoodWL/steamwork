@@ -14,6 +14,7 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.util.PneumaticEndpointSupport;
@@ -273,13 +274,10 @@ public class SteamOscillator extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
-                RebarArgument.of("fluid", steamKind.component()),
-                RebarArgument.of("pressure-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
-                        fluidAmount(steamKind.fluid()), fluidCapacity(steamKind.fluid()), 12,
-                        steamKind.color())),
-                RebarArgument.of("state", statusComponent())
-        ));
+        return WailaDisplay.of(this, player)
+                .add(steamKind.component())
+                .add(ProgressBar.fluidContents(steamKind.fluid(), fluidCapacity(steamKind.fluid()), fluidAmount(steamKind.fluid())))
+                .add(statusComponent());
     }
 
     @Override
