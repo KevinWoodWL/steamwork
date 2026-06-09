@@ -399,7 +399,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         if (!isInLine()) {
-            return new WailaDisplay(Component.translatable("steamwork.item.production_line_buffer_chest.waila_idle"));
+            return WailaDisplay.of(Component.translatable("steamwork.item.production_line_buffer_chest.waila_idle"));
         }
         String stateKey = hasBufferedItems()
                 ? lastPushSucceeded ? "pushing" : "buffering"
@@ -407,7 +407,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
         Component creatorComp = lineCreator != null
                 ? Component.text(lineCreator)
                 : Component.translatable("steamwork.line.unknown_creator");
-        return new WailaDisplay(Component.translatable(
+        return WailaDisplay.of(Component.translatable(
                 "steamwork.item.production_line_buffer_chest.waila",
                 RebarArgument.of("number", Component.text(lineNumber)),
                 RebarArgument.of("state", Component.translatable("steamwork.line.state." + stateKey)),

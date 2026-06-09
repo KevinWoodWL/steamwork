@@ -195,7 +195,7 @@ public class PneumaticDuct extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey());
+        return WailaDisplay.of(this, player);
     }
 
     @Override

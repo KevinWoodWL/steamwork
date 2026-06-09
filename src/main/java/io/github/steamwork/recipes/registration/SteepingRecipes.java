@@ -18,140 +18,140 @@ public final class SteepingRecipes {
         // 圆石浸煮：16 圆石 → 1 下界岩（高温蒸汽软化并渗入硫化物，模拟下界岩的形成环境）。
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_cobblestone_to_netherrack"),
-                RecipeInput.of(new ItemStack(Material.COBBLESTONE, 16)),
-                new ItemStack(Material.NETHERRACK, 1),
+                RecipeInput.of(ItemStack.of(Material.COBBLESTONE, 16)),
+                ItemStack.of(Material.NETHERRACK, 1),
                 30.0,
                 180));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_bamboo_to_fiber"),
-                RecipeInput.of(new ItemStack(Material.BAMBOO, 4)),
+                RecipeInput.of(ItemStack.of(Material.BAMBOO, 4)),
                 SteamworkItems.PLANT_FIBER.clone().asQuantity(3),
                 25.0,
                 140));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_sugar_cane_to_pulp"),
-                RecipeInput.of(new ItemStack(Material.SUGAR_CANE, 3)),
+                RecipeInput.of(ItemStack.of(Material.SUGAR_CANE, 3)),
                 SteamworkItems.STEAM_PULP.clone().asQuantity(2),
                 30.0,
                 160));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_wheat_to_fiber"),
-                RecipeInput.of(new ItemStack(Material.WHEAT, 3)),
+                RecipeInput.of(ItemStack.of(Material.WHEAT, 3)),
                 SteamworkItems.PLANT_FIBER.clone().asQuantity(2),
                 25.0,
                 140));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_kelp_to_fiber"),
-                RecipeInput.of(new ItemStack(Material.KELP, 3)),
+                RecipeInput.of(ItemStack.of(Material.KELP, 3)),
                 SteamworkItems.PLANT_FIBER.clone().asQuantity(2),
                 25.0,
                 140));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_vines_to_fiber"),
-                RecipeInput.of(new ItemStack(Material.VINE, 2)),
+                RecipeInput.of(ItemStack.of(Material.VINE, 2)),
                 SteamworkItems.PLANT_FIBER.clone().asQuantity(2),
                 20.0,
                 120));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_mangrove_roots_to_resin"),
-                RecipeInput.of(new ItemStack(Material.MANGROVE_ROOTS)),
+                RecipeInput.of(ItemStack.of(Material.MANGROVE_ROOTS)),
                 SteamworkItems.RAW_RESIN.clone().asQuantity(2),
                 45.0,
                 220));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_honeycomb_to_resin"),
-                RecipeInput.of(new ItemStack(Material.HONEYCOMB, 2)),
+                RecipeInput.of(ItemStack.of(Material.HONEYCOMB, 2)),
                 SteamworkItems.RAW_RESIN.clone().asQuantity(3),
                 40.0,
                 200));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_slime_to_resin"),
-                RecipeInput.of(new ItemStack(Material.SLIME_BALL)),
+                RecipeInput.of(ItemStack.of(Material.SLIME_BALL)),
                 SteamworkItems.RAW_RESIN,
                 35.0,
                 180));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_oak_log_to_charcoal"),
-                RecipeInput.of(new ItemStack(Material.OAK_LOG)),
-                new ItemStack(Material.CHARCOAL, 2),
+                RecipeInput.of(ItemStack.of(Material.OAK_LOG)),
+                ItemStack.of(Material.CHARCOAL, 2),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_oak_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_OAK_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_OAK_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_spruce_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_SPRUCE_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_SPRUCE_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_birch_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_BIRCH_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_BIRCH_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_jungle_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_JUNGLE_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_JUNGLE_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_acacia_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_ACACIA_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_ACACIA_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_dark_oak_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_DARK_OAK_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_DARK_OAK_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_mangrove_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_MANGROVE_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_MANGROVE_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_cherry_log_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_CHERRY_LOG)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_CHERRY_LOG)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 45.0,
                 240));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_crimson_stem_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_CRIMSON_STEM)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_CRIMSON_STEM)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 50.0,
                 260));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_warped_stem_to_treated_wood"),
-                RecipeInput.of(new ItemStack(Material.STRIPPED_WARPED_STEM)),
+                RecipeInput.of(ItemStack.of(Material.STRIPPED_WARPED_STEM)),
                 SteamworkItems.TREATED_WOOD.clone().asQuantity(4),
                 50.0,
                 260));
@@ -161,7 +161,7 @@ public final class SteepingRecipes {
         for (Material log : new Material[]{Material.SPRUCE_LOG, Material.JUNGLE_LOG}) {
             SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                     steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
-                    RecipeInput.of(new ItemStack(log)),
+                    RecipeInput.of(ItemStack.of(log)),
                     SteamworkItems.RAW_RESIN.clone(),
                     45.0, 240));
         }
@@ -169,7 +169,7 @@ public final class SteepingRecipes {
         for (Material log : new Material[]{Material.OAK_LOG, Material.DARK_OAK_LOG}) {
             SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                     steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
-                    RecipeInput.of(new ItemStack(log, 2)),
+                    RecipeInput.of(ItemStack.of(log, 2)),
                     SteamworkItems.RAW_RESIN.clone(),
                     45.0, 240));
         }
@@ -179,7 +179,7 @@ public final class SteepingRecipes {
                 Material.CHERRY_LOG, Material.MANGROVE_LOG}) {
             SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                     steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
-                    RecipeInput.of(new ItemStack(log, 3)),
+                    RecipeInput.of(ItemStack.of(log, 3)),
                     SteamworkItems.RAW_RESIN.clone(),
                     45.0, 240));
         }
@@ -187,29 +187,29 @@ public final class SteepingRecipes {
         for (Material log : new Material[]{Material.PALE_OAK_LOG, Material.BAMBOO_BLOCK}) {
             SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                     steamworkKey("steep_" + log.name().toLowerCase() + "_to_resin"),
-                    RecipeInput.of(new ItemStack(log, 4)),
+                    RecipeInput.of(ItemStack.of(log, 4)),
                     SteamworkItems.RAW_RESIN.clone(),
                     45.0, 240));
         }
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_crimson_roots_to_resin"),
-                RecipeInput.of(new ItemStack(Material.CRIMSON_ROOTS, 2)),
+                RecipeInput.of(ItemStack.of(Material.CRIMSON_ROOTS, 2)),
                 SteamworkItems.RAW_RESIN,
                 35.0,
                 180));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_warped_roots_to_resin"),
-                RecipeInput.of(new ItemStack(Material.WARPED_ROOTS, 2)),
+                RecipeInput.of(ItemStack.of(Material.WARPED_ROOTS, 2)),
                 SteamworkItems.RAW_RESIN,
                 35.0,
                 180));
 
         SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                 steamworkKey("steep_clay_to_terracotta"),
-                RecipeInput.of(new ItemStack(Material.CLAY)),
-                new ItemStack(Material.TERRACOTTA),
+                RecipeInput.of(ItemStack.of(Material.CLAY)),
+                ItemStack.of(Material.TERRACOTTA),
                 35.0,
                 200));
 
@@ -224,7 +224,7 @@ public final class SteepingRecipes {
             String key = "steep_" + leaves.name().toLowerCase() + "_to_resin";
             SteamSteepingRecipe.RECIPE_TYPE.addRecipe(new SteamSteepingRecipe(
                     steamworkKey(key),
-                    RecipeInput.of(new ItemStack(leaves, 8)),
+                    RecipeInput.of(ItemStack.of(leaves, 8)),
                     SteamworkItems.RAW_RESIN.clone(),
                     30.0,
                     160));

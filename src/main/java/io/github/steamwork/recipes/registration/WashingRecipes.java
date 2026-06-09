@@ -24,7 +24,7 @@ public final class WashingRecipes {
         // 玩家走廉价但慢的"湿法选矿"路径；Pylon Smeltery 的 紫水晶 → molten_zinc 路径作为高级直接路径并存。
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_diorite_to_zinc_concentrate"),
-                RecipeInput.of(new ItemStack(Material.DIORITE, 4)),
+                RecipeInput.of(ItemStack.of(Material.DIORITE, 4)),
                 SteamworkItems.ZINC_CONCENTRATE,
                 1,
                 50.0,
@@ -32,7 +32,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_granite_to_zinc_concentrate"),
-                RecipeInput.of(new ItemStack(Material.GRANITE, 4)),
+                RecipeInput.of(ItemStack.of(Material.GRANITE, 4)),
                 SteamworkItems.ZINC_CONCENTRATE,
                 1,
                 50.0,
@@ -40,39 +40,39 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_gravel_to_flint"),
-                RecipeInput.of(new ItemStack(Material.GRAVEL)),
-                new ItemStack(Material.FLINT),
+                RecipeInput.of(ItemStack.of(Material.GRAVEL)),
+                ItemStack.of(Material.FLINT),
                 1,
                 25.0,
                 140));
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_gravel_to_iron_nugget"),
-                RecipeInput.of(new ItemStack(Material.GRAVEL, 8)),
-                new ItemStack(Material.IRON_NUGGET),
+                RecipeInput.of(ItemStack.of(Material.GRAVEL, 8)),
+                ItemStack.of(Material.IRON_NUGGET),
                 3,
                 55.0,
                 260));
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_suspicious_gravel_to_raw_iron"),
-                RecipeInput.of(new ItemStack(Material.SUSPICIOUS_GRAVEL, 4)),
-                new ItemStack(Material.RAW_IRON),
+                RecipeInput.of(ItemStack.of(Material.SUSPICIOUS_GRAVEL, 4)),
+                ItemStack.of(Material.RAW_IRON),
                 1,
                 60.0,
                 300));
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_sand_to_clay"),
-                RecipeInput.of(new ItemStack(Material.SAND, 4)),
-                new ItemStack(Material.CLAY),
+                RecipeInput.of(ItemStack.of(Material.SAND, 4)),
+                ItemStack.of(Material.CLAY),
                 1,
                 40.0,
                 220));
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_sand_to_silica_grit"),
-                RecipeInput.of(new ItemStack(Material.SAND, 2)),
+                RecipeInput.of(ItemStack.of(Material.SAND, 2)),
                 SteamworkItems.SILICA_GRIT,
                 1,
                 30.0,
@@ -80,7 +80,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_red_sand_to_silica_grit"),
-                RecipeInput.of(new ItemStack(Material.RED_SAND, 2)),
+                RecipeInput.of(ItemStack.of(Material.RED_SAND, 2)),
                 SteamworkItems.SILICA_GRIT,
                 1,
                 32.0,
@@ -88,7 +88,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_clay_to_mineral_flux"),
-                RecipeInput.of(new ItemStack(Material.CLAY)),
+                RecipeInput.of(ItemStack.of(Material.CLAY)),
                 SteamworkItems.MINERAL_FLUX,
                 2,
                 45.0,
@@ -96,7 +96,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_tuff_to_mineral_flux"),
-                RecipeInput.of(new ItemStack(Material.TUFF, 2)),
+                RecipeInput.of(ItemStack.of(Material.TUFF, 2)),
                 SteamworkItems.MINERAL_FLUX,
                 1,
                 45.0,
@@ -104,7 +104,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_calcite_to_silica_grit"),
-                RecipeInput.of(new ItemStack(Material.CALCITE, 2)),
+                RecipeInput.of(ItemStack.of(Material.CALCITE, 2)),
                 SteamworkItems.SILICA_GRIT,
                 2,
                 40.0,
@@ -112,15 +112,15 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_soul_sand_to_soul_soil"),
-                RecipeInput.of(new ItemStack(Material.SOUL_SAND)),
-                new ItemStack(Material.SOUL_SOIL),
+                RecipeInput.of(ItemStack.of(Material.SOUL_SAND)),
+                ItemStack.of(Material.SOUL_SOIL),
                 1,
                 25.0,
                 160));
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_raw_copper_to_crushed_raw_copper"),
-                RecipeInput.of(new ItemStack(Material.RAW_COPPER)),
+                RecipeInput.of(ItemStack.of(Material.RAW_COPPER)),
                 PylonItems.CRUSHED_RAW_COPPER,
                 2,
                 45.0,
@@ -128,7 +128,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_raw_iron_to_crushed_raw_iron"),
-                RecipeInput.of(new ItemStack(Material.RAW_IRON)),
+                RecipeInput.of(ItemStack.of(Material.RAW_IRON)),
                 PylonItems.CRUSHED_RAW_IRON,
                 2,
                 55.0,
@@ -136,7 +136,7 @@ public final class WashingRecipes {
 
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRecipe(
                 steamworkKey("wash_raw_gold_to_crushed_raw_gold"),
-                RecipeInput.of(new ItemStack(Material.RAW_GOLD)),
+                RecipeInput.of(ItemStack.of(Material.RAW_GOLD)),
                 PylonItems.CRUSHED_RAW_GOLD,
                 2,
                 55.0,
@@ -155,7 +155,7 @@ public final class WashingRecipes {
         // 随机产出花岗岩粉、闪长岩粉或安山岩粉之一（等概率 1/3）。
         SteamWashingRecipe.RECIPE_TYPE.addRecipe(new SteamWashingRandomRecipe(
                 steamworkKey("wash_gravel_to_stone_dust"),
-                RecipeInput.of(new ItemStack(Material.GRAVEL, 3)),
+                RecipeInput.of(ItemStack.of(Material.GRAVEL, 3)),
                 List.of(
                         SteamworkItems.GRANITE_DUST,
                         SteamworkItems.DIORITE_DUST,

@@ -88,7 +88,7 @@ public final class CentrifugationRecipes {
                 steamworkKey("centrifuge_machine_scrap"),
                 RecipeInput.of(SteamworkItems.MACHINE_SCRAP, 4),
                 weighted(
-                        new ItemStack(Material.IRON_NUGGET, 4), 50f,
+                        ItemStack.of(Material.IRON_NUGGET, 4), 50f,
                         PylonItems.IRON_DUST.clone(), 25f,
                         PylonItems.COPPER_DUST.clone(), 15f,
                         PylonItems.GOLD_DUST.clone(), 5f,

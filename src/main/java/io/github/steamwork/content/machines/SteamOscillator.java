@@ -273,7 +273,7 @@ public class SteamOscillator extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("fluid", steamKind.component()),
                 RebarArgument.of("pressure-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(steamKind.fluid()), fluidCapacity(steamKind.fluid()), 12,

@@ -1,4 +1,5 @@
 package io.github.steamwork.recipes;
+import io.github.pylonmc.rebar.guide.button.FluidButton;
 
 import io.github.pylonmc.rebar.guide.button.ItemButton;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
@@ -80,7 +81,7 @@ public record SteamCentrifugationRecipe(
         // 产物用集合中第一项代表，保证指南每次显示一致（避免 getRandom() 每次不同）
         java.util.Set<ItemStack> elements = results.getElements();
         ItemStack representativeOutput = elements.isEmpty()
-                ? new ItemStack(Material.BARRIER)
+                ? ItemStack.of(Material.BARRIER)
                 : elements.iterator().next();
 
         return Gui.builder()
@@ -95,7 +96,7 @@ public record SteamCentrifugationRecipe(
                 .addIngredient('i', ItemButton.of(ingredient))
                 .addIngredient('o', ItemButton.of(representativeOutput))
                 .addIngredient('m', ItemButton.of(SteamworkItems.PRECISION_CENTRIFUGE))
-                .addIngredient('s', new io.github.pylonmc.rebar.guide.button.FluidButton(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .build();
     }

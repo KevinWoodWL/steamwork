@@ -27,34 +27,34 @@ public final class AssemblyRecipes {
         register(steamworkKey("assemble_steam_sword"),
                 SteamworkItems.STEAM_SWORD,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 4),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 4),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE));
 
         register(steamworkKey("assemble_steam_pickaxe"),
                 SteamworkItems.STEAM_PICKAXE,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 3),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 3),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE, 2));
 
         register(steamworkKey("assemble_steam_axe"),
                 SteamworkItems.STEAM_AXE,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 6),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 6),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE));
 
         register(steamworkKey("assemble_steam_shovel"),
                 SteamworkItems.STEAM_SHOVEL,
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 6),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 6),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE));
 
         register(steamworkKey("assemble_steam_hoe"),
                 SteamworkItems.STEAM_HOE,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 3),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 3),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE, 2));
 
@@ -62,26 +62,26 @@ public final class AssemblyRecipes {
         register(steamworkKey("assemble_steam_helmet"),
                 SteamworkItems.STEAM_HELMET,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 2),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 2),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR));
 
         register(steamworkKey("assemble_steam_chestplate"),
                 SteamworkItems.STEAM_CHESTPLATE,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 4),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 2),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 2),
                 RecipeInput.of(SteamworkItems.BRASS_SEAL_RING, 5));
 
         register(steamworkKey("assemble_steam_leggings"),
                 SteamworkItems.STEAM_LEGGINGS,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 2),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 2),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE, 2));
 
         register(steamworkKey("assemble_steam_boots"),
                 SteamworkItems.STEAM_BOOTS,
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 2),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT), 2),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 2),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR));
 
         registerEquipmentSet("bronze", new EquipmentSet(
@@ -172,7 +172,7 @@ public final class AssemblyRecipes {
                 RecipeInput.of(SteamworkItems.BRASS_INGOT, 3),
                 RecipeInput.of(SteamworkItems.BRASS_GEAR, 2),
                 RecipeInput.of(SteamworkItems.BRASS_VALVE_CORE, 2),
-                RecipeInput.of(new ItemStack(Material.SMITHING_TABLE)));
+                RecipeInput.of(ItemStack.of(Material.SMITHING_TABLE)));
 
         // ===== 蒸汽充汽舱（主方块）===== 额外需要 2 个高压法兰（中期锻造件），加深但不卡早期
         register(steamworkKey("assemble_charging_chamber"),

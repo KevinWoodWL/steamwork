@@ -535,7 +535,7 @@ public class ProductionLineInlet extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         if (!isInLine()) {
-            return new WailaDisplay(Component.translatable("steamwork.item.production_line_inlet.waila_idle"));
+            return WailaDisplay.of(Component.translatable("steamwork.item.production_line_inlet.waila_idle"));
         }
         boolean hasItems = false;
         for (int i = 0; i < 7; i++) {
@@ -548,7 +548,7 @@ public class ProductionLineInlet extends RebarBlock implements
         Component creatorComp = lineCreator != null
                 ? Component.text(lineCreator)
                 : Component.translatable("steamwork.line.unknown_creator");
-        return new WailaDisplay(Component.translatable(
+        return WailaDisplay.of(Component.translatable(
                 "steamwork.item.production_line_inlet.waila",
                 RebarArgument.of("number", Component.text(lineNumber)),
                 RebarArgument.of("state", Component.translatable("steamwork.line.state." + stateKey)),

@@ -90,7 +90,7 @@ public record SteamFoundryRecipe(
                 .addIngredient('3', ingredientButton(2))
                 .addIngredient('f', ingredientButton(3))
                 .addIngredient('m', ItemButton.of(SteamworkItems.PRECISION_FOUNDRY))
-                .addIngredient('s', new FluidButton(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .addIngredient('o', ItemButton.of(result))
                 .build();

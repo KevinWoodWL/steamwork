@@ -257,7 +257,7 @@ public class PneumaticPulser extends RebarBlock implements
             }
         }
         int pct = (int) (maxRatio * 100);
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("charge", pct),
                 RebarArgument.of("kind", steamKindLabel()),
                 RebarArgument.of("state", Component.translatable(pulseCooldown > 0

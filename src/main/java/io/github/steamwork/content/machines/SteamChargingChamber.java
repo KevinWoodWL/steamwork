@@ -331,7 +331,7 @@ public class SteamChargingChamber extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("structure", Component.translatable(
                         "steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
                 RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(

@@ -154,7 +154,7 @@ public class SteamSorter extends RebarBlock implements
             } else {
                 String matName = pdc.get(FILTER_KEYS[i], PersistentDataType.STRING);
                 if (matName == null) continue;
-                try { filterItems[i] = new ItemStack(Material.valueOf(matName)); }
+                try { filterItems[i] = ItemStack.of(Material.valueOf(matName)); }
                 catch (IllegalArgumentException ignored) {}
             }
         }
@@ -501,7 +501,7 @@ public class SteamSorter extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
                         fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),

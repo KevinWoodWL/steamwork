@@ -97,9 +97,9 @@ public record SteamDistillationRecipe(
                 )
                 .addIngredient('#', GuiItems.backgroundBlack())
                 .addIngredient('i', ItemButton.of(ingredient))
-                .addIngredient('f', inputFluid == null ? GuiItems.backgroundBlack() : new FluidButton(inputFluid))
+                .addIngredient('f', inputFluid == null ? GuiItems.backgroundBlack() : FluidButton.of(inputFluid))
                 .addIngredient('m', ItemButton.of(SteamworkItems.STEAM_DISTILLATION_TOWER))
-                .addIngredient('s', new FluidButton(superheatedSteamCost, SteamworkFluids.SUPERHEATED_STEAM))
+                .addIngredient('s', FluidButton.of(superheatedSteamCost, SteamworkFluids.SUPERHEATED_STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .addIngredient('1', resultButton(0))
                 .addIngredient('2', resultButton(1))
@@ -120,6 +120,6 @@ public record SteamDistillationRecipe(
             return ItemButton.of(item.item());
         }
         FluidOrItem.Fluid fluid = (FluidOrItem.Fluid) result;
-        return new FluidButton(fluid.amountMillibuckets(), fluid.fluid());
+        return FluidButton.of(fluid.amountMillibuckets(), fluid.fluid());
     }
 }

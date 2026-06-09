@@ -520,7 +520,7 @@ public class SteamToolItem extends SteamEquipment implements
     private @NotNull ItemStack smelt(@NotNull ItemStack drop) {
         Material smelted = SMELT_MAP.get(drop.getType());
         if (smelted == null) return drop;
-        return new ItemStack(smelted, drop.getAmount());
+        return ItemStack.of(smelted, drop.getAmount());
     }
 
     // ── 耕地 ──────────────────────────────────────────────────────────────────

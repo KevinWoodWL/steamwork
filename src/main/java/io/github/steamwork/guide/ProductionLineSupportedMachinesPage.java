@@ -15,10 +15,10 @@ public class ProductionLineSupportedMachinesPage extends SimpleStaticGuidePage {
     public ProductionLineSupportedMachinesPage() {
         super(steamworkKey("production_line_supported_machines"));
 
-        addItem(new ItemStack(Material.FURNACE));
-        addItem(new ItemStack(Material.BLAST_FURNACE));
-        addItem(new ItemStack(Material.SMOKER));
-        addItem(new ItemStack(Material.CRAFTER));
+        addItem(ItemStack.of(Material.FURNACE));
+        addItem(ItemStack.of(Material.BLAST_FURNACE));
+        addItem(ItemStack.of(Material.SMOKER));
+        addItem(ItemStack.of(Material.CRAFTER));
 
         addItem(SteamworkItems.STEAM_STERILIZER);
         addItem(SteamworkItems.STEAM_STEEPING_VAT);

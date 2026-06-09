@@ -311,7 +311,7 @@ public class PneumaticLogicGate extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("mode", mode.component().color(NamedTextColor.AQUA)),
                 RebarArgument.of("kind", steamKindLabel()),
                 RebarArgument.of("state", Component.translatable(lastActive

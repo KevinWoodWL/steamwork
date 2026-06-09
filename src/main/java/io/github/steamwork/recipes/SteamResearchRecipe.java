@@ -74,7 +74,7 @@ public record SteamResearchRecipe(
                 .addIngredient('i', ItemButton.of(sample))
                 .addIngredient('r', ItemButton.of(residue))
                 .addIngredient('m', ItemButton.of(SteamworkItems.STEAM_SCIENCE_INTERFACE))
-                .addIngredient('s', new FluidButton(steamCost, SteamworkFluids.STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .build();
     }

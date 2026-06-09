@@ -263,8 +263,11 @@ public class PneumaticInput extends RebarBlock implements
 
     // ── 朝向计算 ──────────────────────────────────────────────────────────────
 
-    boolean acceptsPneumaticConnection(@NotNull BlockFace face) {
-        return face == pneumaticConnectionFace();
+    public boolean acceptsPneumaticConnection(@NotNull BlockFace face) {
+        // 对齐 Pylon CargoInserter：容器贴合面固定在 getFacing().getOppositeFace()
+        //（即长方形机体/插入器所在面），导管可接到除该面以外的任意一面。
+        // 不再以单一 pneumaticConnectionFace() 限定，避免扫描顺序/回退导致正确面连不上。
+        return face != getFacing().getOppositeFace();
     }
 
     private @NotNull BlockFace pneumaticConnectionFace() {
@@ -450,7 +453,7 @@ public class PneumaticInput extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey());
+        return WailaDisplay.of(this, player);
     }
 
     // ── GUI 物品 ──────────────────────────────────────────────────────────────

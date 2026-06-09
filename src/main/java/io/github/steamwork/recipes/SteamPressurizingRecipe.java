@@ -77,7 +77,7 @@ public record SteamPressurizingRecipe(
                 .addIngredient('4', ingredientButton(3))
                 .addIngredient('5', ingredientButton(4))
                 .addIngredient('m', ItemButton.of(SteamworkItems.STEAM_PRESSURIZED_FURNACE))
-                .addIngredient('s', new FluidButton(steamCost, SteamworkFluids.STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .addIngredient('o', ItemButton.of(result))
                 .build();

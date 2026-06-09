@@ -192,7 +192,7 @@ public class SteamPressureTransducer extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("fluid", steamKind.component()),
                 RebarArgument.of("level", String.valueOf(currentLevel())),
                 RebarArgument.of("pressure-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(

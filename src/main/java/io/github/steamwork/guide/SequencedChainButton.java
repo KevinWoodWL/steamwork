@@ -63,7 +63,7 @@ public class SequencedChainButton extends AbstractBoundItem {
                 // 未解锁：BARRIER 外观 + unlock-instructions lore，与 ItemButton 行为对齐
                 String unlockKey = research.getKey().getNamespace()
                         + ".researches." + research.getKey().getKey() + ".unlock-instructions";
-                return ItemStackBuilder.of(displayStack.clone())
+                return ItemStackBuilder.copyOf(displayStack)
                         .set(DataComponentTypes.ITEM_MODEL, Material.BARRIER.getKey())
                         .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
                         .lore(Component.translatable(unlockKey)

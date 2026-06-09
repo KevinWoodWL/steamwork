@@ -602,9 +602,9 @@ public final class SteamworkItems {
         // 简易蒸汽涡轮：仅原版熔炉系列。
         io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage simpleTurbinePage =
                 RebarGuide.getOrCreateInfoPage(SteamworkKeys.SIMPLE_STEAM_TURBINE);
-        simpleTurbinePage.addItem(new ItemStack(Material.FURNACE));
-        simpleTurbinePage.addItem(new ItemStack(Material.BLAST_FURNACE));
-        simpleTurbinePage.addItem(new ItemStack(Material.SMOKER));
+        simpleTurbinePage.addItem(ItemStack.of(Material.FURNACE));
+        simpleTurbinePage.addItem(ItemStack.of(Material.BLAST_FURNACE));
+        simpleTurbinePage.addItem(ItemStack.of(Material.SMOKER));
 
 
         // 基础加工涡轮：Steamwork 基础加工机器（非精密）。

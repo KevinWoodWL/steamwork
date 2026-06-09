@@ -147,11 +147,11 @@ public final class SteamworkPages {
                         steamworkKey("assemble_flight_core"))
         )));
 
-        ROOT.addPage(new ItemStack(Material.CAMPFIRE), HEAT_SOURCES);
-        HEAT_SOURCES.addItem(new ItemStack(Material.CAMPFIRE));
-        HEAT_SOURCES.addItem(new ItemStack(Material.SOUL_CAMPFIRE));
-        HEAT_SOURCES.addItem(new ItemStack(Material.LAVA_BUCKET));
-        HEAT_SOURCES.addItem(new ItemStack(Material.MAGMA_BLOCK));
+        ROOT.addPage(ItemStack.of(Material.CAMPFIRE), HEAT_SOURCES);
+        HEAT_SOURCES.addItem(ItemStack.of(Material.CAMPFIRE));
+        HEAT_SOURCES.addItem(ItemStack.of(Material.SOUL_CAMPFIRE));
+        HEAT_SOURCES.addItem(ItemStack.of(Material.LAVA_BUCKET));
+        HEAT_SOURCES.addItem(ItemStack.of(Material.MAGMA_BLOCK));
 
         ROOT.addPage(SteamworkItems.BRONZE_BOILER, STEAM_MACHINES);
         STEAM_MACHINES.addItem(SteamworkItems.BRONZE_BOILER);

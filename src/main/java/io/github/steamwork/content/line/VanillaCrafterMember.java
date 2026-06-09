@@ -385,7 +385,7 @@ class VanillaCrafterMember implements ManualInteractMember {
 
     private @Nullable ItemStack craftingRemainder(@NotNull ItemStack stack) {
         Material remainder = stack.getType().getCraftingRemainingItem();
-        return remainder == null || remainder.isAir() ? null : new ItemStack(remainder);
+        return remainder == null || remainder.isAir() ? null : ItemStack.of(remainder);
     }
 
     private boolean placeRemainders(

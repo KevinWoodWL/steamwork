@@ -613,7 +613,7 @@ public class SteamAssemblyBench extends RebarBlock implements
                     ? "steamwork.gui.steam_assembly_bench.waila.open_gui"
                     : "steamwork.gui.steam_assembly_bench.waila.structure_missing");
         }
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("structure", Component.translatable("steamwork.structure."
                         + (isFormedAndFullyLoaded() ? "formed" : "missing"))),
                 RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(

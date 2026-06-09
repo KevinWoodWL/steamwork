@@ -77,8 +77,12 @@ public final class PneumaticEndpointSupport {
      * </p>
      */
     public static @NotNull BlockFace pneumaticConnectionFace(@NotNull Block block, @NotNull BlockFace facing) {
+        // 对齐 Pylon CargoInteractor：容器贴合面固定在 facing.getOppositeFace()（长方形端），
+        // 永远不作为网络连接面，扫描时直接跳过。
+        BlockFace containerFace = facing.getOppositeFace();
         BlockFace directEndpointFace = null;
         for (BlockFace face : ALL_FACES) {
+            if (face == containerFace) continue;
             RebarBlock rb = loadedRebarBlock(block.getRelative(face));
             if (rb instanceof PneumaticDuct) {
                 return face;          // duct always takes priority
@@ -86,26 +90,13 @@ public final class PneumaticEndpointSupport {
             if (rb instanceof PneumaticGateValve valve && valve.isPneumaticAligned(face.getOppositeFace())) {
                 return face;          // aligned gate valve treated like a duct
             }
-            if (directEndpointFace == null
-                    && (rb instanceof PneumaticInput || rb instanceof PneumaticOutput)) {
-                directEndpointFace = face;   // remember first direct endpoint hit
+            if (directEndpointFace == null && isDirectEndpoint(block, face)) {
+                directEndpointFace = face;   // 首个双向都接受连接的相邻端点
             }
         }
         if (directEndpointFace != null) return directEndpointFace;
-        // No network blocks found — auto-detect adjacent container to correct orientation.
-        Block facingBlock = block.getRelative(facing);
-        if (isChunkLoaded(facingBlock)
-                && facingBlock.getState() instanceof org.bukkit.block.Container) {
-            return facing.getOppositeFace();
-        }
-        for (BlockFace face : ALL_FACES) {
-            Block neighbor = block.getRelative(face);
-            if (isChunkLoaded(neighbor)
-                    && neighbor.getState() instanceof org.bukkit.block.Container) {
-                return face.getOppositeFace();
-            }
-        }
-        return facing.getOppositeFace();
+        // 无网络邻居：默认朝正前方（getFacing）——连接桩伸出、导管应连接的主网络面。
+        return facing;
     }
 
     /**
@@ -141,8 +132,16 @@ public final class PneumaticEndpointSupport {
     }
 
     public static boolean isDirectEndpoint(@NotNull Block block, @NotNull BlockFace face) {
-        RebarBlock neighbor = loadedRebarBlock(block.getRelative(face));
-        return neighbor instanceof PneumaticInput || neighbor instanceof PneumaticOutput;
+        // 端点直连：本端在 face、对端在 face 的反面都必须接受气动连接
+        //（双方都不能用各自的容器贴合面），否则不视为可直连——避免长方形端误连。
+        return endpointAcceptsOn(loadedRebarBlock(block), face)
+                && endpointAcceptsOn(loadedRebarBlock(block.getRelative(face)), face.getOppositeFace());
+    }
+
+    private static boolean endpointAcceptsOn(@Nullable RebarBlock rb, @NotNull BlockFace face) {
+        if (rb instanceof PneumaticInput in) return in.acceptsPneumaticConnection(face);
+        if (rb instanceof PneumaticOutput out) return out.acceptsPneumaticConnection(face);
+        return false;
     }
 
     public static boolean shouldOwnDirectConnection(@NotNull Block block, @NotNull BlockFace face) {

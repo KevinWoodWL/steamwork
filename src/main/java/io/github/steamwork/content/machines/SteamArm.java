@@ -743,7 +743,7 @@ public class SteamArm extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         boolean hasMotor = hasMotor();
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.STEAM),
                         fluidCapacity(SteamworkFluids.STEAM),
@@ -1455,7 +1455,7 @@ public class SteamArm extends RebarBlock implements
         if (!material.isItem()) {
             material = Material.BARRIER;
         }
-        return new ItemStack(material);
+        return ItemStack.of(material);
     }
 
     private Component targetCoordinateLine(BlockLocation location) {

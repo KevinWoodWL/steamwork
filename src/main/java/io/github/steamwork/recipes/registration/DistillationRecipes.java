@@ -58,7 +58,7 @@ public final class DistillationRecipes {
                 RecipeInput.of(SteamworkItems.FIBER_RESIDUE, 2),
                 null,
                 List.of(
-                        new ItemStack(Material.BONE_MEAL, 3),
+                        ItemStack.of(Material.BONE_MEAL, 3),
                         SteamworkItems.MINERAL_FLUX.clone().asQuantity(1)
                 ),
                 List.<FluidOutput>of(),
@@ -135,10 +135,10 @@ public final class DistillationRecipes {
         // 3 sections: 煤炭干馏 → 焦炭 + 煤焦油（轻/重馏分）
         SteamDistillationRecipe.RECIPE_TYPE.addRecipe(new SteamDistillationRecipe(
                 steamworkKey("distillation_coal_carbonization"),
-                RecipeInput.of(new ItemStack(Material.COAL, 4)),
+                RecipeInput.of(ItemStack.of(Material.COAL, 4)),
                 null,
                 List.of(
-                        new ItemStack(Material.COAL, 3)
+                        ItemStack.of(Material.COAL, 3)
                 ),
                 List.of(
                         new FluidOutput(SteamworkFluids.LIGHT_FRACTION, 150.0),

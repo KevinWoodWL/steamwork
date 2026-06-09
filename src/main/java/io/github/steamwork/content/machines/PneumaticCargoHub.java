@@ -563,7 +563,7 @@ public class PneumaticCargoHub extends RebarBlock implements
         String targetStr = targetPos != null
                 ? targetPos[0] + ", " + targetPos[1] + ", " + targetPos[2]
                 : "—";
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("pressurized-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
                         fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),

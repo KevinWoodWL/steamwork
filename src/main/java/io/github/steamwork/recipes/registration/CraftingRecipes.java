@@ -118,13 +118,13 @@ public final class CraftingRecipes {
         RecipeType.VANILLA_SHAPELESS.addRecipe(rubberGasketFromFabric);
 
         ShapelessRecipe stringFromPlantFiber = new ShapelessRecipe(
-                steamworkKey("string_from_plant_fiber"), new ItemStack(Material.STRING));
+                steamworkKey("string_from_plant_fiber"), ItemStack.of(Material.STRING));
         stringFromPlantFiber.addIngredient(rebarChoice(SteamworkItems.PLANT_FIBER));
         stringFromPlantFiber.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPELESS.addRecipe(stringFromPlantFiber);
 
         ShapelessRecipe paperFromSteamPulp = new ShapelessRecipe(
-                steamworkKey("paper_from_steam_pulp"), new ItemStack(Material.PAPER, 3));
+                steamworkKey("paper_from_steam_pulp"), ItemStack.of(Material.PAPER, 3));
         paperFromSteamPulp.addIngredient(rebarChoice(SteamworkItems.STEAM_PULP));
         paperFromSteamPulp.addIngredient(rebarChoice(SteamworkItems.STEAM_PULP));
         paperFromSteamPulp.setCategory(CraftingBookCategory.MISC);
@@ -161,7 +161,7 @@ public final class CraftingRecipes {
         ShapelessRecipe nichromeDustCrude = new ShapelessRecipe(
                 steamworkKey("nichrome_dust_crude"), SteamworkItems.NICHROME_DUST);
         nichromeDustCrude.addIngredient(3, Material.BLAZE_POWDER);
-        nichromeDustCrude.addIngredient(new RecipeChoice.ExactChoice(new ItemStack(Material.IRON_INGOT)));
+        nichromeDustCrude.addIngredient(new RecipeChoice.ExactChoice(ItemStack.of(Material.IRON_INGOT)));
         nichromeDustCrude.addIngredient(rebarChoice(SteamworkItems.ZINC_INGOT));
         nichromeDustCrude.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPELESS.addRecipe(nichromeDustCrude);

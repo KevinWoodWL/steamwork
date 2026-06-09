@@ -429,7 +429,7 @@ public class PneumaticPressureModule extends RebarBlock implements
             case OVERFLOW_ALARM -> Material.RED_TERRACOTTA;
         };
         ItemDisplay display = new ItemDisplayBuilder()
-                .itemStack(new ItemStack(coreMaterial))
+                .itemStack(ItemStack.of(coreMaterial))
                 .transformation(new TransformBuilder().scale(0.45))
                 .persistent(true)
                 .build(center());
@@ -476,7 +476,7 @@ public class PneumaticPressureModule extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("mode", mode.component()),
                 RebarArgument.of("detail", detailComponent())
         ));

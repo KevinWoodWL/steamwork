@@ -167,7 +167,7 @@ public class PneumaticGateValve extends RebarBlock implements
 
     @Override
     public WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("state", Component.translatable(
                         open
                                 ? "steamwork.gui.pneumatic_gate_valve.state.open"

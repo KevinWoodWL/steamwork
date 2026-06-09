@@ -444,7 +444,7 @@ public class SteamDistillationTower extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("steam-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.SUPERHEATED_STEAM),
                         fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM),

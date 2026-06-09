@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
@@ -232,8 +233,11 @@ public class PneumaticOutput extends RebarBlock implements
 
     // ── 朝向计算 ──────────────────────────────────────────────────────────────
 
-    boolean acceptsPneumaticConnection(@NotNull BlockFace face) {
-        return face == pneumaticConnectionFace();
+    public boolean acceptsPneumaticConnection(@NotNull BlockFace face) {
+        // 对齐 Pylon CargoExtractor：源容器贴合面固定在 getFacing().getOppositeFace()
+        //（即长方形机体/抽取器所在面），导管可接到除该面以外的任意一面。
+        // 不再以单一 pneumaticConnectionFace() 限定，避免扫描顺序/回退导致正确面连不上。
+        return face != getFacing().getOppositeFace();
     }
 
     private @NotNull BlockFace pneumaticConnectionFace() {
@@ -249,13 +253,20 @@ public class PneumaticOutput extends RebarBlock implements
     }
 
     /**
-     * 轮询抽取：当同一个源容器被<b>多个</b>汽动输出端接入时，让它们按服务器 tick 严格轮流抽取，
-     * 避免「先 tick 的把源抽空、后 tick 的抢不到」。仅自己接入（无竞争）时始终允许。
+     * 多端共享同一源容器时的「交接游标」：键为源容器坐标，值为下一个有权补货的输出端序号。
      *
-     * <p>纯确定性、无共享状态：扫描源的 6 个相邻面收集所有以该源为抽取源的输出端（含自己），
-     * 按坐标排序得到稳定序号，本 tick 仅序号 == {@code tick % 数量} 的那个允许抽取。</p>
+     * <p>关键点：游标只在<b>实际发放了一批物品</b>（或当前持有者已满、主动让位）时才推进，
+     * <b>不</b>随服务器 tick 走。这样旋转节奏由真实的物品发放驱动，
+     * 而非墙钟时间——从根本上消除「产出周期与 tick%n 共振导致某端永远抢到」的问题。</p>
      */
-    private boolean shouldExtractThisTick(@NotNull Block source) {
+    private static final Map<String, Integer> SOURCE_PULL_CURSOR = new ConcurrentHashMap<>();
+
+    private static @NotNull String sourceKey(@NotNull Block b) {
+        return b.getWorld().getUID() + ":" + b.getX() + ":" + b.getY() + ":" + b.getZ();
+    }
+
+    /** 收集所有以 {@code source} 为抽取源的输出端（含自己），按坐标稳定排序。 */
+    private @NotNull List<Block> sourcePeers(@NotNull Block source) {
         List<Block> peers = new ArrayList<>();
         for (BlockFace face : FACES) {
             Block neighbor = source.getRelative(face);
@@ -265,24 +276,62 @@ public class PneumaticOutput extends RebarBlock implements
                 peers.add(neighbor);
             }
         }
-        if (peers.size() <= 1) return true;
         peers.sort(Comparator
                 .<Block>comparingInt(Block::getX)
                 .thenComparingInt(Block::getY)
                 .thenComparingInt(Block::getZ));
-        int myIndex = peers.indexOf(getBlock());
-        if (myIndex < 0) return true;
-        return Math.floorMod(org.bukkit.Bukkit.getCurrentTick(), peers.size()) == myIndex;
+        return peers;
+    }
+
+    /**
+     * 公平补货：多端共享一源时按交接游标轮流，单端接入时直接补货。
+     *
+     * <ul>
+     *   <li>仅在轮到本端（{@code myIndex == cursor}）时才尝试补货，且只补足到一个批次量，不囤积；</li>
+     *   <li>若本端已满（无需补货）→ 让位（推进游标），把机会交给下一端；</li>
+     *   <li>若需要补货但源此刻为空 → <b>保留</b>本端的游标位置，下一批出现的物品仍归本端，
+     *       从而消除与周期性产出的共振；</li>
+     *   <li>若成功领到物品 → 推进游标，交接给下一端。</li>
+     * </ul>
+     */
+    private void tryPullFromSource(@NotNull Block source) {
+        List<Block> peers = sourcePeers(source);
+        boolean shared = peers.size() > 1;
+
+        int myIndex = 0;
+        String key = null;
+        if (shared) {
+            myIndex = peers.indexOf(getBlock());
+            key = sourceKey(source);
+            if (myIndex >= 0) {
+                int cursor = Math.floorMod(SOURCE_PULL_CURSOR.getOrDefault(key, 0), peers.size());
+                if (myIndex != cursor) return;   // 还没轮到我
+            }
+        }
+
+        // 每个回合最多补「一个批次量」（itemsPerExtract），但允许自带的 9 格缓存在多个回合里
+        // 逐步填满——既保留缓存的意义（缓冲源空、接收 Distributor/Sorter 推送），
+        // 又让每回合抽取有上界，配合交接游标实现公平、消除单回合整仓抽空。
+        boolean hasRoom = storageHasRoom();
+        int pulled = hasRoom
+                ? PneumaticUtils.pullFromContainer(source, storageInventory, Math.max(itemsPerExtract, MIN_EXTRACT))
+                : 0;
+
+        // 已满让位 或 成功领货 → 推进游标交接下一端；需要但没领到（源空）则保留本端位置。
+        if (shared && myIndex >= 0 && (!hasRoom || pulled > 0)) {
+            int cursor = Math.floorMod(SOURCE_PULL_CURSOR.getOrDefault(key, 0), peers.size());
+            SOURCE_PULL_CURSOR.put(key, Math.floorMod(cursor + 1, peers.size()));
+        }
     }
 
     // ── tick ─────────────────────────────────────────────────────────────────
 
     @Override
     public void tick() {
-        // 1. 每 tick 从来源侧容器补充存储仓（多端接入同一源时轮流抽取，避免抢物品）
+        // 1. 公平补货：交接游标驱动的轮流，每回合最多补一个批次量，9 格缓存可逐步填满（消除抢货 + 共振）
         Block source = getBlock().getRelative(sourceFace());
-        if (!PneumaticDuct.isNetworkConnector(source) && shouldExtractThisTick(source)) {
-            PneumaticUtils.pullFromContainer(source, storageInventory, 64);
+        if (!PneumaticDuct.isNetworkConnector(source)) {
+            tryPullFromSource(source);
         }
 
         // 2. 计数器未到间隔，只补货不发送
@@ -328,6 +377,15 @@ public class PneumaticOutput extends RebarBlock implements
         }
 
         setActive(totalPushed > 0);
+    }
+
+    /** storageInventory 是否还有空间容纳更多物品（任一空槽或未满堆叠）。 */
+    private boolean storageHasRoom() {
+        for (ItemStack s : storageInventory.getItems()) {
+            if (s == null || s.getType().isAir()) return true;
+            if (s.getAmount() < s.getMaxStackSize()) return true;
+        }
+        return false;
     }
 
     /** 统计 storageInventory 中与 template 相似的物品总数。 */
@@ -401,7 +459,11 @@ public class PneumaticOutput extends RebarBlock implements
             if (face == src) continue;
             Block neighbor = getBlock().getRelative(face);
 
-            if (BlockStorage.get(neighbor) instanceof PneumaticInput && seen.add(neighbor)) {
+            // 直连相邻输入端：双方都必须在贴合面接受连接（不能推入对方的容器/长方形端）
+            if (BlockStorage.get(neighbor) instanceof PneumaticInput input
+                    && acceptsPneumaticConnection(face)
+                    && input.acceptsPneumaticConnection(face.getOppositeFace())
+                    && seen.add(neighbor)) {
                 destinations.add(neighbor);
                 continue;
             }
@@ -479,7 +541,7 @@ public class PneumaticOutput extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("extract",  String.valueOf(itemsPerExtract)),
                 RebarArgument.of("interval", String.valueOf(tickIntervalOverride)),
                 RebarArgument.of("state", Component.translatable(

@@ -89,7 +89,7 @@ public record SteamCatalyticReactionRecipe(
                 .addIngredient('2', ingredientButton(1))
                 .addIngredient('k', ingredientButton(2))
                 .addIngredient('m', ItemButton.of(SteamworkItems.PRECISION_CATALYTIC_REACTOR))
-                .addIngredient('s', new FluidButton(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .addIngredient('o', ItemButton.of(result))
                 .build();

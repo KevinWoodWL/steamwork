@@ -24,7 +24,7 @@ public final class CrystallizingRecipes {
         // 6 粗铁 → 1 钢锭（绕过 Pylon 高炉路线，代价是更多原矿 + 更长结晶时间）
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_steel_from_raw_iron"),
-                RecipeInput.of(new ItemStack(Material.RAW_IRON, 6)),
+                RecipeInput.of(ItemStack.of(Material.RAW_IRON, 6)),
                 PylonItems.STEEL_INGOT.clone(),
                 120.0,
                 480));
@@ -32,7 +32,7 @@ public final class CrystallizingRecipes {
         // 6 粗铜 → 1 青铜锭（同理：耗材换便利）
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_bronze_from_raw_copper"),
-                RecipeInput.of(new ItemStack(Material.RAW_COPPER, 6)),
+                RecipeInput.of(ItemStack.of(Material.RAW_COPPER, 6)),
                 PylonItems.BRONZE_INGOT.clone(),
                 80.0,
                 360));
@@ -59,7 +59,7 @@ public final class CrystallizingRecipes {
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_diamond_from_dust"),
                 RecipeInput.of(PylonItems.DIAMOND_DUST, 4),
-                new ItemStack(Material.DIAMOND),
+                ItemStack.of(Material.DIAMOND),
                 90.0,
                 360));
 
@@ -67,7 +67,7 @@ public final class CrystallizingRecipes {
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_emerald_from_dust"),
                 RecipeInput.of(PylonItems.EMERALD_DUST, 4),
-                new ItemStack(Material.EMERALD),
+                ItemStack.of(Material.EMERALD),
                 85.0,
                 340));
 
@@ -75,7 +75,7 @@ public final class CrystallizingRecipes {
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_quartz_from_dust"),
                 RecipeInput.of(PylonItems.QUARTZ_DUST, 4),
-                new ItemStack(Material.QUARTZ),
+                ItemStack.of(Material.QUARTZ),
                 70.0,
                 300));
 
@@ -84,7 +84,7 @@ public final class CrystallizingRecipes {
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_copper_from_dust"),
                 RecipeInput.of(PylonItems.COPPER_DUST, 2),
-                new ItemStack(Material.COPPER_INGOT),
+                ItemStack.of(Material.COPPER_INGOT),
                 40.0,
                 200));
 
@@ -92,7 +92,7 @@ public final class CrystallizingRecipes {
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_iron_from_dust"),
                 RecipeInput.of(PylonItems.IRON_DUST, 2),
-                new ItemStack(Material.IRON_INGOT),
+                ItemStack.of(Material.IRON_INGOT),
                 40.0,
                 200));
 
@@ -100,7 +100,7 @@ public final class CrystallizingRecipes {
         SteamCrystallizingRecipe.RECIPE_TYPE.addRecipe(new SteamCrystallizingRecipe(
                 steamworkKey("crystallize_gold_from_dust"),
                 RecipeInput.of(PylonItems.GOLD_DUST, 2),
-                new ItemStack(Material.GOLD_INGOT),
+                ItemStack.of(Material.GOLD_INGOT),
                 40.0,
                 200));
 

@@ -241,7 +241,7 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("water-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(PylonFluids.WATER),
                         fluidCapacity(PylonFluids.WATER),

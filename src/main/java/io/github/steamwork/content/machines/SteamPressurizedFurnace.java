@@ -729,7 +729,7 @@ public class SteamPressurizedFurnace extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("steam-bar", legacySteamBar()),
                 RebarArgument.of("state", Component.translatable("steamwork.state." + (isProcessingRecipe() ? "active" : "idle")))));
     }

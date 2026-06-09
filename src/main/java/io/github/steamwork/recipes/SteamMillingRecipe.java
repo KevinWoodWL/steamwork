@@ -1,4 +1,5 @@
 package io.github.steamwork.recipes;
+import io.github.pylonmc.rebar.guide.button.FluidButton;
 
 import io.github.pylonmc.rebar.guide.button.ItemButton;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
@@ -77,7 +78,7 @@ public record SteamMillingRecipe(
                 .addIngredient('i', ItemButton.of(ingredient))
                 .addIngredient('o', ItemButton.of(result))
                 .addIngredient('m', ItemButton.of(SteamworkItems.STEAM_PRECISION_MILL))
-                .addIngredient('s', new io.github.pylonmc.rebar.guide.button.FluidButton(steamCost, SteamworkFluids.STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .build();
     }

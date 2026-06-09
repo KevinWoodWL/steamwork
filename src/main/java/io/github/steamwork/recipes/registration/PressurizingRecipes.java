@@ -22,7 +22,7 @@ public final class PressurizingRecipes {
                 steamworkKey("pressurizing_nichrome"),
                 List.of(
                         RecipeInput.of(PylonItems.STEEL_DUST),
-                        RecipeInput.of(new ItemStack(Material.BLAZE_POWDER), 2),
+                        RecipeInput.of(ItemStack.of(Material.BLAZE_POWDER), 2),
                         RecipeInput.of(SteamworkItems.ZINC_INGOT),
                         RecipeInput.of(SteamworkItems.MINERAL_FLUX)
                 ),
@@ -34,7 +34,7 @@ public final class PressurizingRecipes {
                 steamworkKey("pressurizing_invar"),
                 List.of(
                         RecipeInput.of(PylonItems.STEEL_INGOT),
-                        RecipeInput.of(new ItemStack(Material.IRON_INGOT), 2),
+                        RecipeInput.of(ItemStack.of(Material.IRON_INGOT), 2),
                         RecipeInput.of(SteamworkItems.NICHROME_INGOT),
                         RecipeInput.of(SteamworkItems.MINERAL_FLUX)
                 ),
@@ -45,9 +45,9 @@ public final class PressurizingRecipes {
         SteamPressurizingRecipe.RECIPE_TYPE.addRecipe(new SteamPressurizingRecipe(
                 steamworkKey("pressurizing_duralumin"),
                 List.of(
-                        RecipeInput.of(new ItemStack(Material.COPPER_INGOT), 2),
+                        RecipeInput.of(ItemStack.of(Material.COPPER_INGOT), 2),
                         RecipeInput.of(SteamworkItems.ZINC_INGOT),
-                        RecipeInput.of(new ItemStack(Material.AMETHYST_SHARD), 2),
+                        RecipeInput.of(ItemStack.of(Material.AMETHYST_SHARD), 2),
                         RecipeInput.of(SteamworkItems.SILICA_GRIT)
                 ),
                 SteamworkItems.DURALUMIN_DUST.clone().asQuantity(2),
@@ -59,9 +59,9 @@ public final class PressurizingRecipes {
         SteamPressurizingRecipe.RECIPE_TYPE.addRecipe(new SteamPressurizingRecipe(
                 steamworkKey("pressurizing_duralumin_premium"),
                 List.of(
-                        RecipeInput.of(new ItemStack(Material.COPPER_INGOT), 2),
+                        RecipeInput.of(ItemStack.of(Material.COPPER_INGOT), 2),
                         RecipeInput.of(SteamworkItems.ZINC_INGOT),
-                        RecipeInput.of(new ItemStack(Material.AMETHYST_SHARD), 2),
+                        RecipeInput.of(ItemStack.of(Material.AMETHYST_SHARD), 2),
                         RecipeInput.of(SteamworkItems.STERILE_CULTURE)
                 ),
                 SteamworkItems.DURALUMIN_DUST.clone().asQuantity(3),
@@ -71,9 +71,9 @@ public final class PressurizingRecipes {
         SteamPressurizingRecipe.RECIPE_TYPE.addRecipe(new SteamPressurizingRecipe(
                 steamworkKey("pressurizing_tungsten"),
                 List.of(
-                        RecipeInput.of(new ItemStack(Material.NETHERITE_SCRAP)),
+                        RecipeInput.of(ItemStack.of(Material.NETHERITE_SCRAP)),
                         RecipeInput.of(PylonItems.CARBON),
-                        RecipeInput.of(new ItemStack(Material.BLAZE_ROD)),
+                        RecipeInput.of(ItemStack.of(Material.BLAZE_ROD)),
                         RecipeInput.of(SteamworkItems.MINERAL_FLUX, 2)
                 ),
                 SteamworkItems.TUNGSTEN_DUST.clone(),
@@ -85,7 +85,7 @@ public final class PressurizingRecipes {
                 List.of(
                         RecipeInput.of(PylonItems.STEEL_INGOT, 2),
                         RecipeInput.of(PylonItems.CARBON),
-                        RecipeInput.of(new ItemStack(Material.LAPIS_LAZULI), 2),
+                        RecipeInput.of(ItemStack.of(Material.LAPIS_LAZULI), 2),
                         RecipeInput.of(SteamworkItems.MINERAL_FLUX)
                 ),
                 SteamworkItems.MANGANESE_STEEL_DUST.clone().asQuantity(2),
@@ -97,7 +97,7 @@ public final class PressurizingRecipes {
                 List.of(
                         RecipeInput.of(PylonItems.BRONZE_INGOT, 2),
                         RecipeInput.of(SteamworkItems.BRASS_INGOT),
-                        RecipeInput.of(new ItemStack(Material.LAPIS_LAZULI), 2),
+                        RecipeInput.of(ItemStack.of(Material.LAPIS_LAZULI), 2),
                         RecipeInput.of(SteamworkItems.MINERAL_FLUX)
                 ),
                 SteamworkItems.MANGANESE_BRONZE_DUST.clone().asQuantity(3),

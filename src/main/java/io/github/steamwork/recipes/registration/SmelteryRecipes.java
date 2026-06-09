@@ -27,11 +27,11 @@ public final class SmelteryRecipes {
         // pylon 0.37+ 的 MeltingRecipe 签名删了 int timeTicks 参数（时间由 melting point + 熔炉本身决定）。
         MeltingRecipe.RECIPE_TYPE.addRecipe(new MeltingRecipe(
                 steamworkKey("zinc_from_amethyst_shard"),
-                RecipeInput.of(new ItemStack(Material.AMETHYST_SHARD)),
+                RecipeInput.of(ItemStack.of(Material.AMETHYST_SHARD)),
                 SteamworkFluids.MOLTEN_ZINC, 16.0));
         MeltingRecipe.RECIPE_TYPE.addRecipe(new MeltingRecipe(
                 steamworkKey("zinc_from_amethyst_block"),
-                RecipeInput.of(new ItemStack(Material.AMETHYST_BLOCK)),
+                RecipeInput.of(ItemStack.of(Material.AMETHYST_BLOCK)),
                 SteamworkFluids.MOLTEN_ZINC, 144.0));
         MeltingRecipe.RECIPE_TYPE.addRecipe(new MeltingRecipe(
                 SteamworkKeys.ZINC_INGOT, RecipeInput.of(SteamworkItems.ZINC_INGOT),
@@ -60,7 +60,7 @@ public final class SmelteryRecipes {
         // 紫水晶碎片入窑出锌液 + 渣，温度对齐锌的熔点（约 420 °C）。
         KilnRecipe.RECIPE_TYPE.addRecipe(new KilnRecipe(
                 steamworkKey("kiln_zinc_from_amethyst"),
-                RecipeInput.of(new ItemStack(Material.AMETHYST_SHARD)),
+                RecipeInput.of(ItemStack.of(Material.AMETHYST_SHARD)),
                 null,
                 PylonItems.SLAG.clone(),
                 SteamworkFluids.MOLTEN_ZINC, 16.0,
@@ -68,7 +68,7 @@ public final class SmelteryRecipes {
         // 2 紫水晶块入窑出 144 mB 锌液 + 2 渣，给一个略高产的成块入炉路线。
         KilnRecipe.RECIPE_TYPE.addRecipe(new KilnRecipe(
                 steamworkKey("kiln_zinc_from_amethyst_block"),
-                RecipeInput.of(new ItemStack(Material.AMETHYST_BLOCK)),
+                RecipeInput.of(ItemStack.of(Material.AMETHYST_BLOCK)),
                 null,
                 PylonItems.SLAG.clone().asQuantity(2),
                 SteamworkFluids.MOLTEN_ZINC, 144.0,
@@ -77,7 +77,7 @@ public final class SmelteryRecipes {
         // 与 Pylon 自带的 bronze 配方写法对齐（2 copper + 1 tin → 432 mB bronze）。
         KilnRecipe.RECIPE_TYPE.addRecipe(new KilnRecipe(
                 steamworkKey("kiln_brass"),
-                RecipeInput.of(new ItemStack(Material.COPPER_INGOT), 2),
+                RecipeInput.of(ItemStack.of(Material.COPPER_INGOT), 2),
                 RecipeInput.of(SteamworkItems.ZINC_INGOT, 1),
                 PylonItems.SLAG.clone().asQuantity(2),
                 SteamworkFluids.MOLTEN_BRASS, 432.0,

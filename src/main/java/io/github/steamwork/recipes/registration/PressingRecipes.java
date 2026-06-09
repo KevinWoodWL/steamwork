@@ -44,7 +44,7 @@ public final class PressingRecipes {
 
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_copper_ingot_to_sheet"),
-                RecipeInput.of(new ItemStack(Material.COPPER_INGOT)),
+                RecipeInput.of(ItemStack.of(Material.COPPER_INGOT)),
                 PylonItems.COPPER_SHEET,
                 30.0,
                 180));
@@ -52,7 +52,7 @@ public final class PressingRecipes {
         // 金：延展性好，比铁软，压制略省力。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_gold_ingot_to_sheet"),
-                RecipeInput.of(new ItemStack(Material.GOLD_INGOT)),
+                RecipeInput.of(ItemStack.of(Material.GOLD_INGOT)),
                 PylonItems.GOLD_SHEET,
                 32.0,
                 185));
@@ -60,7 +60,7 @@ public final class PressingRecipes {
         // 铁：中游主力材料。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_iron_ingot_to_sheet"),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT)),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT)),
                 PylonItems.IRON_SHEET,
                 35.0,
                 195));
@@ -112,21 +112,21 @@ public final class PressingRecipes {
         // 输出对接 Pylon 粉末体系，适合作为研磨机的平行早期路线。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_raw_iron_to_dust"),
-                RecipeInput.of(new ItemStack(Material.RAW_IRON, 5)),
+                RecipeInput.of(ItemStack.of(Material.RAW_IRON, 5)),
                 PylonItems.IRON_DUST.clone().asQuantity(6),
                 35.0,
                 200));
 
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_raw_copper_to_dust"),
-                RecipeInput.of(new ItemStack(Material.RAW_COPPER, 5)),
+                RecipeInput.of(ItemStack.of(Material.RAW_COPPER, 5)),
                 PylonItems.COPPER_DUST.clone().asQuantity(6),
                 30.0,
                 180));
 
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_raw_gold_to_dust"),
-                RecipeInput.of(new ItemStack(Material.RAW_GOLD, 5)),
+                RecipeInput.of(ItemStack.of(Material.RAW_GOLD, 5)),
                 PylonItems.GOLD_DUST.clone().asQuantity(6),
                 32.0,
                 185));
@@ -135,16 +135,16 @@ public final class PressingRecipes {
         // 骨头：3 骨头 → 11 骨粉（原版 3 骨头 = 9 骨粉，+22%）。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_bone_to_bonemeal"),
-                RecipeInput.of(new ItemStack(Material.BONE, 3)),
-                new ItemStack(Material.BONE_MEAL, 11),
+                RecipeInput.of(ItemStack.of(Material.BONE, 3)),
+                ItemStack.of(Material.BONE_MEAL, 11),
                 25.0,
                 160));
 
         // 烈焰棒：4 烈焰棒 → 10 烈焰粉（原版 4 烈焰棒 = 8 烈焰粉，+25%）。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_blaze_rod_to_powder"),
-                RecipeInput.of(new ItemStack(Material.BLAZE_ROD, 4)),
-                new ItemStack(Material.BLAZE_POWDER, 10),
+                RecipeInput.of(ItemStack.of(Material.BLAZE_ROD, 4)),
+                ItemStack.of(Material.BLAZE_POWDER, 10),
                 40.0,
                 200));
 
@@ -152,16 +152,16 @@ public final class PressingRecipes {
         // 砾石 → 燧石：2 砾石稳定产出 1 燧石，避免靠锹概率开采。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_gravel_to_flint"),
-                RecipeInput.of(new ItemStack(Material.GRAVEL, 2)),
-                new ItemStack(Material.FLINT),
+                RecipeInput.of(ItemStack.of(Material.GRAVEL, 2)),
+                ItemStack.of(Material.FLINT),
                 20.0,
                 140));
 
         // 黏土块 → 砖：4 黏土球 → 5 砖（原版熔炉 4 黏土球 = 4 砖，+25%）。
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_clay_to_brick"),
-                RecipeInput.of(new ItemStack(Material.CLAY_BALL, 4)),
-                new ItemStack(Material.BRICK, 5),
+                RecipeInput.of(ItemStack.of(Material.CLAY_BALL, 4)),
+                ItemStack.of(Material.BRICK, 5),
                 25.0,
                 160));
 
@@ -170,21 +170,21 @@ public final class PressingRecipes {
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_granite_dust_to_granite"),
                 RecipeInput.of(SteamworkItems.GRANITE_DUST, 4),
-                new ItemStack(Material.GRANITE),
+                ItemStack.of(Material.GRANITE),
                 30.0,
                 180));
 
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_diorite_dust_to_diorite"),
                 RecipeInput.of(SteamworkItems.DIORITE_DUST, 4),
-                new ItemStack(Material.DIORITE),
+                ItemStack.of(Material.DIORITE),
                 30.0,
                 180));
 
         SteamPressingRecipe.RECIPE_TYPE.addRecipe(new SteamPressingRecipe(
                 steamworkKey("press_andesite_dust_to_andesite"),
                 RecipeInput.of(SteamworkItems.ANDESITE_DUST, 4),
-                new ItemStack(Material.ANDESITE),
+                ItemStack.of(Material.ANDESITE),
                 30.0,
                 180));
 

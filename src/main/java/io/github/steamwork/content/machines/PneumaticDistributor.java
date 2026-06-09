@@ -403,7 +403,7 @@ public class PneumaticDistributor extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        return new WailaDisplay(getDefaultWailaTranslationKey().arguments(
+        return WailaDisplay.of(getDefaultWailaTranslationKey().arguments(
                 RebarArgument.of("pressurized-bar", io.github.steamwork.util.SteamworkUtils.createFluidAmountBar(
                         fluidAmount(SteamworkFluids.PRESSURIZED_STEAM),
                         fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM),

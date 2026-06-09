@@ -19,44 +19,44 @@ public final class GrindingRecipes {
         // 下界岩研磨：16 下界岩 → 1 烈焰粉（提炼下界岩中的火焰物质，早期无需进入下界深处也能积累烈焰粉）。
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_netherrack_to_blaze_powder"),
-                RecipeInput.of(new ItemStack(Material.NETHERRACK, 16)),
-                new ItemStack(Material.BLAZE_POWDER, 1),
+                RecipeInput.of(ItemStack.of(Material.NETHERRACK, 16)),
+                ItemStack.of(Material.BLAZE_POWDER, 1),
                 35.0,
                 200));
 
 
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_diorite_to_quartz"),
-                RecipeInput.of(new ItemStack(Material.DIORITE)),
-                new ItemStack(Material.QUARTZ),
+                RecipeInput.of(ItemStack.of(Material.DIORITE)),
+                ItemStack.of(Material.QUARTZ),
                 30.0,
                 180));
 
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_granite_to_quartz"),
-                RecipeInput.of(new ItemStack(Material.GRANITE)),
-                new ItemStack(Material.QUARTZ),
+                RecipeInput.of(ItemStack.of(Material.GRANITE)),
+                ItemStack.of(Material.QUARTZ),
                 30.0,
                 180));
 
         // ===== 金属锭粉碎（喂给加压熔炉的合金粉末配方，作为 Pylon dust 体系的早期来源） =====
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_iron_to_dust"),
-                RecipeInput.of(new ItemStack(Material.IRON_INGOT)),
+                RecipeInput.of(ItemStack.of(Material.IRON_INGOT)),
                 PylonItems.IRON_DUST,
                 35.0,
                 200));
 
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_copper_to_dust"),
-                RecipeInput.of(new ItemStack(Material.COPPER_INGOT)),
+                RecipeInput.of(ItemStack.of(Material.COPPER_INGOT)),
                 PylonItems.COPPER_DUST,
                 30.0,
                 180));
 
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_gold_to_dust"),
-                RecipeInput.of(new ItemStack(Material.GOLD_INGOT)),
+                RecipeInput.of(ItemStack.of(Material.GOLD_INGOT)),
                 PylonItems.GOLD_DUST,
                 35.0,
                 200));
@@ -71,7 +71,7 @@ public final class GrindingRecipes {
         // ===== 燃料类 =====
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_coal_to_dust"),
-                RecipeInput.of(new ItemStack(Material.COAL)),
+                RecipeInput.of(ItemStack.of(Material.COAL)),
                 PylonItems.COAL_DUST,
                 20.0,
                 140));
@@ -83,7 +83,7 @@ public final class GrindingRecipes {
         SteamGrindingRecipe.RECIPE_TYPE.addRecipe(new SteamGrindingRecipe(
                 steamworkKey("grind_scrap_to_iron"),
                 RecipeInput.of(SteamworkItems.MACHINE_SCRAP, 4),
-                new ItemStack(Material.IRON_INGOT),
+                ItemStack.of(Material.IRON_INGOT),
                 40.0,
                 240));
 

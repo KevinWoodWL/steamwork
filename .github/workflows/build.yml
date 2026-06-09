@@ -18,7 +18,7 @@ jobs:
         with:
           path: steamwork
 
-      # --- Checkout rebar (master — 自 v0.4.3 起需要 commit#786 之后的版本) ---
+      # --- Checkout rebar (master — v0.4.5 适配 rebar 0.42 API) ---
       - name: Checkout rebar
         uses: actions/checkout@v4
         with:
@@ -26,7 +26,7 @@ jobs:
           ref: 'master'
           path: rebar
 
-      # --- Checkout pylon (master — 跟随 rebar 接口变更) ---
+      # --- Checkout pylon (master — v0.4.5 适配 pylon 0.40 API) ---
       - name: Checkout pylon
         uses: actions/checkout@v4
         with:
@@ -50,10 +50,10 @@ jobs:
         working-directory: rebar
         run: ./gradlew shadowJar -x test --no-daemon
 
-      # --- Build pylon (uses rebar via composite build) ---
+      # --- Build pylon (uses rebar local jar) ---
       - name: Build pylon
         working-directory: pylon
-        run: ./gradlew shadowJar -x test --include-build ../rebar --no-daemon
+        run: ./gradlew shadowJar -x test --no-daemon
 
       # --- Build steamwork ---
       - name: Build steamwork

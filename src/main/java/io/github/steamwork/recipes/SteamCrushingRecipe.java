@@ -1,4 +1,5 @@
 package io.github.steamwork.recipes;
+import io.github.pylonmc.rebar.guide.button.FluidButton;
 
 import io.github.pylonmc.rebar.guide.button.ItemButton;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
@@ -77,7 +78,7 @@ public record SteamCrushingRecipe(
                 .addIngredient('i', ItemButton.of(ingredient))
                 .addIngredient('o', ItemButton.of(result))
                 .addIngredient('m', ItemButton.of(SteamworkItems.HEAVY_IMPACT_CRUSHER))
-                .addIngredient('s', new io.github.pylonmc.rebar.guide.button.FluidButton(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
+                .addIngredient('s', FluidButton.of(steamCost, SteamworkFluids.SUPERHEATED_STEAM))
                 .addIngredient('c', GuiItems.progressCyclingItem(timeTicks, clock))
                 .build();
     }
