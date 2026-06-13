@@ -979,9 +979,10 @@ item:
       <arrow> Autonomous robot built on a Copper Golem
       <arrow> Right-click a block to deploy one on top of it (full of steam)
       <arrow> Wanders near its deploy point; <white>actions consume onboard steam</white>, <red>halts when empty</red>
-      <arrow> Look at the robot to see remaining steam (WAILA)
-      <arrow> <white>Sneak + right-click</white> the robot to dismantle and recover the item
-      <arrow> <yellow>Coming later: charging chamber recharge, mining/chopping/hauling
+      <arrow> Returns to its <white>bound charging chamber</white> when low (auto-binds on first charge)
+      <arrow> <white>Right-click</white> to switch job (Patrol/Mine/Chop); <white>Sneak + right-click</white> to dismantle
+      <arrow> Look at the robot to see job/steam (WAILA)
+      <arrow> <yellow>Mining/chopping/hauling jobs rolling out
 
   pneumatic_distributor:
     name: "Pneumatic Distributor"
@@ -1472,6 +1473,10 @@ gui:
       running: "Patrolling"
       no_steam: "Out of Steam"
       charging: "Returning to Charge"
+    job:
+      patrol: "Patrol"
+      mine: "Mine"
+      chop: "Chop"
   common:
     steam_tier: "<aqua>Steam Tier"
     current: "<gray>Current: <reset>%value%"
@@ -2553,6 +2558,8 @@ researches:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>150 Precision</light_purple> points"
 
 message:
+  steam_robot:
+    job_set: "Job: "
   line_bridge:
     requires_logic: "<red>You must unlock the <white>Pneumatic Logic</white> research before placing this bridge machine"
   line_valve:

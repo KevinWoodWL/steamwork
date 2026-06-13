@@ -58,6 +58,9 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 public class SteamRobot extends RebarEntity<CopperGolem> implements
         TickingRebarEntity, InteractRebarEntityHandler {
 
+    /** 任务模式：巡逻 / 采矿 / 砍树。非潜行右键循环切换。 */
+    public enum JobMode { PATROL, MINE, CHOP }
+
     // home（部署点）持久化键，存为三个 double
     private static final NamespacedKey HOME_X = steamworkKey("robot_home_x");
     private static final NamespacedKey HOME_Y = steamworkKey("robot_home_y");
@@ -68,6 +71,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private static final NamespacedKey BOUND_X = steamworkKey("robot_bound_x");
     private static final NamespacedKey BOUND_Y = steamworkKey("robot_bound_y");
     private static final NamespacedKey BOUND_Z = steamworkKey("robot_bound_z");
+    // 任务模式持久化键（存枚举名）
+    private static final NamespacedKey JOB_KEY = steamworkKey("robot_job");
 
     // ===== 设置（settings/steam_robot.yml，缺省时用默认值，避免缺配置崩溃）=====
     private final int    tickInterval  = getSetting("tick-interval",  ConfigAdapter.INTEGER, 10);
@@ -89,6 +94,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private @Nullable Location boundChamber = null;
     /** 是否正在回充汽舱充能途中（避免在路上耗汽、防抖）。 */
     private boolean seekingCharge = false;
+    /** 当前任务模式。 */
+    private @NotNull JobMode jobMode = JobMode.PATROL;
 
     /** 新生成：写入 rebar 实体 key 并记录部署点。 */
     public SteamRobot(@NotNull CopperGolem golem, @NotNull Location home) {
@@ -117,6 +124,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         this.boundChamber = (bx != null && by != null && bz != null)
                 ? new Location(golem.getWorld(), bx, by, bz)
                 : null;
+        String job = pdc.get(JOB_KEY, PersistentDataType.STRING);
+        if (job != null) {
+            try { this.jobMode = JobMode.valueOf(job); } catch (IllegalArgumentException ignored) {}
+        }
         configure();
     }
 
@@ -172,7 +183,18 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             return;
         }
 
-        // ── 正常巡游（耗汽）──
+        // ── 作业（按任务模式）──
+        switch (jobMode) {
+            case PATROL -> patrolStep(golem);
+            case MINE, CHOP -> patrolStep(golem); // TODO P2：实际采矿/砍树作业
+        }
+
+        // 行动耗汽
+        steam = Math.max(0.0, steam - steamPerTick);
+    }
+
+    /** 巡逻：在部署点周围随机选点游走。 */
+    private void patrolStep(@NotNull CopperGolem golem) {
         Location loc = golem.getLocation();
         ticksSinceRetarget++;
 
@@ -188,9 +210,6 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                     6, 0.2, 0.3, 0.2, 0.01);
             ticksSinceRetarget = 0;
         }
-
-        // 行动耗汽
-        steam = Math.max(0.0, steam - steamPerTick);
     }
 
     /** 回充寻路：未到充汽舱判定框就周期性寻路过去；到了就站定等充。 */
@@ -239,6 +258,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             pdc.set(BOUND_Y, PersistentDataType.DOUBLE, boundChamber.getY());
             pdc.set(BOUND_Z, PersistentDataType.DOUBLE, boundChamber.getZ());
         }
+        pdc.set(JOB_KEY, PersistentDataType.STRING, jobMode.name());
     }
 
     // ===== 蒸汽燃料 / 充能 =====
@@ -278,15 +298,16 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         }
         return WailaDisplay.of(
                         Component.translatable("steamwork.item.steam_robot.name").color(NamedTextColor.AQUA))
+                .add(jobLabel().color(NamedTextColor.GOLD))
                 .add(state)
                 .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, steamCapacity, steam));
     }
 
     /**
-     * 潜行 + 右键机器人 → 拆除并掉回部署物品。
+     * 右键机器人：潜行 → 拆除并掉回部署物品；非潜行 → 循环切换任务模式。
      *
-     * <p>{@code golem.remove()} 触发 {@code EntityRemoveFromWorldEvent}，Rebar 会自动把本实体从
-     * {@link EntityStorage} 注销，无需手动清理。非潜行右键留作 P1 打开 GUI。</p>
+     * <p>拆除时 {@code golem.remove()} 触发 {@code EntityRemoveFromWorldEvent}，Rebar 会自动把本实体
+     * 从 {@link EntityStorage} 注销，无需手动清理。</p>
      */
     @Override
     @MultiHandler(priorities = {EventPriority.NORMAL})
@@ -294,10 +315,29 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         if (priority != EventPriority.NORMAL) return;
         if (event.getHand() != EquipmentSlot.HAND) return;   // 只主手触发一次
         Player player = event.getPlayer();
-        if (!player.isSneaking()) return;                    // 仅潜行+右键 = 拆除
 
         event.setCancelled(true);
-        dismantle(player);
+        if (player.isSneaking()) {
+            dismantle(player);
+        } else {
+            cycleJob(player);
+        }
+    }
+
+    /** 非潜行右键：循环切换任务模式（巡逻→采矿→砍树→…），actionbar 提示 + 音效。 */
+    private void cycleJob(@NotNull Player player) {
+        JobMode[] modes = JobMode.values();
+        jobMode = modes[(jobMode.ordinal() + 1) % modes.length];
+        player.sendActionBar(Component.empty()
+                .append(Component.translatable("steamwork.message.steam_robot.job_set").color(NamedTextColor.GRAY))
+                .append(jobLabel().color(NamedTextColor.AQUA)));
+        CopperGolem golem = getEntity();
+        golem.getWorld().playSound(golem.getLocation(), Sound.UI_BUTTON_CLICK, SoundCategory.BLOCKS, 0.6f, 1.4f);
+    }
+
+    /** 当前任务模式的可翻译名。 */
+    private @NotNull Component jobLabel() {
+        return Component.translatable("steamwork.gui.steam_robot.job." + jobMode.name().toLowerCase());
     }
 
     private void dismantle(@NotNull Player player) {

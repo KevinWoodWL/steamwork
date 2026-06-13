@@ -984,9 +984,10 @@ item:
       <arrow> 以铜傀儡为底座的自主行动机器人
       <arrow> 右键方块在其上方部署一台（满汽）
       <arrow> 在部署点周围巡游，<white>行动消耗内置蒸汽</white>；耗尽则<red>缺汽停摆</red>
-      <arrow> 注视机器人查看蒸汽余量（WAILA）
-      <arrow> <white>潜行 + 右键</white> 机器人可拆除并回收物品
-      <arrow> <yellow>后续将加入：充汽舱充能、采矿/砍树/搬运
+      <arrow> 低汽时回<white>绑定的蒸汽充汽舱</white>充能（首次被充汽自动绑定）
+      <arrow> <white>右键</white> 切换任务模式（巡逻/采矿/砍树），<white>潜行 + 右键</white> 拆除回收
+      <arrow> 注视机器人查看任务/蒸汽（WAILA）
+      <arrow> <yellow>采矿/砍树/搬运作业逐步开放中
 
   pneumatic_distributor:
     name: "汽动分发器"
@@ -1477,6 +1478,10 @@ gui:
       running: "巡游中"
       no_steam: "缺汽停摆"
       charging: "回充汽舱充能中"
+    job:
+      patrol: "巡逻"
+      mine: "采矿"
+      chop: "砍树"
   common:
     steam_tier: "<aqua>蒸汽档位"
     current: "<gray>当前：<reset>%value%"
@@ -2558,6 +2563,8 @@ researches:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>150 精密工程</light_purple>点数解锁"
 
 message:
+  steam_robot:
+    job_set: "任务模式："
   line_bridge:
     requires_logic: "<red>需要先解锁<white>汽动逻辑</white>研究才能放置这台桥接机器"
   line_valve:
