@@ -973,6 +973,15 @@ item:
       <arrow> <red>Needs both Steam Logistics and Pneumatic Logic research
     waila: "Pneumatic Line Sensor | %mode% | %state%"
 
+  steam_robot:
+    name: "Steam Robot"
+    lore: |-
+      <arrow> <gray>P0 validation skeleton</gray>: autonomous robot built on a Copper Golem
+      <arrow> Right-click a block to deploy one on top of it
+      <arrow> Currently only wanders near its deploy point (pathfinding + reload persistence test)
+      <arrow> <white>Sneak + right-click</white> the robot to dismantle and recover the item
+      <arrow> <yellow>Coming later: steam fuel, mining/chopping/hauling, charging chamber recharge
+
   pneumatic_distributor:
     name: "Pneumatic Distributor"
     lore: |-
@@ -2009,7 +2018,7 @@ gui:
     title: "<dark_gray>Steam Pulser"
     waila: "Steam Pulser | Charge %charge%% | %state%"
     charge_threshold: "<yellow>Charge Threshold"
-    charge_current: "<gray>Current: <aqua>%pct%%%"
+    charge_current: "<gray>Current: <aqua>%pct%%"
     charge_value: "<gray>Threshold: <aqua>%value% <gray>mB"
     charge_hint: "<dark_gray>Left +10 | Right -10 | Shift ×100"
     discharge_amount: "<yellow>Pulse Release Amount"

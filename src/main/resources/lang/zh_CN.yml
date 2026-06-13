@@ -978,6 +978,15 @@ item:
       <arrow> <red>需同时解锁蒸汽货运与汽动逻辑两项研究
     waila: "汽动产线传感器 | %mode% | %state%"
 
+  steam_robot:
+    name: "蒸汽机器人"
+    lore: |-
+      <arrow> <gray>P0 验证骨架</gray>：以铜傀儡为底座的自主行动机器人
+      <arrow> 右键方块在其上方部署一台
+      <arrow> 当前仅在部署点周围巡游（验证寻路与重载持久化）
+      <arrow> <white>潜行 + 右键</white> 机器人可拆除并回收物品
+      <arrow> <yellow>后续将加入：耗汽驱动、采矿/砍树/搬运、充汽舱充能
+
   pneumatic_distributor:
     name: "汽动分发器"
     lore: |-
@@ -2015,7 +2024,7 @@ gui:
     title: "<dark_gray>汽动脉冲器"
     waila: "汽动脉冲器 | 蓄能 %charge%% | %state%"
     charge_threshold: "<yellow>蓄能阈值"
-    charge_current: "<gray>当前进度：<aqua>%pct%%%"
+    charge_current: "<gray>当前进度：<aqua>%pct%%"
     charge_value: "<gray>阈值：<aqua>%value% <gray>mB"
     charge_hint: "<dark_gray>左键 +10 | 右键 -10 | Shift ×100"
     discharge_amount: "<yellow>脉冲释放量"

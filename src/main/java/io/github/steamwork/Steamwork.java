@@ -38,6 +38,7 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
         SteamworkFluids.initialize();
         SteamworkItems.initialize();
         SteamworkBlocks.initialize();
+        SteamworkEntities.initialize();
 
         // 注册需要全局监听的方块逻辑（必须在所有 block 注册完成后调用）。
         // 改为显式注册以替代 SteamArm 之前的 static {} 块注册方式。

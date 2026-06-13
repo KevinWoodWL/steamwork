@@ -256,4 +256,7 @@ public final class SteamworkKeys {
     public static final NamespacedKey PNEUMATIC_INPUT = steamworkKey("pneumatic_input");
     public static final NamespacedKey PNEUMATIC_OUTPUT = steamworkKey("pneumatic_output");
     public static final NamespacedKey PNEUMATIC_DISTRIBUTOR = steamworkKey("pneumatic_distributor");
+
+    // Steam robot（蒸汽机器人，实体 schema 与部署物品共用此 key）
+    public static final NamespacedKey STEAM_ROBOT = steamworkKey("steam_robot");
 }

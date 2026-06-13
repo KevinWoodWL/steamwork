@@ -251,6 +251,9 @@ public final class SteamworkItems {
     public static final ItemStack PNEUMATIC_LINE_VALVE = ItemStackBuilder.rebar(Material.WAXED_CUT_COPPER_SLAB, SteamworkKeys.PNEUMATIC_LINE_VALVE).build();
     public static final ItemStack PNEUMATIC_LINE_SENSOR = ItemStackBuilder.rebar(Material.WAXED_CUT_COPPER_SLAB, SteamworkKeys.PNEUMATIC_LINE_SENSOR).build();
 
+    // Steam robot（蒸汽机器人部署物品）
+    public static final ItemStack STEAM_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_ROBOT).build();
+
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
     public static final ItemStack PRECISION_SCREW = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_SCREW).build();
@@ -537,6 +540,7 @@ public final class SteamworkItems {
         RebarItem.register(PneumaticPressureModule.Item.class, PNEUMATIC_PRESSURE_MODULE, SteamworkKeys.PNEUMATIC_PRESSURE_MODULE);
         RebarItem.register(PneumaticLineValve.Item.class, PNEUMATIC_LINE_VALVE, SteamworkKeys.PNEUMATIC_LINE_VALVE);
         RebarItem.register(PneumaticLineSensor.Item.class, PNEUMATIC_LINE_SENSOR, SteamworkKeys.PNEUMATIC_LINE_SENSOR);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.class, STEAM_ROBOT);
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STERILIZER)
                 .addButton(new MachineRecipesButton(SteamSterilizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STEEPING_VAT)
