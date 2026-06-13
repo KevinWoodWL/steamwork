@@ -58,7 +58,7 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * 产线入口方块。
  *
  * <p>物品槽分为原料槽（7 格）和燃料槽（7 格）两组，分别向产线机器推送原料和燃料。</p>
- * <p>两组均支持气动网络（ingredient/fuel INPUT 组）或玩家直接放入。</p>
+ * <p>两组均支持汽动网络（ingredient/fuel INPUT 组）或玩家直接放入。</p>
  * <p>燃料分发支持轮询（默认）和单目标两种模式，通过 GUI 内的扫描按钮和模式切换按钮控制。</p>
  */
 public class ProductionLineInlet extends RebarBlock implements

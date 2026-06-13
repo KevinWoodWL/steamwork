@@ -41,7 +41,7 @@ import java.util.UUID;
  * 产线出口方块。
  *
  * <p>作用：接收产线末台机器推来的产物（通过 {@link #acceptFromLine}），
- * 将产物缓存在内部 buffer，外部气动网络（逻辑组 OUTPUT）可从中拉取物品。</p>
+ * 将产物缓存在内部 buffer，外部汽动网络（逻辑组 OUTPUT）可从中拉取物品。</p>
  *
  * <p>玩家也可直接从 GUI 取走物品。</p>
  */
@@ -114,7 +114,7 @@ public class ProductionLineOutlet extends RebarBlock implements
     @Override
     public void postInitialise() {
         createLogisticGroup("buffer", LogisticGroupType.OUTPUT, buffer);
-        // 任何方式取走物品（玩家、漏斗、气动）都重置堵塞计数
+        // 任何方式取走物品（玩家、漏斗、汽动）都重置堵塞计数
         buffer.addPostUpdateHandler(event -> {
             ItemStack prev = event.getPreviousItem();
             ItemStack next = event.getNewItem();
@@ -214,7 +214,7 @@ public class ProductionLineOutlet extends RebarBlock implements
         return consecutiveRejections >= JAM_THRESHOLD;
     }
 
-    /** 外部排出物品后（漏斗/气动取走）重置堵塞计数。 */
+    /** 外部排出物品后（漏斗/汽动取走）重置堵塞计数。 */
     public void resetJam() {
         consecutiveRejections = 0;
     }

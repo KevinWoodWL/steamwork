@@ -57,7 +57,7 @@ public final class CraftingRecipes {
         steamOscillator.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamOscillator);
 
-        // 汽动截止阀：导管 + 黄铜阀芯 + 红石，红石控制气动物品网络通断
+        // 汽动截止阀：导管 + 黄铜阀芯 + 红石，红石控制汽动物品网络通断
         ShapedRecipe pneumaticGateValve = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_GATE_VALVE, SteamworkItems.PNEUMATIC_GATE_VALVE);
         pneumaticGateValve.shape(" D ", "RVR", " D ");
@@ -90,7 +90,7 @@ public final class CraftingRecipes {
         steamDifferenceEngine.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamDifferenceEngine);
 
-        // 气动管道模块：导管 + 比较器 + 黄铜流阀 + 红石，嵌入导管链做流量计/限流阀/溢流报警
+        // 汽动管道模块：导管 + 比较器 + 黄铜流阀 + 红石，嵌入导管链做流量计/限流阀/溢流报警
         ShapedRecipe pneumaticPressureModule = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_PRESSURE_MODULE, SteamworkItems.PNEUMATIC_PRESSURE_MODULE);
         pneumaticPressureModule.shape(" C ", "DFD", " R ");
@@ -101,7 +101,7 @@ public final class CraftingRecipes {
         pneumaticPressureModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticPressureModule);
 
-        // 气动产线阀：比较器(读阈值) + 锻造板(产线本体) + 黄铜阀芯(门控) + 红石（逻辑→产线桥接）
+        // 汽动产线阀：比较器(读阈值) + 锻造板(产线本体) + 黄铜阀芯(门控) + 红石（逻辑→产线桥接）
         // 配方为合理默认值，平衡可按需调整。
         ShapedRecipe pneumaticLineValve = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_LINE_VALVE, SteamworkItems.PNEUMATIC_LINE_VALVE);
@@ -113,7 +113,7 @@ public final class CraftingRecipes {
         pneumaticLineValve.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticLineValve);
 
-        // 气动产线传感器：侦测器(检测物品经过) + 锻造板(产线本体) + 黄铜流量阀(喷汽) + 红石（产线→逻辑桥接）
+        // 汽动产线传感器：侦测器(检测物品经过) + 锻造板(产线本体) + 黄铜流量阀(喷汽) + 红石（产线→逻辑桥接）
         ShapedRecipe pneumaticLineSensor = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_LINE_SENSOR, SteamworkItems.PNEUMATIC_LINE_SENSOR);
         pneumaticLineSensor.shape(" O ", "PFP", " R ");
@@ -615,7 +615,7 @@ public final class CraftingRecipes {
         steamCompressor.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamCompressor);
 
-        // 气动货运站：精密阀门 + 因瓦合金（低膨胀管路）+ 黄铜过滤器 + 压力表 + 高压法兰（管路接头）+ 密封环
+        // 汽动货运站：精密阀门 + 因瓦合金（低膨胀管路）+ 黄铜过滤器 + 压力表 + 高压法兰（管路接头）+ 密封环
         // 形状：VFV / IPB / FRF  （I=因瓦锭，F=黄铜过滤器，P=高压法兰）
         ShapedRecipe pneumaticCargoHub = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_CARGO_HUB, SteamworkItems.PNEUMATIC_CARGO_HUB);
@@ -656,7 +656,7 @@ public final class CraftingRecipes {
         steamSorter.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(steamSorter);
 
-        // 气动导管：因瓦合金（低膨胀管壁）+ 黄铜密封环，8个产量（管段量大，不能太贵）
+        // 汽动导管：因瓦合金（低膨胀管壁）+ 黄铜密封环，8个产量（管段量大，不能太贵）
         // 形状：RIR / I I / RIR  （I=因瓦锭，R=密封环）
         ShapedRecipe pneumaticDuct = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_DUCT, SteamworkItems.PNEUMATIC_DUCT.clone().asQuantity(8));
@@ -666,7 +666,7 @@ public final class CraftingRecipes {
         pneumaticDuct.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticDuct);
 
-        // 气动分发器：精密阀门 + 因瓦合金 + 黄铜过滤器 + 蒸汽马达 + 垫圈 + 镍铬合金
+        // 汽动分发器：精密阀门 + 因瓦合金 + 黄铜过滤器 + 蒸汽马达 + 垫圈 + 镍铬合金
         // 形状：VFV / NMN / GIG  （V=精密阀门，F=黄铜过滤器，N=镍铬锭，M=蒸汽马达，G=垫圈，I=因瓦锭）
         ShapedRecipe pneumaticDistributor = new ShapedRecipe(
                 SteamworkKeys.PNEUMATIC_DISTRIBUTOR, SteamworkItems.PNEUMATIC_DISTRIBUTOR);
@@ -730,7 +730,7 @@ public final class CraftingRecipes {
         productionLineBlueprint.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(productionLineBlueprint);
 
-        // 气动输入端（插入器）：无动力中继，接收网络推送后插入目标容器。
+        // 汽动输入端（插入器）：无动力中继，接收网络推送后插入目标容器。
         // 因瓦合金（低膨胀管壁）+ 分流阀（单向止回）+ 原版漏斗（插入头）+ 黄铜密封环
         // 形状：RIR / FHF / RIR  （R=密封环 x4，I=因瓦锭 x2，F=分流阀 x2，H=漏斗）
         ShapedRecipe pneumaticInput = new ShapedRecipe(
@@ -743,7 +743,7 @@ public final class CraftingRecipes {
         pneumaticInput.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticInput);
 
-        // 气动输出端（提取器）：消耗蒸汽，从相邻容器抽取物品推入导管网络。
+        // 汽动输出端（提取器）：消耗蒸汽，从相邻容器抽取物品推入导管网络。
         // 因瓦合金（低膨胀管壁）+ 压力表（监控抽取气压）+ 阀芯（精密流量控制）
         // + 蒸汽马达（驱动抽吸机构）+ 橡胶垫圈（密封）+ 黄铜密封环（管接头）
         // 形状：IPI / VMV / GRG  （I=因瓦锭，P=压力表，V=阀芯，M=蒸汽马达，G=垫圈，R=密封环）

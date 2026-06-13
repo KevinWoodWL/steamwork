@@ -5,7 +5,7 @@
 ## 阶段 0 ✅ — 基础蒸汽体系
 
 - 锅炉链（铜 → 因瓦 → 锰钢 → 钨），三档蒸汽（普通 / 过热 / 加压）
-- 气动输送系统：PneumaticInput / Output / Duct / CargoHub / Distributor / Sorter / SteamSorter
+- 汽动输送系统：PneumaticInput / Output / Duct / CargoHub / Distributor / Sorter / SteamSorter
 - 精密加工机器：磨坊、铸造炉、催化反应釜、压机、研磨机……
 - 序列工件（SequencedWorkpiece）+ 钯合金四步工序链
 - 蒸汽装备：工具 / 盔甲 / 武器 + 蒸汽罐插槽系统
@@ -26,7 +26,7 @@
 
 > **核心立意：信号即蒸汽。**
 > 逻辑门的输出口流出的就是真蒸汽，无需「信号→执行器」中间层。
-> 灵感来源：PneumaticCraft: Repressurized（气动工艺），移植到三档蒸汽体系。
+> 灵感来源：PneumaticCraft: Repressurized（汽动工艺），移植到三档蒸汽体系。
 
 ### ✅ 已完成
 
@@ -43,11 +43,11 @@
 - **#A 蒸汽振荡器**（SteamOscillator）
   - 自激蓄压-喷发循环：蓄到上阈值 → 喷发 N tick → 排空到下阈值 → 重新蓄压
   - 频率由供汽速率决定，可类比蒸汽朋克摆钟
-  - 无蒸汽则停摆；副产的"节拍蒸汽"可驱动下游或触发气动网络
+  - 无蒸汽则停摆；副产的"节拍蒸汽"可驱动下游或触发汽动网络
 
 - **#B 汽动截止阀**（PneumaticGateValve）
-  - 嵌入气动导管链的开关阀
-  - 对本块施加红石信号 → 关阀，气动物品不能通过；信号撤销 → 重开
+  - 嵌入汽动导管链的开关阀
+  - 对本块施加红石信号 → 关阀，汽动物品不能通过；信号撤销 → 重开
   - 与逻辑门配合，可做「有蒸汽→放物品」的联动
 
 - **#C 蒸汽压力传感器**（SteamPressureTransducer）
@@ -66,7 +66,7 @@
   - 用途：让产线节奏渐快渐慢、生成非线性供汽波形、作分频器
 
 - **#E 压力管道模块**（PressureTubeModules）
-  - 插在气动导管（PneumaticDuct）侧面的小模块，借鉴 PneumaticCraft 管道模块理念
+  - 插在汽动导管（PneumaticDuct）侧面的小模块，借鉴 PneumaticCraft 管道模块理念
   - **流量计模块**：统计过管道的物品量 → 模拟红石输出
   - **调压阀模块**：限制蒸汽流量上限（等效节流）
   - **安全阀模块**：超压时自动泄压并输出报警信号

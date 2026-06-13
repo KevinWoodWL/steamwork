@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 蒸汽加压机 —— 将普通蒸汽加压成加压蒸汽，供气动货运系统使用。
+ * 蒸汽加压机 —— 将普通蒸汽加压成加压蒸汽，供汽动货运系统使用。
  * 默认转化比：2mB 普通蒸汽 → 1mB 加压蒸汽。
  */
 public class SteamCompressor extends RebarBlock implements

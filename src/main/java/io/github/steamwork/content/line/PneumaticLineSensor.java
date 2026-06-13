@@ -44,7 +44,7 @@ import java.util.UUID;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
- * 气动产线传感器 —— 汽动逻辑与产线系统的桥接方块（物品→逻辑）。
+ * 汽动产线传感器 —— 汽动逻辑与产线系统的桥接方块（物品→逻辑）。
  *
  * <p>实现 {@link ProductionLineMember}，可作为产线的一环。
  * 物品从上游 acceptFromLine 进入后立即转发到下游（透传），

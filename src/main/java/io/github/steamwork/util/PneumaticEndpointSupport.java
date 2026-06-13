@@ -132,7 +132,7 @@ public final class PneumaticEndpointSupport {
     }
 
     public static boolean isDirectEndpoint(@NotNull Block block, @NotNull BlockFace face) {
-        // 端点直连：本端在 face、对端在 face 的反面都必须接受气动连接
+        // 端点直连：本端在 face、对端在 face 的反面都必须接受汽动连接
         //（双方都不能用各自的容器贴合面），否则不视为可直连——避免长方形端误连。
         return endpointAcceptsOn(loadedRebarBlock(block), face)
                 && endpointAcceptsOn(loadedRebarBlock(block.getRelative(face)), face.getOppositeFace());
@@ -219,8 +219,8 @@ public final class PneumaticEndpointSupport {
      *
      * <p>优先级：
      * <ol>
-     *   <li>放置朝向（{@code facing}）有合法物品目标，且不是气动网络方块。</li>
-     *   <li>扫描全部 6 个面，跳过所有气动网络方块，返回第一个合法物品目标面。</li>
+     *   <li>放置朝向（{@code facing}）有合法物品目标，且不是汽动网络方块。</li>
+     *   <li>扫描全部 6 个面，跳过所有汽动网络方块，返回第一个合法物品目标面。</li>
      *   <li>回退：放置朝向（无容器时的默认值）。</li>
      * </ol>
      * </p>

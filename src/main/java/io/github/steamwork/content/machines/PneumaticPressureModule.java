@@ -58,9 +58,9 @@ import java.util.UUID;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
- * 气动管道模块 —— 嵌在气动导管链中段的在线节点（借鉴 PneumaticCraft 管道模块）。
+ * 汽动管道模块 —— 嵌在汽动导管链中段的在线节点（借鉴 PneumaticCraft 管道模块）。
  *
- * <p>像 {@link PneumaticGateValve} 一样占据一个方块位、有朝向、参与气动网络遍历；底材为
+ * <p>像 {@link PneumaticGateValve} 一样占据一个方块位、有朝向、参与汽动网络遍历；底材为
  * {@link Material#BARREL}，因此能复用「桶内填占位物 → 比较器读取」机制输出 0–15 模拟红石。</p>
  *
  * <p>三种模式（GUI 切换），全部作用于<b>经过本模块的物品流</b>：</p>
@@ -225,7 +225,7 @@ public class PneumaticPressureModule extends RebarBlock implements
         return displayUuids;
     }
 
-    // ===== 气动网络接口 =====
+    // ===== 汽动网络接口 =====
 
     /** 通行轴：朝向与其反面。限流阀本窗口配额耗尽时整体断开。 */
     public boolean acceptsPneumaticConnection(@NotNull BlockFace face) {

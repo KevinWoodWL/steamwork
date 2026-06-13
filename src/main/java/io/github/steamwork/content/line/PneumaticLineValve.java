@@ -50,7 +50,7 @@ import java.util.UUID;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
- * 气动产线阀 —— 汽动逻辑与产线系统的桥接方块（逻辑→物品）。
+ * 汽动产线阀 —— 汽动逻辑与产线系统的桥接方块（逻辑→物品）。
  *
  * <p>实现 {@link ProductionLineMember}，可作为产线的一环。
  * 信号面读取相邻方块自身缓存里的蒸汽，≥阈值时允许内部缓存的物品向下游推送；

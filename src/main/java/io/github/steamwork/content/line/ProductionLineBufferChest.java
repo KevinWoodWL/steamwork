@@ -151,7 +151,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
     @Override
     public void postInitialise() {
         createLogisticGroup("buffer", LogisticGroupType.BOTH, buffer);
-        // 不在产线内时禁止向 buffer 放入物品（玩家手动放入和气动网络推送均拦截）
+        // 不在产线内时禁止向 buffer 放入物品（玩家手动放入和汽动网络推送均拦截）
         buffer.addPreUpdateHandler(event -> {
             if (!isInLine() && event.getNewItem() != null && !event.getNewItem().isEmpty()) {
                 event.setCancelled(true);

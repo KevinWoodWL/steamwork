@@ -65,7 +65,7 @@ import java.util.UUID;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
- * 气动货运站 —— 多方块结构底座，正上方必须放置一台蒸汽弹射器。
+ * 汽动货运站 —— 多方块结构底座，正上方必须放置一台蒸汽弹射器。
  * 每 5 秒批量发货一次：从内部 7 格物品栏取最多 batchSize 件物品送到目标货运站。
  * 蒸汽按实际成功传输件数 × steamPerItem 扣除（不足/接收方空间不足时退还）。
  */

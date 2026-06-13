@@ -35,7 +35,7 @@ import java.util.UUID;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
- * 蒸汽弹射器 —— 气动货运站多方块结构的上方视觉组件。
+ * 蒸汽弹射器 —— 汽动货运站多方块结构的上方视觉组件。
  * 不持有任何流体或物品槽，仅负责播放抛物线弹射动画。
  * 蒸汽消耗、目标管理全部由下方的货运站承担。
  */
