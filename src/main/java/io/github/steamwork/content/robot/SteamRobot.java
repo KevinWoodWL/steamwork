@@ -18,22 +18,29 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Container;
 import org.bukkit.entity.CopperGolem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
@@ -49,17 +56,33 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * {@code steamPerTick}；耗尽即<b>缺汽停摆</b>，WAILA 显示蒸汽条与状态。</p>
  *
  * <p><b>P1b 充能</b>：首次被某台蒸汽充汽舱充能时<b>自动绑定</b>该舱（{@link #bindChamber}）；之后蒸汽
- * 低于 {@code recharge-at} 比例即进入回充模式，寻路回绑定充汽舱站定等充（途中不耗汽），充满恢复巡游。
- * 充汽舱侧识别站内机器人并调用 {@link #addSteam}。无绑定且耗尽 → 缺汽停摆。</p>
+ * 低于 {@code recharge-at} 比例即进入回充模式，寻路回绑定充汽舱站定等充（途中不耗汽），充满恢复巡游。</p>
  *
- * <p>后续阶段（见 {@code docs/design/steam-robot.md}）：GUI 与任务模式、采矿/砍树/搬运作业、
- * 铜傀儡拿取/放下动作动画等。</p>
+ * <p><b>P1c 任务模式</b>：{@link JobMode}（巡逻/采矿/砍树），非潜行右键循环切换、持久化。</p>
+ *
+ * <p><b>P2 采矿/砍树</b>：在 {@code work-radius} 工作区内找最近的<b>原版</b>矿石/原木目标（绝不破坏
+ * 任何 Rebar 方块），寻路过去用对应工具取正确掉落、移除方块、回收到 home 旁容器（放不下则散落），
+ * 每次破坏额外耗汽 {@code steam-per-break}。</p>
+ *
+ * <p>后续阶段（见 {@code docs/design/steam-robot.md}）：补料/搬运、Pylon 自定义方块破坏、
+ * 完整 GUI、铜傀儡放下动画等。</p>
  */
 public class SteamRobot extends RebarEntity<CopperGolem> implements
         TickingRebarEntity, InteractRebarEntityHandler {
 
     /** 任务模式：巡逻 / 采矿 / 砍树。非潜行右键循环切换。 */
     public enum JobMode { PATROL, MINE, CHOP }
+
+    // 作业取掉落用的工具（无附魔，保证矿石/原木掉落正确、无 Fortune/精准采集）
+    private static final ItemStack MINE_TOOL = new ItemStack(Material.NETHERITE_PICKAXE);
+    private static final ItemStack CHOP_TOOL = new ItemStack(Material.NETHERITE_AXE);
+    // 找投放箱时扫描的方向（home 方块自身 + 六面）
+    private static final BlockFace[] CHEST_FACES = {
+        BlockFace.SELF, BlockFace.UP, BlockFace.DOWN,
+        BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST
+    };
+    /** 单个目标方块寻路失败的放弃阈值（决策次数）：避免卡在不可达目标上。 */
+    private static final int TARGET_GIVE_UP = 40;
 
     // home（部署点）持久化键，存为三个 double
     private static final NamespacedKey HOME_X = steamworkKey("robot_home_x");
@@ -82,6 +105,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private final double steamPerTick  = getSetting("steam-per-tick", ConfigAdapter.DOUBLE,  10.0);
     /** 蒸汽低于容量该比例时回绑定充汽舱充能。 */
     private final double rechargeAt    = getSetting("recharge-at",    ConfigAdapter.DOUBLE,  0.25);
+    /** 作业工作区半径（以 home 为中心的立方体半边长，格）。 */
+    private final int    workRadius    = getSetting("work-radius",    ConfigAdapter.INTEGER, 5);
+    /** 每破坏一个方块额外耗汽（mB）。 */
+    private final double steamPerBreak = getSetting("steam-per-break", ConfigAdapter.DOUBLE, 30.0);
 
     // ===== 状态 =====
     private @NotNull Location home;
@@ -96,6 +123,12 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private boolean seekingCharge = false;
     /** 当前任务模式。 */
     private @NotNull JobMode jobMode = JobMode.PATROL;
+    /** 当前作业目标方块（采矿/砍树），瞬态；重载后重新扫描。 */
+    private @Nullable Block targetBlock = null;
+    /** 当前目标方块已尝试的决策次数（超过 {@link #TARGET_GIVE_UP} 放弃，避免卡死）。 */
+    private int targetBlockAge = 0;
+    /** 被保护插件拦截过的方块（瞬态跳过集，避免反复尝试同一受保护方块）。 */
+    private final java.util.Set<Block> blockedTargets = new java.util.HashSet<>();
 
     /** 新生成：写入 rebar 实体 key 并记录部署点。 */
     public SteamRobot(@NotNull CopperGolem golem, @NotNull Location home) {
@@ -186,10 +219,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         // ── 作业（按任务模式）──
         switch (jobMode) {
             case PATROL -> patrolStep(golem);
-            case MINE, CHOP -> patrolStep(golem); // TODO P2：实际采矿/砍树作业
+            case MINE, CHOP -> mineStep(golem, jobMode);
         }
 
-        // 行动耗汽
+        // 行动耗汽（破坏的额外耗汽在 breakTarget 内单独扣）
         steam = Math.max(0.0, steam - steamPerTick);
     }
 
@@ -236,6 +269,138 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         Block b = chamberCore.getBlock();
         return PneumaticEndpointSupport.isChunkLoaded(b)
                 && PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber;
+    }
+
+    /**
+     * 采矿 / 砍树：在工作区内找最近目标方块，寻路过去，够近即破坏并回收掉落。
+     * 工作区无目标时退回巡游游走。
+     */
+    private void mineStep(@NotNull CopperGolem golem, @NotNull JobMode mode) {
+        Location loc = golem.getLocation();
+
+        // 已有目标：走过去 / 破坏 / 超时放弃
+        if (targetBlock != null) {
+            if (!isTarget(targetBlock, mode)) {           // 目标已消失/被改 → 重选
+                clearTarget();
+                return;
+            }
+            Location center = targetBlock.getLocation().toCenterLocation();
+            if (loc.getWorld() == center.getWorld() && loc.distanceSquared(center) <= 6.25) {
+                breakTarget(golem, mode);                 // 够近（≤2.5 格）→ 破坏
+                clearTarget();
+                return;
+            }
+            if (++targetBlockAge > TARGET_GIVE_UP) {      // 长时间够不到 → 放弃，换一个
+                clearTarget();
+                return;
+            }
+            if (targetBlockAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
+                golem.getPathfinder().moveTo(center, moveSpeed);
+            }
+            return;
+        }
+
+        // 无目标：扫描工作区
+        targetBlock = findNearestTarget(golem, mode);
+        if (targetBlock == null) {
+            patrolStep(golem);                            // 工作区没活 → 巡游
+        } else {
+            targetBlockAge = 0;
+            golem.getPathfinder().moveTo(targetBlock.getLocation().toCenterLocation(), moveSpeed);
+        }
+    }
+
+    private void clearTarget() {
+        targetBlock = null;
+        targetBlockAge = 0;
+    }
+
+    /** 破坏目标方块：取正确掉落 → 移除 → 特效 → 回收到投放箱（放不下则散落）→ 破坏耗汽。 */
+    private void breakTarget(@NotNull CopperGolem golem, @NotNull JobMode mode) {
+        Block b = targetBlock;
+        if (b == null) return;
+        World world = b.getWorld();
+        Material broken = b.getType();
+
+        // 让保护类插件可拦截（以「实体改变方块」的形式）；被拦截则记入跳过集、不破坏
+        EntityChangeBlockEvent ev = new EntityChangeBlockEvent(golem, b, Material.AIR.createBlockData());
+        if (!ev.callEvent()) {
+            if (blockedTargets.size() > 512) blockedTargets.clear();
+            blockedTargets.add(b);
+            return;
+        }
+
+        Collection<ItemStack> drops = b.getDrops(mode == JobMode.CHOP ? CHOP_TOOL : MINE_TOOL);
+
+        // 破坏特效（音 + 方块碎屑）
+        world.playSound(b.getLocation().toCenterLocation(),
+                broken.createBlockData().getSoundGroup().getBreakSound(), 1.0f, 0.9f);
+        world.spawnParticle(Particle.BLOCK, b.getLocation().toCenterLocation(),
+                20, 0.3, 0.3, 0.3, broken.createBlockData());
+        b.setType(Material.AIR);
+
+        depositOrDrop(drops, b.getLocation());
+        steam = Math.max(0.0, steam - steamPerBreak);
+        golem.setGolemState(CopperGolem.State.GETTING_ITEM); // 拿取动画
+    }
+
+    /** 掉落优先放入 home 旁的容器，放不下则在破坏位置散落（不丢失）。 */
+    private void depositOrDrop(@NotNull Collection<ItemStack> drops, @NotNull Location at) {
+        Inventory chest = findHomeContainer();
+        for (ItemStack drop : drops) {
+            if (drop == null || drop.isEmpty()) continue;
+            if (chest != null) {
+                var overflow = chest.addItem(drop);
+                if (overflow.isEmpty()) continue;
+                for (ItemStack leftover : overflow.values()) {
+                    at.getWorld().dropItemNaturally(at.toCenterLocation(), leftover);
+                }
+            } else {
+                at.getWorld().dropItemNaturally(at.toCenterLocation(), drop);
+            }
+        }
+    }
+
+    /** home 方块自身或六面相邻的第一个容器（箱子/木桶等）的库存；无则 null。 */
+    private @Nullable Inventory findHomeContainer() {
+        Block homeBlock = home.getBlock();
+        for (BlockFace face : CHEST_FACES) {
+            if (homeBlock.getRelative(face).getState() instanceof Container c) {
+                return c.getInventory();
+            }
+        }
+        return null;
+    }
+
+    /** 在工作区（home ±workRadius 立方体）内找离机器人最近的目标方块。 */
+    private @Nullable Block findNearestTarget(@NotNull CopperGolem golem, @NotNull JobMode mode) {
+        Block homeBlock = home.getBlock();
+        Location golemLoc = golem.getLocation();
+        Block best = null;
+        double bestSq = Double.MAX_VALUE;
+        for (int dx = -workRadius; dx <= workRadius; dx++) {
+            for (int dy = -workRadius; dy <= workRadius; dy++) {
+                for (int dz = -workRadius; dz <= workRadius; dz++) {
+                    Block b = homeBlock.getRelative(dx, dy, dz);
+                    if (blockedTargets.contains(b) || !isTarget(b, mode)) continue;
+                    double sq = b.getLocation().toCenterLocation().distanceSquared(golemLoc);
+                    if (sq < bestSq) { bestSq = sq; best = b; }
+                }
+            }
+        }
+        return best;
+    }
+
+    /** 是否为当前模式的可作业目标：先匹配原版材质，再排除一切 Rebar 方块（机器绝不破坏）。 */
+    private boolean isTarget(@NotNull Block b, @NotNull JobMode mode) {
+        Material m = b.getType();
+        boolean matches = switch (mode) {
+            case MINE -> m.name().endsWith("_ORE") || m == Material.ANCIENT_DEBRIS;
+            case CHOP -> m.name().endsWith("_LOG") || m.name().endsWith("_STEM")
+                    || m.name().endsWith("_WOOD") || m.name().endsWith("_HYPHAE");
+            default -> false;
+        };
+        return matches && PneumaticEndpointSupport.loadedRebarBlock(b) == null;
     }
 
     /** 以 home 为原点、wanderRadius 为半径随机选一个地表点。 */
@@ -328,6 +493,9 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private void cycleJob(@NotNull Player player) {
         JobMode[] modes = JobMode.values();
         jobMode = modes[(jobMode.ordinal() + 1) % modes.length];
+        clearTarget(); // 切换模式后旧目标作废
+        blockedTargets.clear();
+        target = null;
         player.sendActionBar(Component.empty()
                 .append(Component.translatable("steamwork.message.steam_robot.job_set").color(NamedTextColor.GRAY))
                 .append(jobLabel().color(NamedTextColor.AQUA)));
