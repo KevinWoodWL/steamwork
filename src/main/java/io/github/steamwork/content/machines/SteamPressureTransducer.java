@@ -196,7 +196,7 @@ public class SteamPressureTransducer extends RebarBlock implements
         return WailaDisplay.of(this, player)
                 .add(steamKind.component())
                 .add(Component.text(String.valueOf(currentLevel())))
-                .add(ProgressBar.fluidContents(steamKind.fluid(), Math.max(1.0, currentCapacity()), currentAmount()));
+                .add(ProgressBar.fluidContentsWithName(steamKind.fluid(), Math.max(1.0, currentCapacity()), currentAmount()));
     }
 
     @Override

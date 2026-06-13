@@ -957,6 +957,26 @@ item:
       <arrow> 左键<white>产线出口</white>完成配置并激活产线
       <arrow> Shift + 右键任意方块取消当前配置
 
+  pneumatic_line_valve:
+    name: "气动产线阀"
+    lore: |-
+      <arrow> <white>逻辑→产线桥接</white>：以蒸汽压力控制物品通断
+      <arrow> 放置在产线中；从信号面读取相邻蒸汽压力
+      <arrow> 信号 ≥ 阈值 → 物品放行；低于 → 物品暂存
+      <arrow> 阈值和信号面可在 GUI 中调节
+      <arrow> <red>需同时解锁蒸汽货运与汽动逻辑两项研究
+    waila: "气动产线阀 | %state%"
+
+  pneumatic_line_sensor:
+    name: "气动产线传感器"
+    lore: |-
+      <arrow> <white>产线→逻辑桥接</white>：物品经过或产线状态变化时输出蒸汽
+      <arrow> 放置在产线中；物品透明通过
+      <arrow> 模式：<white>脉冲</white>（物品经过）/ <white>堵塞</white> / <white>空闲</white>
+      <arrow> 模式和蒸汽类型可在 GUI 中调节；信号从任意相邻面都可读取
+      <arrow> <red>需同时解锁蒸汽货运与汽动逻辑两项研究
+    waila: "气动产线传感器 | %mode% | %state%"
+
   pneumatic_distributor:
     name: "汽动分发器"
     lore: |-
@@ -2255,6 +2275,34 @@ gui:
       title: "<dark_gray>名单列表"
       back: "<yellow>返回"
       back_hint: "<gray>返回缓存箱主界面"
+    slot_hint:
+      title: "<aqua>槽位说明"
+      buffer: "<gray>↓ 27 格缓存：接收上游推送的产物"
+      mode: "<gray>↓ 底栏：产线状态、推送模式、燃料模板、过滤设置"
+
+  pneumatic_line_valve:
+    title: "<dark_gray>气动产线阀"
+    signal_face: "<light_purple>信号面"
+    signal_face_hint: "<dark_gray>点击循环切换（北/东/南/西）— 从该面读取蒸汽"
+    threshold: "<yellow>信号阈值"
+    threshold_desc: "<gray>相邻蒸汽 ≥ 此值时阀门开启"
+    state:
+      open: "<green>开启（物品通过）"
+      closed: "<red>关闭（物品暂存）"
+    status_hint: "<dark_gray>信号面蒸汽 ≥ 阈值时阀门开启放行"
+
+  pneumatic_line_sensor:
+    title: "<dark_gray>气动产线传感器"
+    mode_label: "<light_purple>传感器模式"
+    mode_hint: "<dark_gray>点击循环切换：脉冲 / 堵塞 / 空闲"
+    mode:
+      pulse: "脉冲（物品经过）"
+      jammed: "堵塞（产线停摆）"
+      idle: "空闲（无物品）"
+    state:
+      active: "<green>信号输出中"
+      idle: "<gray>无信号"
+    status_hint: "<dark_gray>根据物品流动或产线状态输出蒸汽信号"
 
   pneumatic_distributor:
     title: "<dark_gray>汽动分发器"
@@ -2489,6 +2537,8 @@ researches:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>150 精密工程</light_purple>点数解锁"
 
 message:
+  line_bridge:
+    requires_logic: "<red>需要先解锁<white>汽动逻辑</white>研究才能放置这台桥接机器"
   pneumatic_cargo_hub:
     selecting: "<yellow>选择模式 —— 左键 %range% 格内的目标货运站完成绑定，右键本机取消"
     selection_cancelled: "<gray>已取消目标选择"

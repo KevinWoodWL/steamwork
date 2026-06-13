@@ -564,7 +564,7 @@ public class PneumaticCargoHub extends RebarBlock implements
                 ? targetPos[0] + ", " + targetPos[1] + ", " + targetPos[2]
                 : "—";
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)))
                 .add(Component.translatable(hasCatapult ? "steamwork.state.active" : "steamwork.state.missing"))
                 .add(Component.text(targetStr))
                 .add(Component.text(String.valueOf(batchSize)))

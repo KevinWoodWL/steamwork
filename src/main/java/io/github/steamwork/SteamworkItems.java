@@ -33,6 +33,8 @@ import io.github.steamwork.content.machines.PneumaticPulser;
 import io.github.steamwork.content.machines.SteamOscillator;
 import io.github.steamwork.content.machines.PneumaticGateValve;
 import io.github.steamwork.content.machines.SteamPressureTransducer;
+import io.github.steamwork.content.line.PneumaticLineSensor;
+import io.github.steamwork.content.line.PneumaticLineValve;
 import io.github.steamwork.content.machines.SteamDifferenceEngine;
 import io.github.steamwork.content.machines.PneumaticPressureModule;
 import io.github.steamwork.content.machines.SteamPress;
@@ -246,6 +248,8 @@ public final class SteamworkItems {
     public static final ItemStack PRODUCTION_LINE_OUTLET = ItemStackBuilder.rebar(Material.DROPPER, SteamworkKeys.PRODUCTION_LINE_OUTLET).build();
     public static final ItemStack PRODUCTION_LINE_BLUEPRINT = ItemStackBuilder.rebar(Material.PAPER, SteamworkKeys.PRODUCTION_LINE_BLUEPRINT).build();
     public static final ItemStack AUTO_PRODUCTION_MODULE = ItemStackBuilder.rebar(Material.REDSTONE, SteamworkKeys.AUTO_PRODUCTION_MODULE).build();
+    public static final ItemStack PNEUMATIC_LINE_VALVE = ItemStackBuilder.rebar(Material.WAXED_CUT_COPPER_SLAB, SteamworkKeys.PNEUMATIC_LINE_VALVE).build();
+    public static final ItemStack PNEUMATIC_LINE_SENSOR = ItemStackBuilder.rebar(Material.WAXED_CUT_COPPER_SLAB, SteamworkKeys.PNEUMATIC_LINE_SENSOR).build();
 
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
@@ -531,6 +535,8 @@ public final class SteamworkItems {
         RebarItem.register(SteamPressureTransducer.Item.class, STEAM_PRESSURE_TRANSDUCER, SteamworkKeys.STEAM_PRESSURE_TRANSDUCER);
         RebarItem.register(SteamDifferenceEngine.Item.class, STEAM_DIFFERENCE_ENGINE, SteamworkKeys.STEAM_DIFFERENCE_ENGINE);
         RebarItem.register(PneumaticPressureModule.Item.class, PNEUMATIC_PRESSURE_MODULE, SteamworkKeys.PNEUMATIC_PRESSURE_MODULE);
+        RebarItem.register(PneumaticLineValve.Item.class, PNEUMATIC_LINE_VALVE, SteamworkKeys.PNEUMATIC_LINE_VALVE);
+        RebarItem.register(PneumaticLineSensor.Item.class, PNEUMATIC_LINE_SENSOR, SteamworkKeys.PNEUMATIC_LINE_SENSOR);
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STERILIZER)
                 .addButton(new MachineRecipesButton(SteamSterilizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STEEPING_VAT)

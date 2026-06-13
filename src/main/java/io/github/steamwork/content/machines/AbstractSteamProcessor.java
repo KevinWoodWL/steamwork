@@ -1163,7 +1163,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(steamFluid(), fluidCapacity(steamFluid()), fluidAmount(steamFluid())))
+                .add(ProgressBar.fluidContentsWithName(steamFluid(), fluidCapacity(steamFluid()), fluidAmount(steamFluid())))
                 .add(Component.translatable("steamwork.state." + currentReason.key()));
     }
 

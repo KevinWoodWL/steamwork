@@ -101,6 +101,29 @@ public final class CraftingRecipes {
         pneumaticPressureModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(pneumaticPressureModule);
 
+        // 气动产线阀：比较器(读阈值) + 锻造板(产线本体) + 黄铜阀芯(门控) + 红石（逻辑→产线桥接）
+        // 配方为合理默认值，平衡可按需调整。
+        ShapedRecipe pneumaticLineValve = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_LINE_VALVE, SteamworkItems.PNEUMATIC_LINE_VALVE);
+        pneumaticLineValve.shape(" C ", "PVP", " R ");
+        pneumaticLineValve.setIngredient('C', new RecipeChoice.MaterialChoice(Material.COMPARATOR));
+        pneumaticLineValve.setIngredient('P', rebarChoice(SteamworkItems.FORGED_PLATE));
+        pneumaticLineValve.setIngredient('V', rebarChoice(SteamworkItems.BRASS_VALVE_CORE));
+        pneumaticLineValve.setIngredient('R', new RecipeChoice.MaterialChoice(Material.REDSTONE));
+        pneumaticLineValve.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticLineValve);
+
+        // 气动产线传感器：侦测器(检测物品经过) + 锻造板(产线本体) + 黄铜流量阀(喷汽) + 红石（产线→逻辑桥接）
+        ShapedRecipe pneumaticLineSensor = new ShapedRecipe(
+                SteamworkKeys.PNEUMATIC_LINE_SENSOR, SteamworkItems.PNEUMATIC_LINE_SENSOR);
+        pneumaticLineSensor.shape(" O ", "PFP", " R ");
+        pneumaticLineSensor.setIngredient('O', new RecipeChoice.MaterialChoice(Material.OBSERVER));
+        pneumaticLineSensor.setIngredient('P', rebarChoice(SteamworkItems.FORGED_PLATE));
+        pneumaticLineSensor.setIngredient('F', rebarChoice(SteamworkItems.BRASS_FLOW_VALVE));
+        pneumaticLineSensor.setIngredient('R', new RecipeChoice.MaterialChoice(Material.REDSTONE));
+        pneumaticLineSensor.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(pneumaticLineSensor);
+
         // 橡胶垫圈基础路径：单产，需要硫化橡胶。
         ShapelessRecipe rubberGasket = new ShapelessRecipe(
                 SteamworkKeys.RUBBER_GASKET, SteamworkItems.RUBBER_GASKET);

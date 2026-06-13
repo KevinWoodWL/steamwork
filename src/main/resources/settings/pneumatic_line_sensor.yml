@@ -1,0 +1,7 @@
+# 气动产线传感器：物品经过时输出蒸汽信号（产线→逻辑桥接）
+# 三种模式：脉冲（物品经过）、堵塞（产线 jammed）、空闲（无物品超过阈值 tick）
+tick-interval: 2
+pulse-amount: 100.0       # 脉冲/持续输出时每 tick 注入的蒸汽量（mB）
+pulse-duration: 10        # PULSE 模式脉冲持续 tick 数
+idle-threshold: 40        # IDLE 模式：连续多少 tick 无物品经过算空闲
+buffer: 500.0             # 蒸汽输出缓存容量（mB）

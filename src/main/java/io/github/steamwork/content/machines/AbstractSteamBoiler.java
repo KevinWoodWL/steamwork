@@ -243,8 +243,8 @@ public abstract class AbstractSteamBoiler extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(PylonFluids.WATER, fluidCapacity(PylonFluids.WATER), fluidAmount(PylonFluids.WATER)))
-                .add(ProgressBar.fluidContents(producedSteam(), fluidCapacity(producedSteam()), fluidAmount(producedSteam())))
+                .add(ProgressBar.fluidContentsWithName(PylonFluids.WATER, fluidCapacity(PylonFluids.WATER), fluidAmount(PylonFluids.WATER)))
+                .add(ProgressBar.fluidContentsWithName(producedSteam(), fluidCapacity(producedSteam()), fluidAmount(producedSteam())))
                 .add(Component.translatable("steamwork.pressure." + pressureState()))
                 .add(Component.translatable("steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing")));
     }

@@ -160,8 +160,8 @@ public class SteamHeatingChamber extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
-                .add(ProgressBar.fluidContents(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
                 .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 

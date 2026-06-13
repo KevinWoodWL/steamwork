@@ -32,6 +32,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Container;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
@@ -387,8 +388,11 @@ public class PneumaticPressureModule extends RebarBlock implements
     void refreshDisplays() {
         clearDisplays();
         BlockFace facing = getFacing();
-        double negEnd = isEndpointNeighbor(facing.getOppositeFace()) ? -1.0D : -0.5D;
-        double posEnd = isEndpointNeighbor(facing) ? 1.0D : 0.5D;
+        // 连接端点那一端伸到 ±0.825：刚好接到端点自身的连接桩，
+        // 不再伸到端点中心（±1.0）穿进连接桩造成材质重叠/穿模。
+        // 未连接（或接导管）时伸到 ±0.65：略微探出木桶面（±0.5），避免导管被木桶材质盖住/打架。
+        double negEnd = isEndpointNeighbor(facing.getOppositeFace()) ? -0.825D : -0.65D;
+        double posEnd = isEndpointNeighbor(facing) ? 0.825D : 0.65D;
 
         List<UUID> ids = new ArrayList<>();
         ids.add(createLineDisplay(negEnd, -0.22D).getUniqueId());
@@ -416,10 +420,28 @@ public class PneumaticPressureModule extends RebarBlock implements
                         .thickness(THICKNESS)
                         .extraLength(0.0)
                         .build())
+                .brightness(ambientBrightness())
                 .persistent(true)
                 .build(center());
         markDisplay(display);
         return display;
+    }
+
+    /**
+     * 显示实体落在不透明的桶方块中心，环境光为 0 → 渲染发黑。
+     * 这里取周围 6 个邻居的最大光照作为亮度，使管道显示与相邻导管/端点的环境亮度一致、不再发黑。
+     */
+    private @NotNull Display.Brightness ambientBrightness() {
+        int blockLight = 0;
+        int skyLight = 0;
+        for (BlockFace face : new BlockFace[]{
+                BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST,
+                BlockFace.WEST,  BlockFace.UP,    BlockFace.DOWN}) {
+            Block neighbor = getBlock().getRelative(face);
+            blockLight = Math.max(blockLight, neighbor.getLightFromBlocks());
+            skyLight   = Math.max(skyLight,   neighbor.getLightFromSky());
+        }
+        return new Display.Brightness(blockLight, skyLight);
     }
 
     private @NotNull ItemDisplay createCoreDisplay() {
@@ -431,6 +453,7 @@ public class PneumaticPressureModule extends RebarBlock implements
         ItemDisplay display = new ItemDisplayBuilder()
                 .itemStack(ItemStack.of(coreMaterial))
                 .transformation(new TransformBuilder().scale(0.45))
+                .brightness(ambientBrightness())
                 .persistent(true)
                 .build(center());
         markDisplay(display);

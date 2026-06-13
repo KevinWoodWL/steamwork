@@ -107,16 +107,34 @@ public final class PylonLineOutputBridge implements Listener {
 
         expireOldPendingOutputs(location.getWorld().getGameTime());
         Block source = findPendingSource(location);
-        if (source == null) return;
+
+        // 后备路径：没有 pending 条目时，检查附近是否有处于产线中的磨石（玩家手动操作时 expectOutput 未被调用）
+        // 仅对机器自然掉落的物品生效（thrower == null），排除玩家手动丢弃的物品
+        if (source == null) {
+            if (entity.getThrower() != null) return;
+            source = findLineMemberGrindstoneNear(location);
+            if (source == null) return;
+        }
 
         BlockKey key = BlockKey.of(source);
         PendingOutput pending = PENDING_OUTPUTS.get(key);
-        if (pending == null) return;
 
+        // 获取产线信息：优先从 pending 条目读取，否则从方块本身读取
+        UUID lineId;
+        BlockFace direction;
         ProductionLineMember sourceMember = ProductionLineMember.of(source);
-        if (sourceMember == null || !pending.lineId().equals(sourceMember.getLineId())) {
-            PENDING_OUTPUTS.remove(key);
-            return;
+        if (pending != null) {
+            if (sourceMember == null || !pending.lineId().equals(sourceMember.getLineId())) {
+                PENDING_OUTPUTS.remove(key);
+                return;
+            }
+            lineId = pending.lineId();
+            direction = pending.direction();
+        } else {
+            if (sourceMember == null || !sourceMember.isInLine()) return;
+            lineId = sourceMember.getLineId();
+            direction = sourceMember.getLineDirection();
+            if (lineId == null || direction == BlockFace.SELF) return;
         }
 
         ItemStack stack = entity.getItemStack();
@@ -131,7 +149,7 @@ public final class PylonLineOutputBridge implements Listener {
 
         int total = stack.getAmount();
         int delivered = 0;
-        ProductionLineMember next = findNextMember(source, pending.direction(), pending.lineId());
+        ProductionLineMember next = findNextMember(source, direction, lineId);
         if (next != null) {
             while (delivered < total) {
                 if (!next.acceptFromLine(stack.asQuantity(1))) break;
@@ -141,7 +159,7 @@ public final class PylonLineOutputBridge implements Listener {
 
         int remaining = total - delivered;
         if (remaining > 0) {
-            enqueueBuffer(key, pending.lineId(), pending.direction(), stack.asQuantity(remaining));
+            enqueueBuffer(key, lineId, direction, stack.asQuantity(remaining));
         }
     }
 
@@ -271,6 +289,27 @@ public final class PylonLineOutputBridge implements Listener {
         Location expected = block.getLocation().toCenterLocation();
         if (!expected.getWorld().equals(dropLocation.getWorld())) return false;
         return expected.distanceSquared(dropLocation) <= MIXING_POT_CAPTURE_RADIUS_SQUARED;
+    }
+
+    /**
+     * 后备检测：在掉落物附近寻找处于产线中的磨石方块。
+     * 用于玩家手动操作磨石时（expectOutput 未被调用）仍能拦截产物。
+     */
+    @Nullable
+    private Block findLineMemberGrindstoneNear(@NotNull Location dropLocation) {
+        Block center = dropLocation.getBlock();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    Block candidate = center.getRelative(dx, dy, dz);
+                    if (!isPylonBlock(candidate, "grindstone")) continue;
+                    if (!isNearGrindstoneOutput(candidate, dropLocation)) continue;
+                    ProductionLineMember member = ProductionLineMember.of(candidate);
+                    if (member != null && member.isInLine()) return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable

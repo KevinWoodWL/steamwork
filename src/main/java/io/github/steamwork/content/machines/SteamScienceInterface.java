@@ -434,7 +434,7 @@ public class SteamScienceInterface extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
                 .add(Component.text(stored(SteamworkDiscipline.MATERIAL) + "/" + stored(SteamworkDiscipline.BIOLOGY) + "/" + stored(SteamworkDiscipline.PRECISION) + "/" + stored(SteamworkDiscipline.CHEMISTRY)))
                 .add(Component.translatable("steamwork.state." + currentReason.key()));
     }

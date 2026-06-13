@@ -745,7 +745,7 @@ public class SteamArm extends RebarBlock implements
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         boolean hasMotor = hasMotor();
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
                 .add(Component.translatable(hasMotor ? "steamwork.gui.steam_arm.motor_installed" : "steamwork.gui.steam_arm.motor_missing"))
                 .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }

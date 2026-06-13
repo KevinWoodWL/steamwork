@@ -445,7 +445,7 @@ public class SteamDistillationTower extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
                 .add(Component.text(detectedSections + "/" + MAX_SECTIONS))
                 .add(Component.translatable("steamwork.structure." + (detectedSections > 0 ? "formed" : "missing")))
                 .add(Component.translatable("steamwork.state." + currentReason.key()));

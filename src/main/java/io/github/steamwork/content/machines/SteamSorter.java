@@ -502,7 +502,7 @@ public class SteamSorter extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)))
                 .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }
 

@@ -333,6 +333,6 @@ public class SteamChargingChamber extends RebarBlock implements
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
                 .add(Component.translatable("steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing")))
-                .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)));
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.PRESSURIZED_STEAM, fluidCapacity(SteamworkFluids.PRESSURIZED_STEAM), fluidAmount(SteamworkFluids.PRESSURIZED_STEAM)));
     }
 }

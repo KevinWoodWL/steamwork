@@ -276,7 +276,7 @@ public class SteamOscillator extends RebarBlock implements
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
                 .add(steamKind.component())
-                .add(ProgressBar.fluidContents(steamKind.fluid(), fluidCapacity(steamKind.fluid()), fluidAmount(steamKind.fluid())))
+                .add(ProgressBar.fluidContentsWithName(steamKind.fluid(), fluidCapacity(steamKind.fluid()), fluidAmount(steamKind.fluid())))
                 .add(statusComponent());
     }
 

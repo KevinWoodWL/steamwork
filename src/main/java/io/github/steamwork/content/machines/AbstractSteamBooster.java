@@ -589,7 +589,7 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(boosterFluid(), fluidCapacity(boosterFluid()), fluidAmount(boosterFluid())))
+                .add(ProgressBar.fluidContentsWithName(boosterFluid(), fluidCapacity(boosterFluid()), fluidAmount(boosterFluid())))
                 .add(Component.text(lastTargetsFound + "/" + lastTargetsBoosted))
                 .add(Component.translatable("steamwork.state." + (lastActive ? "active" : "idle")));
     }

@@ -234,6 +234,8 @@ public final class SteamworkPages {
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_GATE_VALVE);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_PRESSURE_MODULE);
         STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_DISTRIBUTOR);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_LINE_VALVE);
+        STEAM_LOGISTICS.addItem(SteamworkItems.PNEUMATIC_LINE_SENSOR);
 
         ROOT.addPage(SteamworkItems.STEAM_ARM, STEAM_AUTOMATION);
         // ★ PRECISION_ADVANCED_AUTOMATION_1（学科门控）

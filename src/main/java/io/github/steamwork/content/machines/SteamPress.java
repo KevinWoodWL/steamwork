@@ -93,6 +93,11 @@ public class SteamPress extends RebarBlock implements
     private static final NamespacedKey PISTON_KEY     = new NamespacedKey("steamwork", "pressing_piston");
     private static final NamespacedKey PRESS_MARKER   = new NamespacedKey("steamwork", "press_display");
 
+    /** 活塞静止（缩回）位的 Y 偏移——放置时与复位后必须一致，否则复位后会偏离、材质冲突。 */
+    private static final float PISTON_IDLE_Y    = 0.2375f;
+    /** 活塞下压到底（铁块顶面）的 Y 偏移。 */
+    private static final float PISTON_PRESSED_Y = -0.5f;
+
     private final int tickInterval   = getSettings().getOrThrow("tick-interval", ConfigAdapter.INTEGER);
     private final double steamBuffer = getSettings().getOrThrow("steam-buffer",  ConfigAdapter.DOUBLE);
     private final double scrapChance = getSettings().get("scrap-chance", ConfigAdapter.DOUBLE, 0.1);
@@ -350,7 +355,7 @@ public class SteamPress extends RebarBlock implements
                     d.setPersistent(true);
                     // Retracted (idle) position: piston head sits at top of air gap
                     d.setTransformation(new Transformation(
-                            new Vector3f(-0.5f, 0.2375f, -0.5f),
+                            new Vector3f(-0.5f, PISTON_IDLE_Y, -0.5f),
                             new Quaternionf(new AxisAngle4f(0, 0, 1, 0)),
                             new Vector3f(1, 1, 1),
                             new Quaternionf(new AxisAngle4f(0, 0, 1, 0))
@@ -366,7 +371,7 @@ public class SteamPress extends RebarBlock implements
         pistonEntityUuid = null;
     }
 
-    /** 开始加工时下压活塞头到铁块顶面（Y = -0.5），并播放音效+粒子。 */
+    /** 开始加工时下压活塞头到铁块顶面（{@link #PISTON_PRESSED_Y}），并播放音效+粒子。 */
     private void pressPistonDown() {
         BlockDisplay bd = getPistonDisplay();
         if (bd == null || pistonPressed) return;
@@ -374,7 +379,7 @@ public class SteamPress extends RebarBlock implements
         bd.setInterpolationDelay(0);
         bd.setInterpolationDuration(6);
         bd.setTransformation(new Transformation(
-                new Vector3f(-0.5f, -0.5f, -0.5f),
+                new Vector3f(-0.5f, PISTON_PRESSED_Y, -0.5f),
                 new Quaternionf(new AxisAngle4f(0, 0, 1, 0)),
                 new Vector3f(1, 1, 1),
                 new Quaternionf(new AxisAngle4f(0, 0, 1, 0))
@@ -384,7 +389,7 @@ public class SteamPress extends RebarBlock implements
                 getBlock().getLocation().add(0.5, 0.5, 0.5), 6, 0.2, 0.1, 0.2, 0.02);
     }
 
-    /** 加工结束后将活塞头升回静止位（Y = 0.3），并产出蒸汽效果。 */
+    /** 加工结束后将活塞头升回静止位（{@link #PISTON_IDLE_Y}，与放置时一致），并产出蒸汽效果。 */
     private void liftPiston() {
         BlockDisplay bd = getPistonDisplay();
         if (bd == null) return;
@@ -392,7 +397,7 @@ public class SteamPress extends RebarBlock implements
         bd.setInterpolationDelay(0);
         bd.setInterpolationDuration(6);
         bd.setTransformation(new Transformation(
-                new Vector3f(-0.5f, 0.3f, -0.5f),
+                new Vector3f(-0.5f, PISTON_IDLE_Y, -0.5f),
                 new Quaternionf(new AxisAngle4f(0, 0, 1, 0)),
                 new Vector3f(1, 1, 1),
                 new Quaternionf(new AxisAngle4f(0, 0, 1, 0))
@@ -769,7 +774,7 @@ public class SteamPress extends RebarBlock implements
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
         return WailaDisplay.of(this, player)
-                .add(ProgressBar.fluidContents(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.STEAM, fluidCapacity(SteamworkFluids.STEAM), fluidAmount(SteamworkFluids.STEAM)))
                 .add(Component.translatable("steamwork.state." + currentState.key()));
     }
 

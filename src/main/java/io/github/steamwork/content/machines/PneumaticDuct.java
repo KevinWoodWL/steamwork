@@ -282,9 +282,12 @@ public class PneumaticDuct extends RebarBlock implements
     private @NotNull ItemDisplay createFaceDisplay(@NotNull BlockFace face, int index) {
         float thickness = LINE_THICKNESSES[index % LINE_THICKNESSES.length];
         Location center = getBlock().getLocation().toCenterLocation();
-        double length = faceSegmentLength(face);
+        // LineBuilder 以 from→to 中点为中心、长度为 distance+extraLength，故 extraLength 会向两端
+        // 各延伸一半。原本前端会越过方块边界（0.5）探进相邻方块约 thickness/2，口型/拐角连接时
+        // 与邻居段过度交叠/穿模。把 to 缩短 thickness/2，使前端正好落在方块边界、不再越界探入。
+        double reach = faceSegmentLength(face) - thickness / 2.0;
         Vector3d from = new Vector3d();
-        Vector3d to = new Vector3d(face.getModX() * length, face.getModY() * length, face.getModZ() * length);
+        Vector3d to = new Vector3d(face.getModX() * reach, face.getModY() * reach, face.getModZ() * reach);
 
         ItemDisplay display = new ItemDisplayBuilder()
                 .itemStack(ductLineStack())

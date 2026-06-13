@@ -244,6 +244,8 @@ public final class SteamworkKeys {
     public static final NamespacedKey PRODUCTION_LINE_OUTLET = steamworkKey("production_line_outlet");
     public static final NamespacedKey PRODUCTION_LINE_BLUEPRINT = steamworkKey("production_line_blueprint");
     public static final NamespacedKey AUTO_PRODUCTION_MODULE = steamworkKey("auto_production_module");
+    public static final NamespacedKey PNEUMATIC_LINE_VALVE = steamworkKey("pneumatic_line_valve");
+    public static final NamespacedKey PNEUMATIC_LINE_SENSOR = steamworkKey("pneumatic_line_sensor");
 
     // Steam logistics
     public static final NamespacedKey STEAM_COMPRESSOR = steamworkKey("steam_compressor");

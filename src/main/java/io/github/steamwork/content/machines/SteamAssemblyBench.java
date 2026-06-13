@@ -615,7 +615,7 @@ public class SteamAssemblyBench extends RebarBlock implements
         }
         return WailaDisplay.of(this, player)
                 .add(Component.translatable("steamwork.structure." + (isFormedAndFullyLoaded() ? "formed" : "missing")))
-                .add(ProgressBar.fluidContents(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.SUPERHEATED_STEAM, fluidCapacity(SteamworkFluids.SUPERHEATED_STEAM), fluidAmount(SteamworkFluids.SUPERHEATED_STEAM)))
                 .add(state);
     }
 

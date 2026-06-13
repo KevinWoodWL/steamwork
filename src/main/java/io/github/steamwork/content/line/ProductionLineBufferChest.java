@@ -416,13 +416,14 @@ public class ProductionLineBufferChest extends RebarBlock implements
     public @NotNull Gui createGui() {
         return Gui.builder()
                 .setStructure(
-                        "# # # # # # # # #",
+                        "# # # # T # # # #",
                         "b b b b b b b b b",
                         "b b b b b b b b b",
                         "b b b b b b b b b",
                         "# # L M F W B # #"
                 )
                 .addIngredient('#', GuiItems.background())
+                .addIngredient('T', new SlotHintItem())
                 .addIngredient('b', buffer)
                 .addIngredient('L', lineInfoItem)
                 .addIngredient('M', modeToggleItem)
@@ -632,6 +633,20 @@ public class ProductionLineBufferChest extends RebarBlock implements
                     : BlacklistBehavior.RETAIN;
             notifyWindows();
         }
+    }
+
+    private final class SlotHintItem extends AbstractItem {
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            return ItemStackBuilder.of(Material.PAPER)
+                    .name(ni(Component.translatable("steamwork.gui.production_line_buffer_chest.slot_hint.title")))
+                    .lore(List.of(
+                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.slot_hint.buffer")),
+                            ni(Component.translatable("steamwork.gui.production_line_buffer_chest.slot_hint.mode"))
+                    ));
+        }
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {}
     }
 
     private final class BackItem extends AbstractItem {

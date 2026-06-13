@@ -98,6 +98,10 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_INLET, Material.DISPENSER, ProductionLineInlet.class);
         RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_BUFFER_CHEST, Material.CHEST, ProductionLineBufferChest.class);
         RebarBlock.register(SteamworkKeys.PRODUCTION_LINE_OUTLET, Material.DROPPER, ProductionLineOutlet.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_LINE_VALVE, Material.WAXED_CUT_COPPER_SLAB,
+                io.github.steamwork.content.line.PneumaticLineValve.class);
+        RebarBlock.register(SteamworkKeys.PNEUMATIC_LINE_SENSOR, Material.WAXED_CUT_COPPER_SLAB,
+                io.github.steamwork.content.line.PneumaticLineSensor.class);
         RebarBlock.register(SteamworkKeys.STEAM_DISTILLATION_TOWER, Material.CAULDRON, SteamDistillationTower.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_TOWER_SECTION, Material.LIGHT_GRAY_STAINED_GLASS, RebarBlock.class);
         RebarBlock.register(SteamworkKeys.DISTILLATION_CONDENSER, Material.CUT_COPPER, RebarBlock.class);

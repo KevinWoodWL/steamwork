@@ -1,6 +1,11 @@
 package io.github.steamwork;
 
 import io.github.pylonmc.rebar.item.research.Research;
+import io.github.pylonmc.rebar.config.RebarConfig;
+import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
@@ -91,7 +96,10 @@ public final class SteamworkResearches {
             SteamworkKeys.PNEUMATIC_LOGIC_GATE,
             SteamworkKeys.STEAM_OSCILLATOR,
             SteamworkKeys.STEAM_PRESSURE_TRANSDUCER,
-            SteamworkKeys.STEAM_DIFFERENCE_ENGINE);
+            SteamworkKeys.STEAM_DIFFERENCE_ENGINE,
+            SteamworkKeys.PNEUMATIC_DIFFERENTIAL_GATE,
+            SteamworkKeys.PNEUMATIC_PULSER,
+            SteamworkKeys.PNEUMATIC_LATCH);
 
     /** 解锁蒸汽科研接口 —— 必须保持全局研究点可解锁，否则玩家无法建造接口来获取学科点数。 */
     public static final Research CHEMISTRY_BASIC_RESEARCH = new Research(
@@ -141,7 +149,8 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_CATAPULT, SteamworkKeys.STEAM_SORTER,
             SteamworkKeys.PNEUMATIC_DISTRIBUTOR,
             SteamworkKeys.PNEUMATIC_GATE_VALVE,
-            SteamworkKeys.PNEUMATIC_PRESSURE_MODULE);
+            SteamworkKeys.PNEUMATIC_PRESSURE_MODULE,
+            SteamworkKeys.PNEUMATIC_LINE_VALVE, SteamworkKeys.PNEUMATIC_LINE_SENSOR);
 
     /**
      * ★ 化学门控：需在蒸汽科研接口消耗 100 化学点数解锁。
@@ -247,5 +256,23 @@ public final class SteamworkResearches {
         PRECISION_TURBINES_2.register();
         PRECISION_STEAM_EQUIPMENT.register();
         MATERIAL_STEAM_ARMOR.register();
+    }
+
+    /**
+     * 桥接机器（汽动产线阀 / 传感器）的附加放置门控。
+     *
+     * <p>这两台是「货运 × 逻辑」桥：物品本身由框架按所属研究（蒸汽货运 {@link #MATERIAL_STEAM_LOGISTICS}）
+     * 门控领取/合成；此方法额外<b>硬性</b>要求放置者已解锁 {@link #PRECISION_PNEUMATIC_LOGIC 汽动逻辑} 研究——
+     * 两个研究齐备才能放置使用。这里<b>不</b>看 {@code rebar.item.*} 绕过权限：该权限对 OP 默认为真，
+     * 会让管理员/测试环境直接跳过门控（这正是之前「没解锁也能用」的原因）。仅在研究系统整体关闭、
+     * 或非玩家放置（插件/世界生成/区块加载）时放行。</p>
+     *
+     * @return {@code true} 表示应拦截本次放置（缺汽动逻辑研究），并已向玩家发送提示。
+     */
+    public static boolean denyLineBridgePlacement(@Nullable Player player) {
+        if (!RebarConfig.ResearchConfig.ENABLED || player == null) return false;
+        if (PRECISION_PNEUMATIC_LOGIC.isResearchedBy(player)) return false;
+        player.sendMessage(Component.translatable("steamwork.message.line_bridge.requires_logic"));
+        return true;
     }
 }

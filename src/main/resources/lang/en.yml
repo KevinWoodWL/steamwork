@@ -952,6 +952,26 @@ item:
       <arrow> Left-click a <white>Production Line Outlet</white> to complete and activate the line
       <arrow> Shift + right-click any block to cancel configuration
 
+  pneumatic_line_valve:
+    name: "Pneumatic Line Valve"
+    lore: |-
+      <arrow> <white>Logic → Line bridge</white>: gates item flow by steam pressure
+      <arrow> Place in a production line; reads steam from the signal face
+      <arrow> Signal ≥ threshold → items pass through; below → items held
+      <arrow> Threshold and signal face adjustable in GUI
+      <arrow> <red>Needs both Steam Logistics and Pneumatic Logic research
+    waila: "Pneumatic Line Valve | %state%"
+
+  pneumatic_line_sensor:
+    name: "Pneumatic Line Sensor"
+    lore: |-
+      <arrow> <white>Line → Logic bridge</white>: outputs steam when items pass or line state changes
+      <arrow> Place in a production line; items pass through transparently
+      <arrow> Modes: <white>Pulse</white> (on item pass) / <white>Jammed</white> / <white>Idle</white>
+      <arrow> Mode and steam type adjustable in GUI; signal readable from any adjacent side
+      <arrow> <red>Needs both Steam Logistics and Pneumatic Logic research
+    waila: "Pneumatic Line Sensor | %mode% | %state%"
+
   pneumatic_distributor:
     name: "Pneumatic Distributor"
     lore: |-
@@ -2249,6 +2269,34 @@ gui:
       title: "<dark_gray>Filter List"
       back: "<yellow>Back"
       back_hint: "<gray>Return to the buffer chest menu"
+    slot_hint:
+      title: "<aqua>Slot Guide"
+      buffer: "<gray>↓ 27-slot cache: receives products from upstream"
+      mode: "<gray>↓ Bottom row: line status, push mode, fuel template, filter"
+
+  pneumatic_line_valve:
+    title: "<dark_gray>Pneumatic Line Valve"
+    signal_face: "<light_purple>Signal Face"
+    signal_face_hint: "<dark_gray>Click to cycle (N/E/S/W) — reads steam from this side"
+    threshold: "<yellow>Signal Threshold"
+    threshold_desc: "<gray>Adjacent steam ≥ this value → valve opens"
+    state:
+      open: "<green>Open (items passing)"
+      closed: "<red>Closed (items held)"
+    status_hint: "<dark_gray>Steam on signal face ≥ threshold opens the valve"
+
+  pneumatic_line_sensor:
+    title: "<dark_gray>Pneumatic Line Sensor"
+    mode_label: "<light_purple>Sensor Mode"
+    mode_hint: "<dark_gray>Click to cycle: Pulse / Jammed / Idle"
+    mode:
+      pulse: "Pulse (on item)"
+      jammed: "Jammed (on jam)"
+      idle: "Idle (no items)"
+    state:
+      active: "<green>Signal Active"
+      idle: "<gray>No Signal"
+    status_hint: "<dark_gray>Outputs steam based on item flow or line state"
 
   pneumatic_distributor:
     title: "<dark_gray>Pneumatic Distributor"
@@ -2484,6 +2532,8 @@ researches:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>150 Precision</light_purple> points"
 
 message:
+  line_bridge:
+    requires_logic: "<red>You must unlock the <white>Pneumatic Logic</white> research before placing this bridge machine"
   pneumatic_cargo_hub:
     selecting: "<yellow>Selection mode �?left-click target hub within %range% blocks, right-click this hub to cancel"
     selection_cancelled: "<gray>Target selection cancelled"
