@@ -1,5 +1,9 @@
-# 蒸汽机器人（P0 验证骨架）：巡游参数。
-# 后续阶段会加入耗汽、作业、充能等设置。
-tick-interval: 10      # 决策间隔（tick）
-wander-radius: 6.0     # 以部署点为原点的巡游半径（格）
-move-speed: 1.0        # 寻路移动速度倍率
+# 蒸汽机器人：巡游与燃料参数。
+# 后续阶段会加入作业、充能（充汽舱绑定）等设置。
+tick-interval: 10        # 决策间隔（tick）
+wander-radius: 6.0       # 以部署点为原点的巡游半径（格）
+move-speed: 1.0          # 寻路移动速度倍率
+
+# 燃料（P1a）
+steam-capacity: 2000.0   # 内置蒸汽容量（mB），满汽部署
+steam-per-tick: 10.0     # 每次决策 tick 行动耗汽（mB）；耗尽则缺汽停摆

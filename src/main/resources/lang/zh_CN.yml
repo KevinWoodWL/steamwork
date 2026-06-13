@@ -981,11 +981,12 @@ item:
   steam_robot:
     name: "蒸汽机器人"
     lore: |-
-      <arrow> <gray>P0 验证骨架</gray>：以铜傀儡为底座的自主行动机器人
-      <arrow> 右键方块在其上方部署一台
-      <arrow> 当前仅在部署点周围巡游（验证寻路与重载持久化）
+      <arrow> 以铜傀儡为底座的自主行动机器人
+      <arrow> 右键方块在其上方部署一台（满汽）
+      <arrow> 在部署点周围巡游，<white>行动消耗内置蒸汽</white>；耗尽则<red>缺汽停摆</red>
+      <arrow> 注视机器人查看蒸汽余量（WAILA）
       <arrow> <white>潜行 + 右键</white> 机器人可拆除并回收物品
-      <arrow> <yellow>后续将加入：耗汽驱动、采矿/砍树/搬运、充汽舱充能
+      <arrow> <yellow>后续将加入：充汽舱充能、采矿/砍树/搬运
 
   pneumatic_distributor:
     name: "汽动分发器"
@@ -1471,6 +1472,10 @@ item:
     lore: <arrow> 一次研究分析后留下的废弃物
 
 gui:
+  steam_robot:
+    state:
+      running: "巡游中"
+      no_steam: "缺汽停摆"
   common:
     steam_tier: "<aqua>蒸汽档位"
     current: "<gray>当前：<reset>%value%"

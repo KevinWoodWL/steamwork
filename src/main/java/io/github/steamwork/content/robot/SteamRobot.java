@@ -6,6 +6,9 @@ import io.github.pylonmc.rebar.entity.RebarEntity;
 import io.github.pylonmc.rebar.entity.interfaces.InteractRebarEntityHandler;
 import io.github.pylonmc.rebar.entity.interfaces.TickingRebarEntity;
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler;
+import io.github.pylonmc.rebar.util.ProgressBar;
+import io.github.pylonmc.rebar.waila.WailaDisplay;
+import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
 import io.github.steamwork.SteamworkKeys;
 import io.papermc.paper.world.WeatheringCopperState;
@@ -33,19 +36,18 @@ import java.util.concurrent.ThreadLocalRandom;
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 
 /**
- * 蒸汽机器人 —— <b>P0 验证骨架</b>。
+ * 蒸汽机器人 —— P0 实体地基 + <b>P1a 蒸汽燃料</b>。
  *
- * <p>本阶段只验证最核心的实体地基是否跑通，<b>不含</b>任何作业 / 耗汽 / 充能逻辑：</p>
- * <ol>
- *   <li>以铜傀儡（{@link CopperGolem}）为底座，用 {@link RebarEntity} 包装、{@link EntityStorage} 托管；</li>
- *   <li>实现 {@link TickingRebarEntity}，按 {@code tick-interval} 周期决策；</li>
- *   <li>每次决策在部署点（home）周围随机选点，用原版寻路 {@code getPathfinder().moveTo} 走过去——
- *       验证「Rebar 包装的 Mob 能寻路移动」；</li>
- *   <li>{@link #write} 持久化 home，重载后由单参 load 构造器恢复——验证「重载不丢」。</li>
- * </ol>
+ * <p>以铜傀儡（{@link CopperGolem}，已涂蜡、永不氧化）为底座，{@link RebarEntity} 包装、
+ * {@link EntityStorage} 托管，{@link TickingRebarEntity} 周期决策；部署点（home）周围巡游，
+ * 用原版寻路 {@code getPathfinder().moveTo} 行动；home 与蒸汽量持久化，重载恢复。</p>
  *
- * <p>后续阶段（见 {@code docs/design/steam-robot.md}）才加入：蒸汽罐燃料、采矿/砍树/搬运作业、
- * 复用蒸汽充汽舱四方向绑定充能、铜傀儡拿取/放下动作动画等。</p>
+ * <p><b>P1a 燃料</b>：内置蒸汽储量（{@code steam}/{@code steamCapacity}），每 tick 行动耗汽
+ * {@code steamPerTick}；耗尽即<b>缺汽停摆</b>（停止寻路、不再行动），WAILA 显示蒸汽条与状态。
+ * 充能（复用蒸汽充汽舱四方向绑定）在 P1b 接入，会调用 {@link #addSteam}。</p>
+ *
+ * <p>后续阶段（见 {@code docs/design/steam-robot.md}）：充汽舱充能、采矿/砍树/搬运作业、
+ * 铜傀儡拿取/放下动作动画等。</p>
  */
 public class SteamRobot extends RebarEntity<CopperGolem> implements
         TickingRebarEntity, InteractRebarEntityHandler {
@@ -54,22 +56,29 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private static final NamespacedKey HOME_X = steamworkKey("robot_home_x");
     private static final NamespacedKey HOME_Y = steamworkKey("robot_home_y");
     private static final NamespacedKey HOME_Z = steamworkKey("robot_home_z");
+    // 蒸汽储量持久化键
+    private static final NamespacedKey STEAM_KEY = steamworkKey("robot_steam");
 
-    // ===== 设置（settings/steam_robot.yml，缺省时用默认值，避免 spike 阶段缺配置崩溃）=====
-    private final int    tickInterval = getSetting("tick-interval", ConfigAdapter.INTEGER, 10);
-    private final double wanderRadius = getSetting("wander-radius", ConfigAdapter.DOUBLE,  6.0);
-    private final double moveSpeed    = getSetting("move-speed",    ConfigAdapter.DOUBLE,  1.0);
+    // ===== 设置（settings/steam_robot.yml，缺省时用默认值，避免缺配置崩溃）=====
+    private final int    tickInterval  = getSetting("tick-interval",  ConfigAdapter.INTEGER, 10);
+    private final double wanderRadius  = getSetting("wander-radius",  ConfigAdapter.DOUBLE,  6.0);
+    private final double moveSpeed     = getSetting("move-speed",     ConfigAdapter.DOUBLE,  1.0);
+    private final double steamCapacity = getSetting("steam-capacity", ConfigAdapter.DOUBLE,  2000.0);
+    private final double steamPerTick  = getSetting("steam-per-tick", ConfigAdapter.DOUBLE,  10.0);
 
     // ===== 状态 =====
     private @NotNull Location home;
     private @Nullable Location target = null;
     /** 距上次重新选点经过的决策次数，超过阈值即强制重选，避免目标不可达时永久卡住。 */
     private int ticksSinceRetarget = 0;
+    /** 当前蒸汽储量（mB）。 */
+    private double steam;
 
     /** 新生成：写入 rebar 实体 key 并记录部署点。 */
     public SteamRobot(@NotNull CopperGolem golem, @NotNull Location home) {
         super(SteamworkKeys.STEAM_ROBOT, golem);
         this.home = home.clone();
+        this.steam = steamCapacity; // 新部署：满汽
         configure();
     }
 
@@ -84,6 +93,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         this.home = (hx != null && hy != null && hz != null)
                 ? new Location(golem.getWorld(), hx, hy, hz)
                 : golem.getLocation();
+        Double s = pdc.get(STEAM_KEY, PersistentDataType.DOUBLE);
+        this.steam = (s != null) ? Math.min(s, steamCapacity) : steamCapacity;
         configure();
     }
 
@@ -116,6 +127,14 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         CopperGolem golem = getEntity();
         if (!golem.isValid()) return;
 
+        // 缺汽停摆：停止寻路、不再行动（充能在 P1b 接入后恢复）
+        if (steam <= 0.0) {
+            if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+            target = null;
+            golem.setGolemState(CopperGolem.State.IDLE);
+            return;
+        }
+
         Location loc = golem.getLocation();
         ticksSinceRetarget++;
 
@@ -126,11 +145,14 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         if (target == null || reached || ticksSinceRetarget > 6) {
             target = pickWanderTarget(golem);
             golem.getPathfinder().moveTo(target, moveSpeed);
-            // 蒸汽喷气作为「正在决策」的可视信号（P0 调试用）
+            // 蒸汽喷气：行动可视信号
             golem.getWorld().spawnParticle(Particle.CLOUD, loc.clone().add(0, 1.0, 0),
                     6, 0.2, 0.3, 0.2, 0.01);
             ticksSinceRetarget = 0;
         }
+
+        // 行动耗汽
+        steam = Math.max(0.0, steam - steamPerTick);
     }
 
     /** 以 home 为原点、wanderRadius 为半径随机选一个地表点。 */
@@ -147,6 +169,32 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         pdc.set(HOME_X, PersistentDataType.DOUBLE, home.getX());
         pdc.set(HOME_Y, PersistentDataType.DOUBLE, home.getY());
         pdc.set(HOME_Z, PersistentDataType.DOUBLE, home.getZ());
+        pdc.set(STEAM_KEY, PersistentDataType.DOUBLE, steam);
+    }
+
+    // ===== 蒸汽燃料 =====
+
+    public double getSteam()         { return steam; }
+    public double getSteamCapacity() { return steamCapacity; }
+
+    /** 充入蒸汽（封顶到容量），返回实际充入量。供蒸汽充汽舱（P1b）调用。 */
+    public double addSteam(double amount) {
+        if (amount <= 0.0) return 0.0;
+        double added = Math.min(amount, steamCapacity - steam);
+        steam += added;
+        return added;
+    }
+
+    @Override
+    public @Nullable WailaDisplay getWaila(@NotNull Player player) {
+        boolean hasSteam = steam > 0.0;
+        return WailaDisplay.of(
+                        Component.translatable("steamwork.item.steam_robot.name").color(NamedTextColor.AQUA))
+                .add(Component.translatable(hasSteam
+                                ? "steamwork.gui.steam_robot.state.running"
+                                : "steamwork.gui.steam_robot.state.no_steam")
+                        .color(hasSteam ? NamedTextColor.GREEN : NamedTextColor.RED))
+                .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, steamCapacity, steam));
     }
 
     /**

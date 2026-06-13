@@ -976,11 +976,12 @@ item:
   steam_robot:
     name: "Steam Robot"
     lore: |-
-      <arrow> <gray>P0 validation skeleton</gray>: autonomous robot built on a Copper Golem
-      <arrow> Right-click a block to deploy one on top of it
-      <arrow> Currently only wanders near its deploy point (pathfinding + reload persistence test)
+      <arrow> Autonomous robot built on a Copper Golem
+      <arrow> Right-click a block to deploy one on top of it (full of steam)
+      <arrow> Wanders near its deploy point; <white>actions consume onboard steam</white>, <red>halts when empty</red>
+      <arrow> Look at the robot to see remaining steam (WAILA)
       <arrow> <white>Sneak + right-click</white> the robot to dismantle and recover the item
-      <arrow> <yellow>Coming later: steam fuel, mining/chopping/hauling, charging chamber recharge
+      <arrow> <yellow>Coming later: charging chamber recharge, mining/chopping/hauling
 
   pneumatic_distributor:
     name: "Pneumatic Distributor"
@@ -1466,6 +1467,10 @@ item:
     lore: <arrow> Spent material left over after a research analysis cycle
 
 gui:
+  steam_robot:
+    state:
+      running: "Patrolling"
+      no_steam: "Out of Steam"
   common:
     steam_tier: "<aqua>Steam Tier"
     current: "<gray>Current: <reset>%value%"
