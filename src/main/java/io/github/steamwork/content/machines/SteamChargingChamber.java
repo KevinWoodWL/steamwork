@@ -13,17 +13,21 @@ import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
+import io.github.pylonmc.rebar.entity.EntityStorage;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkKeys;
+import io.github.steamwork.content.robot.SteamRobot;
 import io.github.steamwork.util.SteamCharge;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
+import org.bukkit.entity.CopperGolem;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
@@ -216,9 +220,44 @@ public class SteamChargingChamber extends RebarBlock implements
         BoundingBox box = BoundingBox.of(core).expand(1.0);
 
         for (var entity : core.getWorld().getNearbyEntities(box)) {
-            if (!(entity instanceof Player player)) continue;
-            chargePlayer(player);
+            if (entity instanceof Player player) {
+                chargePlayer(player);
+            } else if (entity instanceof CopperGolem) {
+                // 站内的蒸汽机器人：给其内置蒸汽充汽（与玩家共用充能体验）
+                if (EntityStorage.get(entity) instanceof SteamRobot robot) {
+                    chargeRobot(robot);
+                }
+            }
         }
+    }
+
+    /**
+     * 给站内的蒸汽机器人内置蒸汽充汽，并让其自动绑定本充汽舱（低汽时回此处充能）。
+     * 复用与玩家相同的蒸汽粒子 + 音效。
+     */
+    private void chargeRobot(@NotNull SteamRobot robot) {
+        robot.bindChamber(getBlock().getLocation().toCenterLocation());
+
+        double cap = robot.getSteamCapacity();
+        double cur = robot.getSteam();
+        if (cur >= cap) return;
+
+        double steam = fluidAmount(SteamworkFluids.PRESSURIZED_STEAM);
+        if (steam <= 0) return;
+
+        double toGive = Math.min(Math.min(chargeRate, cap - cur), steam);
+        double added  = robot.addSteam(toGive);
+        if (added > 0) {
+            removeFluid(SteamworkFluids.PRESSURIZED_STEAM, added);
+            spawnRobotChargeFx(robot.getEntity().getLocation());
+        }
+    }
+
+    /** 机器人充汽特效：蒸汽云 + 加压蒸汽音效（与玩家充汽一致）。 */
+    private void spawnRobotChargeFx(@NotNull Location at) {
+        at.getWorld().spawnParticle(Particle.CLOUD, at.clone().add(0, 1.0, 0),
+                14, 0.4, 0.5, 0.4, 0.02);
+        at.getWorld().playSound(at, Sound.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.35f, 1.8f);
     }
 
     /**

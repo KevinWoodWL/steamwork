@@ -11,6 +11,8 @@ import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
 import io.github.steamwork.SteamworkKeys;
+import io.github.steamwork.content.machines.SteamChargingChamber;
+import io.github.steamwork.util.PneumaticEndpointSupport;
 import io.papermc.paper.world.WeatheringCopperState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -21,6 +23,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.CopperGolem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -43,10 +46,13 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * 用原版寻路 {@code getPathfinder().moveTo} 行动；home 与蒸汽量持久化，重载恢复。</p>
  *
  * <p><b>P1a 燃料</b>：内置蒸汽储量（{@code steam}/{@code steamCapacity}），每 tick 行动耗汽
- * {@code steamPerTick}；耗尽即<b>缺汽停摆</b>（停止寻路、不再行动），WAILA 显示蒸汽条与状态。
- * 充能（复用蒸汽充汽舱四方向绑定）在 P1b 接入，会调用 {@link #addSteam}。</p>
+ * {@code steamPerTick}；耗尽即<b>缺汽停摆</b>，WAILA 显示蒸汽条与状态。</p>
  *
- * <p>后续阶段（见 {@code docs/design/steam-robot.md}）：充汽舱充能、采矿/砍树/搬运作业、
+ * <p><b>P1b 充能</b>：首次被某台蒸汽充汽舱充能时<b>自动绑定</b>该舱（{@link #bindChamber}）；之后蒸汽
+ * 低于 {@code recharge-at} 比例即进入回充模式，寻路回绑定充汽舱站定等充（途中不耗汽），充满恢复巡游。
+ * 充汽舱侧识别站内机器人并调用 {@link #addSteam}。无绑定且耗尽 → 缺汽停摆。</p>
+ *
+ * <p>后续阶段（见 {@code docs/design/steam-robot.md}）：GUI 与任务模式、采矿/砍树/搬运作业、
  * 铜傀儡拿取/放下动作动画等。</p>
  */
 public class SteamRobot extends RebarEntity<CopperGolem> implements
@@ -58,6 +64,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private static final NamespacedKey HOME_Z = steamworkKey("robot_home_z");
     // 蒸汽储量持久化键
     private static final NamespacedKey STEAM_KEY = steamworkKey("robot_steam");
+    // 绑定充汽舱核心位置持久化键（与机器人同世界，存为三个 double）
+    private static final NamespacedKey BOUND_X = steamworkKey("robot_bound_x");
+    private static final NamespacedKey BOUND_Y = steamworkKey("robot_bound_y");
+    private static final NamespacedKey BOUND_Z = steamworkKey("robot_bound_z");
 
     // ===== 设置（settings/steam_robot.yml，缺省时用默认值，避免缺配置崩溃）=====
     private final int    tickInterval  = getSetting("tick-interval",  ConfigAdapter.INTEGER, 10);
@@ -65,6 +75,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private final double moveSpeed     = getSetting("move-speed",     ConfigAdapter.DOUBLE,  1.0);
     private final double steamCapacity = getSetting("steam-capacity", ConfigAdapter.DOUBLE,  2000.0);
     private final double steamPerTick  = getSetting("steam-per-tick", ConfigAdapter.DOUBLE,  10.0);
+    /** 蒸汽低于容量该比例时回绑定充汽舱充能。 */
+    private final double rechargeAt    = getSetting("recharge-at",    ConfigAdapter.DOUBLE,  0.25);
 
     // ===== 状态 =====
     private @NotNull Location home;
@@ -73,6 +85,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private int ticksSinceRetarget = 0;
     /** 当前蒸汽储量（mB）。 */
     private double steam;
+    /** 绑定的充汽舱核心位置（首次被某舱充能时自动绑定）；null = 未绑定。 */
+    private @Nullable Location boundChamber = null;
+    /** 是否正在回充汽舱充能途中（避免在路上耗汽、防抖）。 */
+    private boolean seekingCharge = false;
 
     /** 新生成：写入 rebar 实体 key 并记录部署点。 */
     public SteamRobot(@NotNull CopperGolem golem, @NotNull Location home) {
@@ -95,6 +111,12 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                 : golem.getLocation();
         Double s = pdc.get(STEAM_KEY, PersistentDataType.DOUBLE);
         this.steam = (s != null) ? Math.min(s, steamCapacity) : steamCapacity;
+        Double bx = pdc.get(BOUND_X, PersistentDataType.DOUBLE);
+        Double by = pdc.get(BOUND_Y, PersistentDataType.DOUBLE);
+        Double bz = pdc.get(BOUND_Z, PersistentDataType.DOUBLE);
+        this.boundChamber = (bx != null && by != null && bz != null)
+                ? new Location(golem.getWorld(), bx, by, bz)
+                : null;
         configure();
     }
 
@@ -127,7 +149,22 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         CopperGolem golem = getEntity();
         if (!golem.isValid()) return;
 
-        // 缺汽停摆：停止寻路、不再行动（充能在 P1b 接入后恢复）
+        // ── 回充模式：低汽且有可用绑定充汽舱 → 走过去站定等充（途中不耗汽）──
+        if (seekingCharge) {
+            if (steam >= steamCapacity || boundChamber == null || !chamberLoaded(boundChamber)) {
+                seekingCharge = false; // 充满 / 舱失效 → 退出回充
+            } else {
+                navigateToChamber(golem);
+                return;
+            }
+        } else if (steam < steamCapacity * rechargeAt
+                && boundChamber != null && chamberLoaded(boundChamber)) {
+            seekingCharge = true;
+            navigateToChamber(golem);
+            return;
+        }
+
+        // ── 缺汽停摆（无可用充汽舱）──
         if (steam <= 0.0) {
             if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
             target = null;
@@ -135,6 +172,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             return;
         }
 
+        // ── 正常巡游（耗汽）──
         Location loc = golem.getLocation();
         ticksSinceRetarget++;
 
@@ -155,6 +193,32 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         steam = Math.max(0.0, steam - steamPerTick);
     }
 
+    /** 回充寻路：未到充汽舱判定框就周期性寻路过去；到了就站定等充。 */
+    private void navigateToChamber(@NotNull CopperGolem golem) {
+        Location loc = golem.getLocation();
+        if (boundChamber != null
+                && boundChamber.getWorld() == loc.getWorld()
+                && loc.distanceSquared(boundChamber) <= 2.6) {   // 已在核心 ±1.6 内（充汽舱判定框）
+            if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+            golem.setGolemState(CopperGolem.State.IDLE);
+            target = null;
+            ticksSinceRetarget = 0;
+            return;
+        }
+        ticksSinceRetarget++;
+        if (ticksSinceRetarget > 6 || !golem.getPathfinder().hasPath()) {
+            if (boundChamber != null) golem.getPathfinder().moveTo(boundChamber, moveSpeed);
+            ticksSinceRetarget = 0;
+        }
+    }
+
+    /** 绑定充汽舱所在区块是否已加载、且该方块确为充汽舱。 */
+    private boolean chamberLoaded(@NotNull Location chamberCore) {
+        Block b = chamberCore.getBlock();
+        return PneumaticEndpointSupport.isChunkLoaded(b)
+                && PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber;
+    }
+
     /** 以 home 为原点、wanderRadius 为半径随机选一个地表点。 */
     private @NotNull Location pickWanderTarget(@NotNull CopperGolem golem) {
         ThreadLocalRandom rng = ThreadLocalRandom.current();
@@ -170,14 +234,19 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         pdc.set(HOME_Y, PersistentDataType.DOUBLE, home.getY());
         pdc.set(HOME_Z, PersistentDataType.DOUBLE, home.getZ());
         pdc.set(STEAM_KEY, PersistentDataType.DOUBLE, steam);
+        if (boundChamber != null) {
+            pdc.set(BOUND_X, PersistentDataType.DOUBLE, boundChamber.getX());
+            pdc.set(BOUND_Y, PersistentDataType.DOUBLE, boundChamber.getY());
+            pdc.set(BOUND_Z, PersistentDataType.DOUBLE, boundChamber.getZ());
+        }
     }
 
-    // ===== 蒸汽燃料 =====
+    // ===== 蒸汽燃料 / 充能 =====
 
     public double getSteam()         { return steam; }
     public double getSteamCapacity() { return steamCapacity; }
 
-    /** 充入蒸汽（封顶到容量），返回实际充入量。供蒸汽充汽舱（P1b）调用。 */
+    /** 充入蒸汽（封顶到容量），返回实际充入量。供蒸汽充汽舱调用。 */
     public double addSteam(double amount) {
         if (amount <= 0.0) return 0.0;
         double added = Math.min(amount, steamCapacity - steam);
@@ -185,15 +254,31 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         return added;
     }
 
+    /**
+     * 被某台充汽舱充能时调用：自动绑定该舱（核心方块中心位置），低汽时回到此处充能。
+     * 仅当绑定目标变化时更新。
+     */
+    public void bindChamber(@NotNull Location chamberCore) {
+        if (boundChamber == null
+                || boundChamber.getWorld() != chamberCore.getWorld()
+                || boundChamber.distanceSquared(chamberCore) > 0.01) {
+            this.boundChamber = chamberCore.clone();
+        }
+    }
+
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
-        boolean hasSteam = steam > 0.0;
+        Component state;
+        if (seekingCharge) {
+            state = Component.translatable("steamwork.gui.steam_robot.state.charging").color(NamedTextColor.YELLOW);
+        } else if (steam > 0.0) {
+            state = Component.translatable("steamwork.gui.steam_robot.state.running").color(NamedTextColor.GREEN);
+        } else {
+            state = Component.translatable("steamwork.gui.steam_robot.state.no_steam").color(NamedTextColor.RED);
+        }
         return WailaDisplay.of(
                         Component.translatable("steamwork.item.steam_robot.name").color(NamedTextColor.AQUA))
-                .add(Component.translatable(hasSteam
-                                ? "steamwork.gui.steam_robot.state.running"
-                                : "steamwork.gui.steam_robot.state.no_steam")
-                        .color(hasSteam ? NamedTextColor.GREEN : NamedTextColor.RED))
+                .add(state)
                 .add(ProgressBar.fluidContents(SteamworkFluids.PRESSURIZED_STEAM, steamCapacity, steam));
     }
 

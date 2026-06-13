@@ -1471,6 +1471,7 @@ gui:
     state:
       running: "Patrolling"
       no_steam: "Out of Steam"
+      charging: "Returning to Charge"
   common:
     steam_tier: "<aqua>Steam Tier"
     current: "<gray>Current: <reset>%value%"
