@@ -245,14 +245,22 @@ public class ProductionLineInlet extends RebarBlock implements
     /** 每个物品每跳消耗的加压蒸汽量（mB）。 */
     public double getSteamPerItem() { return steamPerItem; }
 
-    /** 当前加压蒸汽缓存量（旧版入口可能没有该缓存，故先判存在）。 */
-    private double currentDriveSteam() {
-        return hasFluid(SteamworkFluids.PRESSURIZED_STEAM)
-                ? fluidAmount(SteamworkFluids.PRESSURIZED_STEAM) : 0.0;
+    /**
+     * 该入口是否启用耗汽驱动。v0.4.7 之前放置的老入口没有加压蒸汽缓冲（{@code hasFluid} 为 false），
+     * 走兼容模式：不耗汽、不会因缺汽停摆（行为同 v0.4.7 之前）。
+     */
+    private boolean steamDriveEnabled() {
+        return hasFluid(SteamworkFluids.PRESSURIZED_STEAM);
     }
 
-    /** 入口加压蒸汽缓存是否够支付一次推进。 */
+    /** 当前加压蒸汽缓存量（老入口无缓冲时返回 0）。 */
+    private double currentDriveSteam() {
+        return steamDriveEnabled() ? fluidAmount(SteamworkFluids.PRESSURIZED_STEAM) : 0.0;
+    }
+
+    /** 入口加压蒸汽是否够支付一次推进（老入口无缓冲 → 视为始终可驱动，不耗汽）。 */
     public boolean hasDriveSteam(double amount) {
+        if (!steamDriveEnabled()) return true;
         return currentDriveSteam() >= amount;
     }
 

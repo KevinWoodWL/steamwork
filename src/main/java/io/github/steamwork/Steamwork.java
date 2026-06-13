@@ -31,6 +31,10 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
         registerWithRebar();
         saveDefaultConfig();
 
+        // 旧存档兼容：必须在任何方块反序列化之前注册（区块可能在 onEnable 后立即加载）。
+        getServer().getPluginManager().registerEvents(
+                new io.github.steamwork.util.EntityHolderMigrationListener(), this);
+
         SteamworkFluids.initialize();
         SteamworkItems.initialize();
         SteamworkBlocks.initialize();
