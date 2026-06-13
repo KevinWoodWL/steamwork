@@ -916,6 +916,7 @@ item:
       <arrow> 蒸汽产线的物料入口，内置 <white>7 格原料槽</white>和 <white>7 格燃料槽</white>
       <arrow> 汽动网络（ingredient/fuel INPUT 组）或玩家可直接放入物品
       <arrow> 每 tick 推送原料；燃料支持轮询或单目标绑定模式
+      <arrow> <aqua>耗汽驱动</aqua>：从<white>背面</white>接入<white>加压蒸汽</white>，物品每向下游推进一跳消耗固定量；缺汽则整线停摆
       <arrow> 兼容原版熔炉、高炉、烟熏炉作为产线中间机器
     waila_idle: "产线入口 | 未激活"
     waila: "产线入口 #%number% | %state% | 制作人：%creator%"
@@ -961,7 +962,7 @@ item:
     name: "气动产线阀"
     lore: |-
       <arrow> <white>逻辑→产线桥接</white>：以蒸汽压力控制物品通断
-      <arrow> 放置在产线中；从信号面读取相邻蒸汽压力
+      <arrow> 放置在产线中；把锅炉/逻辑门等持蒸汽方块直接贴在信号面（绿点）
       <arrow> 信号 ≥ 阈值 → 物品放行；低于 → 物品暂存
       <arrow> 阈值和信号面可在 GUI 中调节
       <arrow> <red>需同时解锁蒸汽货运与汽动逻辑两项研究
@@ -1464,6 +1465,8 @@ gui:
   common:
     steam_tier: "<aqua>蒸汽档位"
     current: "<gray>当前：<reset>%value%"
+    line_disabled: "<gray>产线未启用（不工作）"
+    line_disabled_hint: "<dark_gray>需先用蓝图激活所在产线后，本机才会运行"
     input_face: "<gold>输入面：%face%"
     output_face: "<gold>输出面：%face%"
     read_face: "<gold>读取面：%face%"
@@ -2207,6 +2210,8 @@ gui:
       pushing: "<gray>状态：<green>正在向下游推送物品"
       blocked: "<gray>状态：<gold>下游阻塞，物品无法推出"
       jammed: "<gray>状态：<red>出口已满，产线停摆"
+      no_steam: "<gray>状态：<aqua>缺加压蒸汽，产线停摆（请从背面接入加压蒸汽）"
+      steam: "<gray>加压蒸汽：<aqua>%amount% <gray>/ <aqua>%capacity% <gray>mB（每件每跳耗 <aqua>%cost%</aqua>）"
     slot_hint:
       title: "<aqua>槽位说明"
       ingredient: "<gray>第一行：<white>原料槽</white>（推送给产线机器）"
@@ -2283,9 +2288,10 @@ gui:
   pneumatic_line_valve:
     title: "<dark_gray>气动产线阀"
     signal_face: "<light_purple>信号面"
-    signal_face_hint: "<dark_gray>点击循环切换（北/东/南/西）— 从该面读取蒸汽"
+    signal_face_hint: "<dark_gray>点击循环切换六个面（北/东/南/西/上/下）— 读取该面（绿点）相邻方块自身的蒸汽"
     threshold: "<yellow>信号阈值"
     threshold_desc: "<gray>相邻蒸汽 ≥ 此值时阀门开启"
+    threshold_hint: "<dark_gray>左键 +1 | 右键 -1 | Shift ×10 | 丢弃键(Q) 聊天栏直接输入数值"
     state:
       open: "<green>开启（物品通过）"
       closed: "<red>关闭（物品暂存）"
@@ -2539,6 +2545,11 @@ researches:
 message:
   line_bridge:
     requires_logic: "<red>需要先解锁<white>汽动逻辑</white>研究才能放置这台桥接机器"
+  line_valve:
+    threshold_prompt: "<yellow>请在聊天栏输入信号阈值（纯数字，单位 mB）；输入 <white>取消</white> 放弃本次设置"
+    threshold_set: "<green>信号阈值已设为 <white>%value%</white> mB"
+    threshold_invalid: "<red>无效数字：<white>%input%</white> —— 已取消（只能输入数字）"
+    threshold_cancelled: "<gray>已取消阈值设置"
   pneumatic_cargo_hub:
     selecting: "<yellow>选择模式 —— 左键 %range% 格内的目标货运站完成绑定，右键本机取消"
     selection_cancelled: "<gray>已取消目标选择"
@@ -2621,6 +2632,7 @@ line:
     pushing: "<green>推送中"
     blocked: "<gold>下游阻塞"
     jammed: "<red>出口满停摆"
+    no_steam: "<aqua>缺加压蒸汽停摆"
     receiving: "<green>接收中"
     buffering: "<gold>缓存中"
   blueprint:

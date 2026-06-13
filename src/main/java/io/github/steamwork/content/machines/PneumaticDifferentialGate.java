@@ -247,10 +247,25 @@ public class PneumaticDifferentialGate extends RebarBlock implements
         BlockDisplay display = new BlockDisplayBuilder()
                 .blockData(data)
                 .transformation(new TransformBuilder().scale(0.5).translate(0, 1.5, 0))
+                .brightness(ambientBrightness())
                 .persistent(true)
                 .build(center());
         markDisplay(display);
         displayUuids = List.of(display.getUniqueId());
+    }
+
+    /** 取 6 个相邻方块的最大光照设置显示亮度，避免显示实体落在暗处 / 不透明体内时发黑。 */
+    private @NotNull Display.Brightness ambientBrightness() {
+        int blockLight = 0;
+        int skyLight = 0;
+        for (BlockFace face : new BlockFace[]{
+                BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST,
+                BlockFace.WEST,  BlockFace.UP,    BlockFace.DOWN}) {
+            Block neighbor = getBlock().getRelative(face);
+            blockLight = Math.max(blockLight, neighbor.getLightFromBlocks());
+            skyLight   = Math.max(skyLight,   neighbor.getLightFromSky());
+        }
+        return new Display.Brightness(blockLight, skyLight);
     }
 
     private @NotNull Location center() { return getBlock().getLocation().toCenterLocation(); }

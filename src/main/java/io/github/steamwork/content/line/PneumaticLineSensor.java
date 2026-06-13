@@ -190,6 +190,17 @@ public class PneumaticLineSensor extends RebarBlock implements
 
     @Override
     public void tick() {
+        if (!isInLine()) {
+            // 产线未启用：传感器不工作——复位计数、清空所有信号输出缓存
+            signalActive = false;
+            pulseTicksRemaining = 0;
+            idleCounter = 0;
+            for (RebarFluid fluid : STEAMS) {
+                if (hasFluid(fluid) && fluidAmount(fluid) > 0) removeFluid(fluid, fluidAmount(fluid));
+            }
+            notifyGuiItems();
+            return;
+        }
         if (idleCounter < idleThreshold) idleCounter += tickInterval;  // 到阈值封顶，避免无上界累加
 
         // 脉冲倒计时
@@ -296,6 +307,10 @@ public class PneumaticLineSensor extends RebarBlock implements
 
     @Override
     public @Nullable WailaDisplay getWaila(@NotNull Player player) {
+        if (!isInLine()) {
+            return WailaDisplay.of(this, player)
+                    .add(Component.translatable("steamwork.gui.common.line_disabled").color(NamedTextColor.GRAY));
+        }
         return WailaDisplay.of(this, player)
                 .add(sensorMode.component().color(NamedTextColor.AQUA))
                 .add(Component.translatable(signalActive
@@ -365,6 +380,11 @@ public class PneumaticLineSensor extends RebarBlock implements
 
     private final class StatusItem extends AbstractItem {
         @Override public @NotNull ItemProvider getItemProvider(@NotNull Player v) {
+            if (!isInLine()) {
+                return ItemStackBuilder.of(Material.GRAY_STAINED_GLASS_PANE)
+                        .name(ni(Component.translatable("steamwork.gui.common.line_disabled")))
+                        .lore(List.of(ni(Component.translatable("steamwork.gui.common.line_disabled_hint"))));
+            }
             return ItemStackBuilder.of(signalActive ? Material.GREEN_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE)
                     .name(ni(Component.translatable(signalActive
                             ? "steamwork.gui.pneumatic_line_sensor.state.active"

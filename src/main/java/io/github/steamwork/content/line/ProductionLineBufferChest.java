@@ -268,7 +268,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
                     // 黑名单物品：按行为处理
                     if (blacklistBehavior == BlacklistBehavior.EJECT) {
                         ProductionLineMember outlet = findOutlet();
-                        if (outlet != null && outlet.acceptFromLine(single)) {
+                        if (outlet != null && ProductionLineMember.acceptIntoLine(outlet, single)) {
                             decrementBuffer(i, stack);
                             lastPushSucceeded = true;
                             return;
@@ -285,7 +285,7 @@ public class ProductionLineBufferChest extends RebarBlock implements
             } else if (pushMode == PushMode.AUTO && hasTemplate && single.isSimilar(fuelTemplate) && next.hasFuelSlot()) {
                 accepted = next.acceptFuelFromLine(single);
             } else {
-                accepted = next.acceptFromLine(single);
+                accepted = ProductionLineMember.acceptIntoLine(next, single);
             }
             if (!accepted) continue;
 

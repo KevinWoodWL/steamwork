@@ -177,7 +177,7 @@ class VanillaFurnaceMember implements ProductionLineMember {
             if (result == null || result.getType() == Material.AIR) break;
             ItemStack single = result.clone();
             single.setAmount(1);
-            if (!downstream.acceptFromLine(single)) break;
+            if (!ProductionLineMember.acceptIntoLine(downstream, single)) break;
             if (result.getAmount() <= 1) {
                 inv.setResult(null);
             } else {
@@ -225,7 +225,7 @@ class VanillaFurnaceMember implements ProductionLineMember {
             if (!myLineId.equals(downstream.getLineId())) return;
             ItemStack single = result.clone();
             single.setAmount(1);
-            if (downstream.acceptFromLine(single)) {
+            if (ProductionLineMember.acceptIntoLine(downstream, single)) {
                 if (result.getAmount() <= 1) inv.setResult(null);
                 else { result.setAmount(result.getAmount() - 1); inv.setResult(result); }
             }

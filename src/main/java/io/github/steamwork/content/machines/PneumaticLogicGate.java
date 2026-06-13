@@ -354,10 +354,25 @@ public class PneumaticLogicGate extends RebarBlock implements
         BlockDisplay display = new BlockDisplayBuilder()
                 .blockData(data)
                 .transformation(new TransformBuilder().scale(0.5).translate(0, 0.5, 0))
+                .brightness(ambientBrightness())
                 .persistent(true)
                 .build(center());
         markDisplay(display);
         return display;
+    }
+
+    /** 取相邻 6 格最大光照，避免显示实体落在不透明体内 / 暗处时发黑。 */
+    private @NotNull Display.Brightness ambientBrightness() {
+        int blockLight = 0;
+        int skyLight = 0;
+        for (BlockFace face : new BlockFace[]{
+                BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST,
+                BlockFace.WEST,  BlockFace.UP,    BlockFace.DOWN}) {
+            Block neighbor = getBlock().getRelative(face);
+            blockLight = Math.max(blockLight, neighbor.getLightFromBlocks());
+            skyLight   = Math.max(skyLight,   neighbor.getLightFromSky());
+        }
+        return new Display.Brightness(blockLight, skyLight);
     }
 
     private @NotNull Location center() {

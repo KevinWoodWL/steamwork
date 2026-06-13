@@ -152,7 +152,7 @@ public final class PylonLineOutputBridge implements Listener {
         ProductionLineMember next = findNextMember(source, direction, lineId);
         if (next != null) {
             while (delivered < total) {
-                if (!next.acceptFromLine(stack.asQuantity(1))) break;
+                if (!ProductionLineMember.acceptIntoLine(next, stack.asQuantity(1))) break;
                 delivered++;
             }
         }
@@ -213,7 +213,7 @@ public final class PylonLineOutputBridge implements Listener {
                 int unitsSent = 0;
                 int total = head.getAmount();
                 while (unitsSent < total) {
-                    if (!next.acceptFromLine(head.asQuantity(1))) break;
+                    if (!ProductionLineMember.acceptIntoLine(next, head.asQuantity(1))) break;
                     unitsSent++;
                 }
                 head.setAmount(head.getAmount() - unitsSent);

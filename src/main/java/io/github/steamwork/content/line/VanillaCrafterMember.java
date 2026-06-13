@@ -431,7 +431,7 @@ class VanillaCrafterMember implements ManualInteractMember {
         if (downstream != null) {
             int delivered = 0;
             while (delivered < remaining.getAmount()) {
-                if (!downstream.acceptFromLine(remaining.asQuantity(1))) break;
+                if (!ProductionLineMember.acceptIntoLine(downstream, remaining.asQuantity(1))) break;
                 delivered++;
             }
             remaining.setAmount(remaining.getAmount() - delivered);
@@ -488,7 +488,7 @@ class VanillaCrafterMember implements ManualInteractMember {
                 int delivered = 0;
                 int total = head.getAmount();
                 while (delivered < total) {
-                    if (!downstream.acceptFromLine(head.asQuantity(1))) break;
+                    if (!ProductionLineMember.acceptIntoLine(downstream, head.asQuantity(1))) break;
                     delivered++;
                 }
                 head.setAmount(head.getAmount() - delivered);

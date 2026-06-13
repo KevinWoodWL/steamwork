@@ -158,11 +158,40 @@ public interface ProductionLineMember {
         ItemStack remaining = item.clone();
         int delivered = 0;
         while (delivered < remaining.getAmount()) {
-            if (!next.acceptFromLine(remaining.asQuantity(1))) break;
+            if (!acceptIntoLine(next, remaining.asQuantity(1))) break;
             delivered++;
         }
         remaining.setAmount(remaining.getAmount() - delivered);
         return remaining;
+    }
+
+    /**
+     * 向下游成员推送 1 个物品，并按「耗汽驱动」扣除产线入口的加压蒸汽。
+     *
+     * <p>这是产线所有「物品向下游推进」的统一计费入口：每成功推进 1 个物品，
+     * 就从该产线的入口扣 {@code steam-per-item} 点加压蒸汽。入口蒸汽不足时<b>拒绝推进</b>
+     * （产线停摆），物品停在原处直到补汽。若该产线没有可用入口（未加载 / 旧线无缓存等），
+     * 则不计费、原样推进，保证兼容。</p>
+     *
+     * @param next    下游成员（其 {@link #getLineId()} 即所在产线）
+     * @param oneItem 待推送物品（amount = 1）
+     * @return 是否成功推进（true=已接收且已扣汽；false=下游已满或入口缺汽）
+     */
+    static boolean acceptIntoLine(@NotNull ProductionLineMember next, @NotNull ItemStack oneItem) {
+        UUID lineId = next.getLineId();
+        ProductionLineInlet inlet = (lineId != null) ? ProductionLineInlet.forLine(lineId) : null;
+        if (inlet == null) {
+            return next.acceptFromLine(oneItem); // 无耗汽入口 → 原样推进
+        }
+        double cost = inlet.getSteamPerItem();
+        if (cost > 0.0 && !inlet.hasDriveSteam(cost)) {
+            return false; // 缺汽 → 停摆
+        }
+        if (!next.acceptFromLine(oneItem)) {
+            return false; // 下游已满
+        }
+        if (cost > 0.0) inlet.consumeDriveSteam(cost);
+        return true;
     }
 
     /**

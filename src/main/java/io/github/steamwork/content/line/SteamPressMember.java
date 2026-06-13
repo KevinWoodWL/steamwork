@@ -206,7 +206,7 @@ public class SteamPressMember implements ProductionLineMember {
 
         int delivered = 0;
         while (delivered < remaining.getAmount()) {
-            if (!downstream.acceptFromLine(remaining.asQuantity(1))) break;
+            if (!ProductionLineMember.acceptIntoLine(downstream, remaining.asQuantity(1))) break;
             delivered++;
         }
         remaining.setAmount(remaining.getAmount() - delivered);

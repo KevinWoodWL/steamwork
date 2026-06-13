@@ -6,14 +6,20 @@ import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
+import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
+import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.content.machines.upgrade.UpgradeableMachine;
+import io.github.steamwork.util.PneumaticEndpointSupport;
 import io.github.pylonmc.rebar.logistics.LogisticGroupType;
 import io.github.pylonmc.rebar.util.MachineUpdateReason;
+import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import net.kyori.adventure.text.Component;
@@ -41,6 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import io.github.steamwork.util.PneumaticUtils;
@@ -57,9 +64,30 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
 public class ProductionLineInlet extends RebarBlock implements
         DirectionalRebarBlock, TickingRebarBlock,
         VirtualInventoryRebarBlock, GuiRebarBlock,
-        LogisticRebarBlock, ProductionLineMember, UpgradeableMachine {
+        LogisticRebarBlock, FluidBufferRebarBlock,
+        ProductionLineMember, UpgradeableMachine {
 
     enum FuelMode { ROUND_ROBIN, SINGLE_TARGET }
+
+    /**
+     * lineId → 该产线入口（耗汽驱动核心）的活动实例表，供
+     * {@link ProductionLineMember#acceptIntoLine} 在任意推进点 O(1) 找到入口扣汽。
+     * 加入产线 / 重载时登记，离线 / 拆线 / 破坏时注销；取用时校验仍为已加载的当前实例。
+     */
+    private static final Map<UUID, ProductionLineInlet> ACTIVE_INLETS = new ConcurrentHashMap<>();
+
+    /** 按 lineId 取该产线的入口（仅返回仍处于加载状态的当前实例，否则剔除陈旧项并返回 null）。 */
+    public static @Nullable ProductionLineInlet forLine(@NotNull UUID lineId) {
+        ProductionLineInlet inlet = ACTIVE_INLETS.get(lineId);
+        if (inlet == null) return null;
+        Block b = inlet.getBlock();
+        if (!PneumaticEndpointSupport.isChunkLoaded(b)
+                || PneumaticEndpointSupport.loadedRebarBlock(b) != inlet) {
+            ACTIVE_INLETS.remove(lineId, inlet);
+            return null;
+        }
+        return inlet;
+    }
 
     // ===== PDC 键 =====
 
@@ -102,6 +130,15 @@ public class ProductionLineInlet extends RebarBlock implements
     private int jamNotifyCounter = 0;
     private static final int JAM_NOTIFY_INTERVAL = 100; // 5 tick/次 × 20 次 = 100 tick = 5 秒
 
+    // ===== 耗汽驱动 =====
+
+    /** 每个物品每跳消耗的加压蒸汽（mB）。 */
+    private final double steamPerItem = getSettings().get("steam-per-item", ConfigAdapter.DOUBLE, 10.0);
+    /** 入口加压蒸汽缓存容量（mB），由蒸汽管道从背面接入。 */
+    private final double steamBuffer  = getSettings().get("steam-buffer", ConfigAdapter.DOUBLE, 10000.0);
+    /** 入口加压蒸汽不足以驱动推进时为 true（供 WAILA / GUI 显示「缺汽停摆」）。 */
+    private boolean noSteam = false;
+
     /** 缓存的产线出口引用，joinLine/leaveLine 时更新，避免每 tick 遍历整条产线。 */
     @Nullable private ProductionLineOutlet cachedOutlet = null;
     /** 缓存的产线内所有 ManualInteractMember，joinLine/leaveLine 时更新。 */
@@ -124,6 +161,9 @@ public class ProductionLineInlet extends RebarBlock implements
         setTickInterval(5);
         Arrays.fill(fuelSlotBindings, -1);
         for (int i = 0; i < 7; i++) machineDisplayItems[i] = new MachineDisplayItem(i);
+        // 耗汽驱动：背面（产线走向反方向）接入加压蒸汽，network 向 buffer 灌汽（input=true）。
+        createFluidPoint(FluidPointType.INPUT, context.getFacing().getOppositeFace(), 0.5f);
+        createFluidBuffer(SteamworkFluids.PRESSURIZED_STEAM, steamBuffer, true, false);
     }
 
     @SuppressWarnings("unused")
@@ -196,6 +236,32 @@ public class ProductionLineInlet extends RebarBlock implements
                 event.setCancelled(true);
             }
         });
+        // 重载后若已属于某条产线，重新登记到耗汽驱动表
+        if (lineId != null) ACTIVE_INLETS.put(lineId, this);
+    }
+
+    // ===== 耗汽驱动：供 ProductionLineMember.acceptIntoLine 调用 =====
+
+    /** 每个物品每跳消耗的加压蒸汽量（mB）。 */
+    public double getSteamPerItem() { return steamPerItem; }
+
+    /** 当前加压蒸汽缓存量（旧版入口可能没有该缓存，故先判存在）。 */
+    private double currentDriveSteam() {
+        return hasFluid(SteamworkFluids.PRESSURIZED_STEAM)
+                ? fluidAmount(SteamworkFluids.PRESSURIZED_STEAM) : 0.0;
+    }
+
+    /** 入口加压蒸汽缓存是否够支付一次推进。 */
+    public boolean hasDriveSteam(double amount) {
+        return currentDriveSteam() >= amount;
+    }
+
+    /** 扣除一次推进所需的加压蒸汽（按缓存余量封顶）。 */
+    public void consumeDriveSteam(double amount) {
+        if (!hasFluid(SteamworkFluids.PRESSURIZED_STEAM)) return;
+        double have = fluidAmount(SteamworkFluids.PRESSURIZED_STEAM);
+        if (have <= 0) return;
+        removeFluid(SteamworkFluids.PRESSURIZED_STEAM, Math.min(amount, have));
     }
 
     @Override
@@ -230,6 +296,7 @@ public class ProductionLineInlet extends RebarBlock implements
 
     @Override
     public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
+        if (lineId != null) ACTIVE_INLETS.remove(lineId, this);
         VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
@@ -241,6 +308,7 @@ public class ProductionLineInlet extends RebarBlock implements
         PneumaticUtils.pullFromAdjacentHoppers(getBlock(), ingredientBuffer);
 
         if (!isInLine() || lineDirection == BlockFace.SELF) {
+            noSteam = false;
             lineInfoItem.notifyWindows();
             return;
         }
@@ -267,27 +335,34 @@ public class ProductionLineInlet extends RebarBlock implements
             }
         }
 
-        // 推送一个原料物品
-        for (int i = 0; i < 7; i++) {
-            ItemStack item = ingredientBuffer.getItem(i);
-            if (item == null || item.isEmpty()) continue;
-            ProductionLineMember next = findNextInLine();
-            if (next == null) { lastPushSucceeded = false; break; }
-            ItemStack single = item.clone();
-            single.setAmount(1);
-            if (next.acceptFromLine(single)) {
-                decrementBuffer(ingredientBuffer, i, item);
-                lastPushSucceeded = true;
-            } else {
-                lastPushSucceeded = false;
-                // 检查是否是出口满导致的阻塞
-                if (isOutletFull()) {
-                    outletJammed = true;
-                    jamNotifyCounter = JAM_NOTIFY_INTERVAL; // 立即触发第一次通知
-                    notifyAllMembers(true);
+        // 耗汽驱动：入口加压蒸汽缓存不足 1 件所需量 → 整条产线停摆（入口不再喂料）
+        noSteam = steamPerItem > 0 && !hasDriveSteam(steamPerItem);
+
+        // 推送一个原料物品（缺汽时跳过；acceptIntoLine 内部按跳扣汽）
+        if (!noSteam) {
+            for (int i = 0; i < 7; i++) {
+                ItemStack item = ingredientBuffer.getItem(i);
+                if (item == null || item.isEmpty()) continue;
+                ProductionLineMember next = findNextInLine();
+                if (next == null) { lastPushSucceeded = false; break; }
+                ItemStack single = item.clone();
+                single.setAmount(1);
+                if (ProductionLineMember.acceptIntoLine(next, single)) {
+                    decrementBuffer(ingredientBuffer, i, item);
+                    lastPushSucceeded = true;
+                } else {
+                    lastPushSucceeded = false;
+                    // 检查是否是出口满导致的阻塞
+                    if (isOutletFull()) {
+                        outletJammed = true;
+                        jamNotifyCounter = JAM_NOTIFY_INTERVAL; // 立即触发第一次通知
+                        notifyAllMembers(true);
+                    }
                 }
+                break;
             }
-            break;
+        } else {
+            lastPushSucceeded = false;
         }
 
         // 推送一个燃料物品
@@ -426,10 +501,12 @@ public class ProductionLineInlet extends RebarBlock implements
         // 缓存将在 postInitialise 或首次 tick 时延迟构建（此时产线其他成员可能还未 joinLine）
         this.cachedOutlet = null;
         this.cachedManualMembers = null;
+        ACTIVE_INLETS.put(id, this); // 登记为该产线的耗汽驱动核心
     }
 
     @Override
     public void leaveLine() {
+        if (this.lineId != null) ACTIVE_INLETS.remove(this.lineId, this);
         this.lineId        = null;
         this.linePosition  = 0;
         this.lineDirection = BlockFace.SELF;
@@ -438,6 +515,7 @@ public class ProductionLineInlet extends RebarBlock implements
         this.lastPushSucceeded = false;
         this.outletJammed = false;
         this.jamNotifyCounter = 0;
+        this.noSteam = false;
         this.cachedOutlet = null;
         this.cachedManualMembers = null;
         this.fuelTargetBlocks.clear();
@@ -543,6 +621,7 @@ public class ProductionLineInlet extends RebarBlock implements
             if (s != null && !s.isEmpty()) { hasItems = true; break; }
         }
         String stateKey = outletJammed ? "jammed"
+                        : noSteam ? "no_steam"
                         : (hasItems && !lastPushSucceeded) ? "blocked"
                         : hasItems ? "pushing" : "waiting";
         Component creatorComp = lineCreator != null
@@ -551,6 +630,8 @@ public class ProductionLineInlet extends RebarBlock implements
         return WailaDisplay.of(this, player)
                 .add(Component.text(String.valueOf(lineNumber)))
                 .add(Component.translatable("steamwork.line.state." + stateKey))
+                .add(ProgressBar.fluidContentsWithName(SteamworkFluids.PRESSURIZED_STEAM, steamBuffer,
+                        currentDriveSteam()))
                 .add(creatorComp);
     }
 
@@ -608,6 +689,8 @@ public class ProductionLineInlet extends RebarBlock implements
             String stateKey;
             if (outletJammed) {
                 mat = Material.RED_STAINED_GLASS_PANE; stateKey = "jammed";
+            } else if (noSteam) {
+                mat = Material.LIGHT_BLUE_STAINED_GLASS_PANE; stateKey = "no_steam";
             } else if (hasItems && !lastPushSucceeded) {
                 mat = Material.ORANGE_STAINED_GLASS_PANE; stateKey = "blocked";
             } else if (hasItems) {
@@ -617,7 +700,13 @@ public class ProductionLineInlet extends RebarBlock implements
             }
             return ItemStackBuilder.of(mat)
                     .name(ni(Component.translatable("steamwork.gui.production_line_inlet.line_status.title")))
-                    .lore(List.of(ni(Component.translatable("steamwork.gui.production_line_inlet.line_status." + stateKey))));
+                    .lore(List.of(
+                            ni(Component.translatable("steamwork.gui.production_line_inlet.line_status." + stateKey)),
+                            ni(Component.translatable("steamwork.gui.production_line_inlet.line_status.steam",
+                                    RebarArgument.of("amount", Component.text((int) currentDriveSteam())),
+                                    RebarArgument.of("capacity", Component.text((int) steamBuffer)),
+                                    RebarArgument.of("cost", Component.text((int) steamPerItem))))
+                    ));
         }
 
         @Override

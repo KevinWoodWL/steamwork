@@ -911,6 +911,7 @@ item:
       <arrow> Entry point of a steam production line �?<white>7 ingredient slots</white> + <white>7 fuel slots</white>
       <arrow> Fill via pneumatic network (ingredient/fuel INPUT groups) or manually
       <arrow> Pushes ingredients each tick; fuel supports round-robin or single-target mode
+      <arrow> <aqua>Steam-driven</aqua>: pipe <white>pressurized steam</white> into the <white>back</white>; each downstream hop costs a fixed amount, the line halts when out of steam
       <arrow> Compatible with vanilla furnaces, blast furnaces, and smokers as line machines
     waila_idle: "Production Line Inlet | Not configured"
     waila: "Production Line Inlet #%number% | %state% | Creator: %creator%"
@@ -956,7 +957,7 @@ item:
     name: "Pneumatic Line Valve"
     lore: |-
       <arrow> <white>Logic → Line bridge</white>: gates item flow by steam pressure
-      <arrow> Place in a production line; reads steam from the signal face
+      <arrow> Place in a production line; put a steam-holding block (boiler/logic gate) right against the signal face (green dot)
       <arrow> Signal ≥ threshold → items pass through; below → items held
       <arrow> Threshold and signal face adjustable in GUI
       <arrow> <red>Needs both Steam Logistics and Pneumatic Logic research
@@ -1459,6 +1460,8 @@ gui:
   common:
     steam_tier: "<aqua>Steam Tier"
     current: "<gray>Current: <reset>%value%"
+    line_disabled: "<gray>Line not active (idle)"
+    line_disabled_hint: "<dark_gray>Activate the production line (blueprint) to enable this machine"
     input_face: "<gold>Input Face: %face%"
     output_face: "<gold>Output Face: %face%"
     read_face: "<gold>Read Face: %face%"
@@ -2201,6 +2204,8 @@ gui:
       pushing: "<gray>Status: <green>Pushing items downstream"
       blocked: "<gray>Status: <gold>Downstream blocked"
       jammed: "<gray>Status: <red>Outlet full �?line halted"
+      no_steam: "<gray>Status: <aqua>Out of pressurized steam, line halted (pipe it into the back)"
+      steam: "<gray>Pressurized steam: <aqua>%amount% <gray>/ <aqua>%capacity% <gray>mB (<aqua>%cost%</aqua> per item per hop)"
     slot_hint:
       title: "<aqua>Slot Guide"
       ingredient: "<gray>Row 1: <white>Ingredient slots</white> (pushed to line machines)"
@@ -2277,9 +2282,10 @@ gui:
   pneumatic_line_valve:
     title: "<dark_gray>Pneumatic Line Valve"
     signal_face: "<light_purple>Signal Face"
-    signal_face_hint: "<dark_gray>Click to cycle (N/E/S/W) — reads steam from this side"
+    signal_face_hint: "<dark_gray>Click to cycle all 6 faces (N/E/S/W/Up/Down) — reads the steam held by the block on that face (green dot)"
     threshold: "<yellow>Signal Threshold"
     threshold_desc: "<gray>Adjacent steam ≥ this value → valve opens"
+    threshold_hint: "<dark_gray>L +1 | R -1 | Shift ×10 | Drop key (Q) type a value in chat"
     state:
       open: "<green>Open (items passing)"
       closed: "<red>Closed (items held)"
@@ -2534,6 +2540,11 @@ researches:
 message:
   line_bridge:
     requires_logic: "<red>You must unlock the <white>Pneumatic Logic</white> research before placing this bridge machine"
+  line_valve:
+    threshold_prompt: "<yellow>Type the signal threshold in chat (numbers only, in mB); type <white>cancel</white> to abort"
+    threshold_set: "<green>Signal threshold set to <white>%value%</white> mB"
+    threshold_invalid: "<red>Invalid number: <white>%input%</white> — aborted (numbers only)"
+    threshold_cancelled: "<gray>Threshold change cancelled"
   pneumatic_cargo_hub:
     selecting: "<yellow>Selection mode �?left-click target hub within %range% blocks, right-click this hub to cancel"
     selection_cancelled: "<gray>Target selection cancelled"
@@ -2614,6 +2625,7 @@ line:
     pushing: "<green>Pushing"
     blocked: "<gold>Downstream Blocked"
     jammed: "<red>Outlet Full �?Halted"
+    no_steam: "<aqua>Out of Pressurized Steam"
     receiving: "<green>Receiving"
     buffering: "<gold>Buffering"
   blueprint:
