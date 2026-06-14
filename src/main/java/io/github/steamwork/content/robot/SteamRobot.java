@@ -96,6 +96,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     };
     /** 单个目标方块寻路失败的放弃阈值（决策次数）：避免卡在不可达目标上。 */
     private static final int TARGET_GIVE_UP = 40;
+    /** 单次锁定的连通簇（整棵树 / 整条矿脉）最大方块数。 */
+    private static final int CLUSTER_CAP = 512;
 
     // home（部署点）持久化键，存为三个 double
     private static final NamespacedKey HOME_X = steamworkKey("robot_home_x");
@@ -122,6 +124,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private final int    workRadius    = getSetting("work-radius",    ConfigAdapter.INTEGER, 5);
     /** 每破坏一个方块额外耗汽（mB）。 */
     private final double steamPerBreak = getSetting("steam-per-break", ConfigAdapter.DOUBLE, 30.0);
+    /** 破坏一个方块需累积的决策次数（每次决策约 tick-interval 游戏刻），≥1，避免秒砍。 */
+    private final int    breakTicks    = Math.max(1, getSetting("break-ticks", ConfigAdapter.INTEGER, 4));
 
     // ===== 状态 =====
     private @NotNull Location home;
@@ -136,11 +140,15 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private boolean seekingCharge = false;
     /** 当前任务模式。 */
     private @NotNull JobMode jobMode = JobMode.PATROL;
-    /** 当前作业目标方块（采矿/砍树），瞬态；重载后重新扫描。 */
+    /** 当前正在破坏的方块（来自锁定簇），瞬态；重载后重新扫描。 */
     private @Nullable Block targetBlock = null;
-    /** 当前目标方块已尝试的决策次数（超过 {@link #TARGET_GIVE_UP} 放弃，避免卡死）。 */
-    private int targetBlockAge = 0;
-    /** 被保护插件拦截过的方块（瞬态跳过集，避免反复尝试同一受保护方块）。 */
+    /** 接近阶段寻路尝试计数（超过 {@link #TARGET_GIVE_UP} 放弃，避免卡死）。 */
+    private int approachAge = 0;
+    /** 当前方块已累积的破坏进度（决策次数），达到 {@link #breakTicks} 才真正破坏（非秒砍）。 */
+    private int breakingProgress = 0;
+    /** 锁定的连通簇（整棵树 / 整条矿脉）中尚未破坏的方块；瞬态。 */
+    private final java.util.List<Block> lockedCluster = new java.util.ArrayList<>();
+    /** 不可达 / 被保护插件拦截的方块（瞬态跳过集）。 */
     private final java.util.Set<Block> blockedTargets = new java.util.HashSet<>();
 
     /** 新生成：写入 rebar 实体 key 并记录部署点。 */
@@ -194,8 +202,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         CopperGolem golem = getEntity();
         golem.setPersistent(true);
         golem.setRemoveWhenFarAway(false);
-        // 关键：移除铜傀儡的原版 AI 目标（捡物/游荡等），否则会与我们的寻路抢控制，
-        // 导致它"分心"、走不到作业目标、采矿/砍树失效。清空后导航完全由本类的 moveTo 驱动。
+        // 关键：彻底关掉铜傀儡的自主 AI（含新版 brain 行为：捡物/游荡），否则会与我们的寻路抢控制。
+        // setAware(false) 停掉自主决策，但显式 getPathfinder().moveTo() 的导航仍生效；
+        // 再清一遍旧 goal 制目标双保险。导航此后完全由本类驱动。
+        golem.setAware(false);
         Bukkit.getMobGoals().removeAllGoals(golem);
         // 已涂蜡铜傀儡：固定为未氧化的亮铜外观，且不再随时间氧化
         golem.setWeatheringState(WeatheringCopperState.UNAFFECTED);
@@ -234,6 +244,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         } else if (steam < steamCapacity * rechargeAt
                 && boundChamber != null && chamberLoaded(boundChamber)) {
             seekingCharge = true;
+            resetWork();   // 放弃当前作业，充满回来后重新接近目标（避免远程采伐）
             navigateToChamber(golem);
             return;
         }
@@ -302,47 +313,137 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     }
 
     /**
-     * 采矿 / 砍树：在工作区内找最近目标方块，寻路过去，够近即破坏并回收掉落。
-     * 工作区无目标时退回巡游游走。
+     * 采矿 / 砍树（两阶段）：
+     * <ol>
+     *   <li><b>接近</b>：工作区内找最近目标，寻路过去；够近即对其连通簇（整棵树 / 整条矿脉）
+     *       flood-fill 锁定。</li>
+     *   <li><b>采伐</b>：站定逐个破坏锁定簇里的方块，每个需累积 {@link #breakTicks} 次进度
+     *       （挥臂 + 裂纹，非秒砍）；簇清空后回接近阶段重新扫描。</li>
+     * </ol>
+     * 工作区无目标时退回巡游。
      */
     private void mineStep(@NotNull CopperGolem golem, @NotNull JobMode mode) {
-        Location loc = golem.getLocation();
-
-        // 已有目标：走过去 / 破坏 / 超时放弃
-        if (targetBlock != null) {
-            if (!isTarget(targetBlock, mode)) {           // 目标已消失/被改 → 重选
-                clearTarget();
-                return;
-            }
-            Location center = targetBlock.getLocation().toCenterLocation();
-            if (loc.getWorld() == center.getWorld() && loc.distanceSquared(center) <= 9.0) {
-                breakTarget(golem, mode);                 // 够近（≤3 格）→ 破坏
-                clearTarget();
-                return;
-            }
-            if (++targetBlockAge > TARGET_GIVE_UP) {      // 长时间够不到 → 放弃，换一个
-                clearTarget();
-                return;
-            }
-            if (targetBlockAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
-                golem.getPathfinder().moveTo(center, moveSpeed);
-            }
+        // 采伐阶段：已锁定一棵树 / 一条矿脉
+        if (targetBlock != null || !lockedCluster.isEmpty()) {
+            harvestStep(golem, mode);
             return;
         }
-
-        // 无目标：扫描工作区
-        targetBlock = findNearestTarget(golem, mode);
-        if (targetBlock == null) {
+        // 接近阶段：找最近目标
+        Block start = findNearestTarget(golem, mode);
+        if (start == null) {
             patrolStep(golem);                            // 工作区没活 → 巡游
-        } else {
-            targetBlockAge = 0;
-            golem.getPathfinder().moveTo(targetBlock.getLocation().toCenterLocation(), moveSpeed);
+            return;
+        }
+        Location center = start.getLocation().toCenterLocation();
+        if (golem.getLocation().distanceSquared(center) <= 9.0) {
+            lockCluster(start, mode);                     // 够近 → 锁定整簇，进入采伐
+            approachAge = 0;
+        } else if (++approachAge > TARGET_GIVE_UP) {      // 够不到 → 暂时拉黑，换一个
+            blacklist(start);
+            approachAge = 0;
+        } else if (approachAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
+            golem.getPathfinder().moveTo(center, moveSpeed);
         }
     }
 
-    private void clearTarget() {
+    /** 采伐：逐个破坏锁定簇里的方块，每个需累积破坏进度（非秒砍）。 */
+    private void harvestStep(@NotNull CopperGolem golem, @NotNull JobMode mode) {
+        World world = golem.getWorld();
+
+        // 当前目标失效 → 清裂纹换下一个
+        if (targetBlock != null && !isTarget(targetBlock, mode)) {
+            sendCrack(targetBlock, 0.0f);
+            targetBlock = null;
+        }
+        if (targetBlock == null) {
+            targetBlock = pollNextClusterBlock(mode);
+            breakingProgress = 0;
+            if (targetBlock == null) {                    // 簇清空 → 回接近阶段
+                lockedCluster.clear();
+                return;
+            }
+        }
+
+        // 累积破坏进度：挥臂 + 裂纹 + 碎屑
+        golem.swingMainHand();
+        golem.setGolemState(CopperGolem.State.GETTING_ITEM);
+        breakingProgress++;
+        float progress = Math.min(1.0f, (float) breakingProgress / breakTicks);
+        sendCrack(targetBlock, progress);
+        world.spawnParticle(Particle.BLOCK, targetBlock.getLocation().toCenterLocation(),
+                3, 0.2, 0.2, 0.2, targetBlock.getBlockData());
+
+        if (breakingProgress >= breakTicks) {
+            sendCrack(targetBlock, 0.0f);                 // 清裂纹
+            breakTarget(golem, mode);                     // 实际移除 + 掉落 + 音效 + 耗汽
+            targetBlock = null;
+            breakingProgress = 0;
+        }
+    }
+
+    /** 给附近玩家发送方块破坏裂纹（World 无此 API，需逐玩家发；source=机器人实体 id）。 */
+    private void sendCrack(@NotNull Block b, float progress) {
+        int id = getEntity().getEntityId();
+        Location loc = b.getLocation();
+        for (Player p : b.getWorld().getPlayers()) {
+            if (p.getLocation().distanceSquared(loc) <= 4096) { // 64 格内
+                p.sendBlockDamage(loc, progress, id);
+            }
+        }
+    }
+
+    /** 从起点 flood-fill（26 邻接）连通的同类目标，锁定为一棵树 / 一条矿脉。 */
+    private void lockCluster(@NotNull Block start, @NotNull JobMode mode) {
+        lockedCluster.clear();
+        java.util.Set<Block> visited = new java.util.HashSet<>();
+        java.util.Deque<Block> queue = new java.util.ArrayDeque<>();
+        queue.add(start);
+        visited.add(start);
+        while (!queue.isEmpty() && lockedCluster.size() < CLUSTER_CAP) {
+            Block b = queue.poll();
+            lockedCluster.add(b);
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        Block nb = b.getRelative(dx, dy, dz);
+                        if (visited.add(nb) && isTarget(nb, mode)) queue.add(nb);
+                    }
+                }
+            }
+        }
+    }
+
+    /** 取锁定簇中离机器人最近、仍有效的方块并移除；顺手剔除失效项；无则 null。 */
+    private @Nullable Block pollNextClusterBlock(@NotNull JobMode mode) {
+        Location gl = getEntity().getLocation();
+        Block best = null;
+        double bestSq = Double.MAX_VALUE;
+        java.util.Iterator<Block> it = lockedCluster.iterator();
+        while (it.hasNext()) {
+            Block b = it.next();
+            if (blockedTargets.contains(b) || !isTarget(b, mode)) { it.remove(); continue; }
+            double sq = b.getLocation().toCenterLocation().distanceSquared(gl);
+            if (sq < bestSq) { bestSq = sq; best = b; }
+        }
+        if (best != null) lockedCluster.remove(best);
+        return best;
+    }
+
+    private void blacklist(@NotNull Block b) {
+        if (blockedTargets.size() > 512) blockedTargets.clear();
+        blockedTargets.add(b);
+    }
+
+    /** 清空当前作业状态（切换模式 / 拆除时调用），并抹掉残留裂纹。 */
+    private void resetWork() {
+        if (targetBlock != null) {
+            sendCrack(targetBlock, 0.0f);
+        }
         targetBlock = null;
-        targetBlockAge = 0;
+        breakingProgress = 0;
+        approachAge = 0;
+        lockedCluster.clear();
     }
 
     /** 破坏目标方块：取正确掉落 → 移除 → 特效 → 回收到投放箱（放不下则散落）→ 破坏耗汽。 */
@@ -362,8 +463,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         Collection<ItemStack> drops = b.getDrops(mode == JobMode.CHOP ? CHOP_TOOL : MINE_TOOL);
 
-        // 挥动手臂（手持工具）+ 破坏特效（音 + 方块碎屑）
-        golem.swingMainHand();
+        // 破坏特效（音 + 方块碎屑）；挥臂动画在 harvestStep 每 tick 已做
         world.playSound(b.getLocation().toCenterLocation(),
                 broken.createBlockData().getSoundGroup().getBreakSound(), 1.0f, 0.9f);
         world.spawnParticle(Particle.BLOCK, b.getLocation().toCenterLocation(),
@@ -372,7 +472,6 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         depositOrDrop(drops, b.getLocation());
         steam = Math.max(0.0, steam - steamPerBreak);
-        golem.setGolemState(CopperGolem.State.GETTING_ITEM); // 拿取动画
     }
 
     /** 掉落优先放入 home 旁的容器，放不下则在破坏位置散落（不丢失）。 */
@@ -524,7 +623,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private void setJob(@NotNull JobMode mode) {
         if (jobMode == mode) return;
         jobMode = mode;
-        clearTarget();
+        resetWork();
         blockedTargets.clear();
         target = null;
         updateHeldTool();
@@ -626,6 +725,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     }
 
     private void dismantle(@NotNull Player player) {
+        resetWork(); // 抹掉残留破坏裂纹
         CopperGolem golem = getEntity();
         Location loc = golem.getLocation();
         World world = golem.getWorld();
