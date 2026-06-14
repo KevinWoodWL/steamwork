@@ -142,6 +142,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private boolean seekingCharge = false;
     /** 当前任务模式。 */
     private @NotNull JobMode jobMode = JobMode.PATROL;
+    /** 接近阶段选定的目标方块（走过去再锁定整簇）；避免每 tick 重复全扫。 */
+    private @Nullable Block approachTarget = null;
     /** 当前正在破坏的方块（来自锁定簇），瞬态；重载后重新扫描。 */
     private @Nullable Block targetBlock = null;
     /** 接近阶段寻路尝试计数（超过 {@link #TARGET_GIVE_UP} 放弃，避免卡死）。 */
@@ -359,29 +361,37 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             harvestStep(golem, mode);
             return true;
         }
-        // 空扫冷却：上次没扫到目标，等几次决策再扫，避免空扫大立方体每 tick 跑
-        if (scanCooldown > 0) {
-            scanCooldown--;
-            setState(golem, CopperGolem.State.IDLE);
-            return false;
+        // 接近阶段：选定一个接近目标后<b>持续走向它</b>，不每 tick 重新全扫（重扫很费且可能触发区块加载）
+        if (approachTarget != null && !isTarget(approachTarget, mode)) {
+            approachTarget = null; // 选定目标已失效 → 重新扫描
         }
-        // 接近阶段：扫描工作区找最近目标
-        Block start = findNearestTarget(golem, mode);
-        if (start == null) {
-            // 工作区无目标：原地待命，等待目标出现（不游荡、不耗汽）
-            scanCooldown = SCAN_IDLE_COOLDOWN;
-            setState(golem, CopperGolem.State.IDLE);
-            if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
-            target = null;
-            return false;
+        if (approachTarget == null) {
+            // 空扫冷却：上次没扫到目标，等几次决策再扫，避免空扫大立方体每 tick 跑
+            if (scanCooldown > 0) {
+                scanCooldown--;
+                setState(golem, CopperGolem.State.IDLE);
+                return false;
+            }
+            approachTarget = findNearestTarget(golem, mode);
+            if (approachTarget == null) {
+                // 工作区无目标：原地待命，等待目标出现（不游荡、不耗汽）
+                scanCooldown = SCAN_IDLE_COOLDOWN;
+                setState(golem, CopperGolem.State.IDLE);
+                if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+                target = null;
+                return false;
+            }
+            approachAge = 0;
         }
         setState(golem, CopperGolem.State.IDLE);          // 接近途中：非作业姿态
-        Location center = start.getLocation().toCenterLocation();
+        Location center = approachTarget.getLocation().toCenterLocation();
         if (golem.getLocation().distanceSquared(center) <= 9.0) {
-            lockCluster(start, mode);                     // 够近 → 锁定整簇，进入采伐
+            lockCluster(approachTarget, mode);            // 够近 → 锁定整簇，进入采伐
+            approachTarget = null;
             approachAge = 0;
         } else if (++approachAge > TARGET_GIVE_UP) {      // 够不到 → 暂时拉黑，换一个
-            blacklist(start);
+            blacklist(approachTarget);
+            approachTarget = null;
             approachAge = 0;
         } else if (approachAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
             golem.getPathfinder().moveTo(center, moveSpeed);
@@ -484,6 +494,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             sendCrack(targetBlock, 0.0f);
         }
         targetBlock = null;
+        approachTarget = null;
         breakingProgress = 0;
         approachAge = 0;
         scanCooldown = 0;
@@ -539,7 +550,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private @Nullable Inventory findHomeContainer() {
         Block homeBlock = home.getBlock();
         for (BlockFace face : CHEST_FACES) {
-            if (homeBlock.getRelative(face).getState() instanceof Container c) {
+            Block b = homeBlock.getRelative(face);
+            // 跳过未加载区块，避免 getState() 同步强制加载区块
+            if (!b.getWorld().isChunkLoaded(b.getX() >> 4, b.getZ() >> 4)) continue;
+            if (b.getState() instanceof Container c) {
                 return c.getInventory();
             }
         }
@@ -567,6 +581,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
     /** 是否为当前模式的可作业目标：先匹配原版材质，再排除一切 Rebar 方块（机器绝不破坏）。 */
     private boolean isTarget(@NotNull Block b, @NotNull JobMode mode) {
+        // 关键：绝不访问未加载区块的方块——否则 getType() 会在主线程同步加载/生成区块，导致服务器卡死
+        if (!b.getWorld().isChunkLoaded(b.getX() >> 4, b.getZ() >> 4)) return false;
         Material m = b.getType();
         boolean matches = switch (mode) {
             case MINE -> m.name().endsWith("_ORE") || m == Material.ANCIENT_DEBRIS;
