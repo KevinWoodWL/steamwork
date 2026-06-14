@@ -98,8 +98,12 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private static final int TARGET_GIVE_UP = 40;
     /** 单次锁定的连通簇（整棵树 / 整条矿脉）最大方块数。 */
     private static final int CLUSTER_CAP = 512;
+    /** 锁定簇到起点的水平半径上限（格）：把一簇限制为"一棵树/一处矿脉"，避免并入旁边另一棵树。 */
+    private static final int CLUSTER_HORIZONTAL_RADIUS = 6;
     /** 工作区扫不到目标后，待命多少次决策再重新扫描（避免空扫大立方体每 tick 跑）。 */
     private static final int SCAN_IDLE_COOLDOWN = 10;
+    /** 接近目标连续多少次决策无明显靠近就判定为够不到、放弃（避免对不可达目标死寻路）。 */
+    private static final int NO_PROGRESS_LIMIT = 6;
 
     // home（部署点）持久化键，存为三个 double
     private static final NamespacedKey HOME_X = steamworkKey("robot_home_x");
@@ -144,6 +148,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private @NotNull JobMode jobMode = JobMode.PATROL;
     /** 接近阶段选定的目标方块（走过去再锁定整簇）；避免每 tick 重复全扫。 */
     private @Nullable Block approachTarget = null;
+    /** 接近目标时上次到目标的距离平方（用于"无进度"检测）。 */
+    private double lastApproachDistSq = Double.MAX_VALUE;
+    /** 连续多少次决策没有明显靠近目标（无进度计数）。 */
+    private int noProgress = 0;
     /** 当前正在破坏的方块（来自锁定簇），瞬态；重载后重新扫描。 */
     private @Nullable Block targetBlock = null;
     /** 接近阶段寻路尝试计数（超过 {@link #TARGET_GIVE_UP} 放弃，避免卡死）。 */
@@ -152,10 +160,16 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private int breakingProgress = 0;
     /** 锁定的连通簇（整棵树 / 整条矿脉）中尚未破坏的方块；瞬态。 */
     private final java.util.List<Block> lockedCluster = new java.util.ArrayList<>();
+    /** 采伐时"上一块"的位置：下一块取离它最近的，以便沿一棵树连续砍完再跳到另一棵。 */
+    private @Nullable Location lastFocus = null;
     /** 空扫冷却剩余决策次数（>0 时跳过扫描、原地待命）。 */
     private int scanCooldown = 0;
     /** 不可达 / 被保护插件拦截的方块（瞬态跳过集）。 */
     private final java.util.Set<Block> blockedTargets = new java.util.HashSet<>();
+    /** 预扫描：砍当前树时提前锁定下一棵的树根，砍完无缝衔接不用重扫。 */
+    private @Nullable Block nextApproachTarget = null;
+    /** 当前簇是否已做过预扫描（每簇最多扫一次，避免末尾几块时每 tick 空扫大立方体）。 */
+    private boolean preScanned = false;
 
     /** 新生成：写入 rebar 实体 key 并记录部署点。 */
     public SteamRobot(@NotNull CopperGolem golem, @NotNull Location home) {
@@ -223,6 +237,9 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         updateHeldTool();
     }
 
+    // neutralizeBrain 的反射方法缓存（运行时类稳定，首次解析后复用，避免每次 configure 重复查找）
+    private static java.lang.reflect.Method mGetHandle, mGetBrain, mRemoveBehaviors, mClearMemories;
+
     /**
      * 反射清空铜傀儡的 brain（行为 + 记忆），使其无自主动作但导航仍可用。
      * 运行时为 mojang 映射（Paper/Purpur）：CraftMob.getHandle() → Mob.getBrain()
@@ -230,10 +247,14 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
      */
     private void neutralizeBrain(@NotNull CopperGolem golem) {
         try {
-            Object nmsMob = golem.getClass().getMethod("getHandle").invoke(golem);
-            Object brain  = nmsMob.getClass().getMethod("getBrain").invoke(nmsMob);
-            brain.getClass().getMethod("removeAllBehaviors").invoke(brain);
-            brain.getClass().getMethod("clearMemories").invoke(brain);
+            if (mGetHandle == null) mGetHandle = golem.getClass().getMethod("getHandle");
+            Object nmsMob = mGetHandle.invoke(golem);
+            if (mGetBrain == null) mGetBrain = nmsMob.getClass().getMethod("getBrain");
+            Object brain = mGetBrain.invoke(nmsMob);
+            if (mRemoveBehaviors == null) mRemoveBehaviors = brain.getClass().getMethod("removeAllBehaviors");
+            if (mClearMemories == null) mClearMemories = brain.getClass().getMethod("clearMemories");
+            mRemoveBehaviors.invoke(brain);
+            mClearMemories.invoke(brain);
         } catch (Throwable t) {
             Bukkit.getLogger().warning("[Steamwork] 无法清空蒸汽机器人 brain（映射变动?）：" + t);
         }
@@ -366,42 +387,243 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             approachTarget = null; // 选定目标已失效 → 重新扫描
         }
         if (approachTarget == null) {
-            // 空扫冷却：上次没扫到目标，等几次决策再扫，避免空扫大立方体每 tick 跑
-            if (scanCooldown > 0) {
-                scanCooldown--;
-                setState(golem, CopperGolem.State.IDLE);
-                return false;
+            // 优先使用预扫描结果（砍上一棵树时已提前找到的下一棵）
+            if (nextApproachTarget != null && isTarget(nextApproachTarget, mode)
+                    && !blockedTargets.contains(nextApproachTarget)) {
+                Block found = nextApproachTarget;
+                nextApproachTarget = null;
+                approachTarget = (mode == JobMode.CHOP) ? treeBase(found) : found;
+                if (blockedTargets.contains(approachTarget)) {
+                    blacklist(found);
+                    approachTarget = null;
+                    return true;
+                }
+                beginApproach();
+            } else {
+                nextApproachTarget = null;
+                // 空扫冷却：上次没扫到目标，等几次决策再扫，避免空扫大立方体每 tick 跑
+                if (scanCooldown > 0) {
+                    scanCooldown--;
+                    setState(golem, CopperGolem.State.IDLE);
+                    return false;
+                }
+                Block found = findNearestTarget(golem, mode);
+                if (found == null) {
+                    // 工作区无目标：原地待命，等待目标出现（不游荡、不耗汽）
+                    scanCooldown = SCAN_IDLE_COOLDOWN;
+                    setState(golem, CopperGolem.State.IDLE);
+                    if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+                    target = null;
+                    return false;
+                }
+                // 砍树：把目标降到这根树干的<b>最底部</b>，让机器人走到树根旁砍，而不是爬到树顶
+                approachTarget = (mode == JobMode.CHOP) ? treeBase(found) : found;
+                if (blockedTargets.contains(approachTarget)) {
+                    blacklist(found);
+                    approachTarget = null;
+                    return true;
+                }
+                beginApproach();
             }
-            approachTarget = findNearestTarget(golem, mode);
-            if (approachTarget == null) {
-                // 工作区无目标：原地待命，等待目标出现（不游荡、不耗汽）
-                scanCooldown = SCAN_IDLE_COOLDOWN;
-                setState(golem, CopperGolem.State.IDLE);
-                if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
-                target = null;
-                return false;
-            }
-            approachAge = 0;
         }
         setState(golem, CopperGolem.State.IDLE);          // 接近途中：非作业姿态
         Location center = approachTarget.getLocation().toCenterLocation();
-        if (golem.getLocation().distanceSquared(center) <= 9.0) {
-            lockCluster(approachTarget, mode);            // 够近 → 锁定整簇，进入采伐
+        golem.lookAt(center);                             // 朝向目标
+        Location loc = golem.getLocation();
+        double hDistSq = horizontalDistSq(loc, center);
+        double dy = loc.getY() - approachTarget.getY();   // 有符号：+ 在目标上方，- 在下方
+
+        // 锁定条件：水平就在树干/矿石旁（≤约2格），且站在底部附近——允许略低（浅坑）/略高（旁边台阶），
+        // 但不能高出太多（防止站到树顶上）。满足即锁定整簇开砍。
+        if (hDistSq <= 4.0 && dy >= -2.5 && dy <= 1.5) {
+            lockCluster(approachTarget, mode);
             approachTarget = null;
-            approachAge = 0;
-        } else if (++approachAge > TARGET_GIVE_UP) {      // 够不到 → 暂时拉黑，换一个
-            blacklist(approachTarget);
+            return true;
+        }
+
+        // 困在高处检测：如果机器人在目标上方过高（站到树顶了），直接寻路回 home 着陆再重试
+        if (dy > 3.0 && noProgress >= 2) {
+            golem.getPathfinder().moveTo(home, moveSpeed);
+            blacklistTree(approachTarget, mode);
             approachTarget = null;
-            approachAge = 0;
-        } else if (approachAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
-            golem.getPathfinder().moveTo(center, moveSpeed);
+            noProgress = 0;
+            return true;
+        }
+
+        // 无进度检测：靠近了就清零，否则累计；够不到太久 → 放弃这棵（悬空/被围 → 整棵拉黑，去下一棵）
+        double distSq = loc.distanceSquared(center);
+        if (distSq < lastApproachDistSq - 0.25) {         // 比上次近了至少 0.5 格
+            lastApproachDistSq = distSq;
+            noProgress = 0;
+        } else {
+            noProgress++;
+        }
+        if (noProgress > NO_PROGRESS_LIMIT || ++approachAge > TARGET_GIVE_UP) {
+            blacklistTree(approachTarget, mode);          // 够不到 → 整棵树拉黑，避免反复卡在同一棵
+            approachTarget = null;
+            if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+            return true;
+        }
+        // 清掉正前方（朝目标方向）挡路的树叶——仅树叶，绝不破坏原木/其它方块
+        clearLeavesAhead(golem, center);
+        // 仅在需要重新寻路时计算站立点（findStandingSpot 略有开销，不必每 tick 算）
+        if (approachAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
+            // 砍树时寻路到树根旁的站立点，而非原木本身（避免爬上树）
+            Location navTarget = (mode == JobMode.CHOP)
+                    ? findStandingSpot(approachTarget) : center;
+            golem.getPathfinder().moveTo(navTarget, moveSpeed);
         }
         return true;
+    }
+
+    /** 清掉机器人正前方（朝 {@code toward} 方向）脚部与头部高度挡路的树叶。 */
+    private void clearLeavesAhead(@NotNull CopperGolem golem, @NotNull Location toward) {
+        Location loc = golem.getLocation();
+        double dx = toward.getX() - loc.getX();
+        double dz = toward.getZ() - loc.getZ();
+        if (dx * dx + dz * dz < 0.04) return;             // 已基本到位，无前方可言
+        BlockFace dir = (Math.abs(dx) >= Math.abs(dz))
+                ? (dx >= 0 ? BlockFace.EAST : BlockFace.WEST)
+                : (dz >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
+        Block feetAhead = loc.getBlock().getRelative(dir);
+        breakLeaf(golem, feetAhead);                       // 脚部高度
+        breakLeaf(golem, feetAhead.getRelative(BlockFace.UP)); // 头部高度
+    }
+
+    /**
+     * 若该方块是<b>树叶</b>则破坏以清路（收集掉落、不耗汽、可被保护插件拦截）。
+     * 仅破坏树叶，绝不破坏原木 / 其它方块 / 任何 Rebar 方块。
+     *
+     * @return 是否破坏了一块树叶
+     */
+    private boolean breakLeaf(@NotNull CopperGolem golem, @NotNull Block b) {
+        if (!chunkLoaded(b)) return false;
+        Material leaf = b.getType();
+        if (!leaf.name().endsWith("_LEAVES")) return false;
+        if (PneumaticEndpointSupport.loadedRebarBlock(b) != null) return false;
+        // 保护插件可拦截
+        if (!new EntityChangeBlockEvent(golem, b, Material.AIR.createBlockData()).callEvent()) return false;
+
+        Collection<ItemStack> drops = b.getDrops(CHOP_TOOL);
+        World w = b.getWorld();
+        golem.swingMainHand();
+        w.playSound(b.getLocation().toCenterLocation(),
+                leaf.createBlockData().getSoundGroup().getBreakSound(), 0.5f, 1.0f);
+        w.spawnParticle(Particle.BLOCK, b.getLocation().toCenterLocation(),
+                8, 0.3, 0.3, 0.3, leaf.createBlockData());
+        b.setType(Material.AIR);
+        depositOrDrop(drops, b.getLocation());
+        return true;
+    }
+
+    /**
+     * 把够不到的目标拉黑：砍树时<b>整棵树</b>的原木一次性拉黑（flood-fill 连通原木），
+     * 这样机器人不会反复选回同一棵够不到的树（如悬空树根、被严密包围的树），直接去下一棵。
+     * 采矿则只拉黑该方块。
+     */
+    private void blacklistTree(@NotNull Block start, @NotNull JobMode mode) {
+        if (mode != JobMode.CHOP) { blacklist(start); return; }
+        if (blockedTargets.size() > 4096) blockedTargets.clear();
+        final int sx = start.getX(), sz = start.getZ();
+        final int rSq = CLUSTER_HORIZONTAL_RADIUS * CLUSTER_HORIZONTAL_RADIUS;
+        java.util.Set<Block> visited = new java.util.HashSet<>();
+        java.util.Deque<Block> queue = new java.util.ArrayDeque<>();
+        queue.add(start);
+        visited.add(start);
+        int count = 0;
+        while (!queue.isEmpty() && count < CLUSTER_CAP) {
+            Block b = queue.poll();
+            blockedTargets.add(b);
+            count++;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        Block nb = b.getRelative(dx, dy, dz);
+                        if (!visited.add(nb)) continue;
+                        int hx = nb.getX() - sx, hz = nb.getZ() - sz;
+                        if (hx * hx + hz * hz > rSq) continue;
+                        if (isTarget(nb, mode)) queue.add(nb);
+                    }
+                }
+            }
+        }
+    }
+
+    /** 从一根原木向下找到这根树干最底部的原木（让机器人走到树根处砍伐）。 */
+    private @NotNull Block treeBase(@NotNull Block log) {
+        Block b = log;
+        for (int i = 0; i < 32; i++) {                    // 上限保护
+            Block below = b.getRelative(BlockFace.DOWN);
+            if (!isTarget(below, JobMode.CHOP)) break;
+            b = below;
+        }
+        return b;
+    }
+
+    /**
+     * 找到树根旁可站立的地面空气格——机器人寻路到这里而非原木方块本身，
+     * 避免 Minecraft 寻路把原木当台阶爬上树顶。
+     * 搜索顺序：树根同层四面 → 树根下方一格四面（斜坡）；找不到则 fallback 原木正上方。
+     */
+    private @NotNull Location findStandingSpot(@NotNull Block treeBase) {
+        BlockFace[] horizontals = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+        // 优先：同层四邻的空气格（脚+头都可通行）
+        for (BlockFace f : horizontals) {
+            Block feet = treeBase.getRelative(f);
+            if (isPassable(feet) && isPassable(feet.getRelative(BlockFace.UP))
+                    && isSolid(feet.getRelative(BlockFace.DOWN))) {
+                return feet.getLocation().toCenterLocation();
+            }
+        }
+        // 次选：树根下一格的四邻（应对地表凹陷/树根在台阶上的情况）
+        Block below = treeBase.getRelative(BlockFace.DOWN);
+        for (BlockFace f : horizontals) {
+            Block feet = below.getRelative(f);
+            if (isPassable(feet) && isPassable(feet.getRelative(BlockFace.UP))
+                    && isSolid(feet.getRelative(BlockFace.DOWN))) {
+                return feet.getLocation().toCenterLocation();
+            }
+        }
+        // fallback：树根正上方（至少不会再爬更高）
+        return treeBase.getRelative(BlockFace.UP).getLocation().toCenterLocation();
+    }
+
+    /** 区块是否已加载——访问方块前必须判断，否则 getType() 会在主线程同步加载区块导致卡死。 */
+    private static boolean chunkLoaded(@NotNull Block b) {
+        return b.getWorld().isChunkLoaded(b.getX() >> 4, b.getZ() >> 4);
+    }
+
+    private static boolean isPassable(@NotNull Block b) {
+        return chunkLoaded(b) && !b.getType().isSolid();
+    }
+
+    private static boolean isSolid(@NotNull Block b) {
+        return chunkLoaded(b) && b.getType().isSolid();
+    }
+
+    /** 两点的水平（忽略 Y）距离平方。 */
+    private static double horizontalDistSq(@NotNull Location a, @NotNull Location b) {
+        double dx = a.getX() - b.getX();
+        double dz = a.getZ() - b.getZ();
+        return dx * dx + dz * dz;
+    }
+
+    /** 选定新接近目标时重置接近进度/计数。 */
+    private void beginApproach() {
+        approachAge = 0;
+        noProgress = 0;
+        lastApproachDistSq = Double.MAX_VALUE;
     }
 
     /** 采伐：逐个破坏锁定簇里的方块，每个需累积破坏进度（非秒砍）。 */
     private void harvestStep(@NotNull CopperGolem golem, @NotNull JobMode mode) {
         World world = golem.getWorld();
+
+        // 开始作业即站定：停掉接近阶段残留的寻路路径，采伐期间不再走动
+        // （否则会出现「一边砍树一边往树顶爬」的情况）
+        if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+        target = null;
 
         // 当前目标失效 → 清裂纹换下一个
         if (targetBlock != null && !isTarget(targetBlock, mode)) {
@@ -417,7 +639,16 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             }
         }
 
-        // 累积破坏进度：挥臂 + 裂纹 + 碎屑
+        // 预扫描：簇剩余少量方块时，提前找到下一棵最近的树/矿脉（基于当前工作位置），
+        // 砍完后直接衔接不用全扫。每簇只扫一次，避免末尾几块时每 tick 空扫大立方体。
+        if (!preScanned && nextApproachTarget == null && lockedCluster.size() <= 3) {
+            Location ref = (lastFocus != null) ? lastFocus : golem.getLocation();
+            nextApproachTarget = findNearestTargetFrom(ref, mode);
+            preScanned = true;
+        }
+
+        // 累积破坏进度：朝向目标 + 挥臂 + 裂纹 + 碎屑
+        golem.lookAt(targetBlock.getLocation().toCenterLocation());
         golem.swingMainHand();
         setState(golem, CopperGolem.State.GETTING_ITEM);
         breakingProgress++;
@@ -445,9 +676,19 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         }
     }
 
-    /** 从起点 flood-fill（26 邻接）连通的同类目标，锁定为一棵树 / 一条矿脉。 */
+    /**
+     * 从起点 flood-fill（26 邻接）连通的同类目标，锁定为<b>一棵树 / 一条矿脉</b>。
+     *
+     * <p>限制：只纳入离起点（树根）<b>水平距离 ≤ {@link #CLUSTER_HORIZONTAL_RADIUS} 格</b>的方块，垂直不限。
+     * 这样高树仍能整棵砍，但根部相距较远的<b>两棵树不会被并成一簇</b>——否则机器人会站在已砍空的第一棵
+     * 树原地远程采伐另一棵树。</p>
+     */
     private void lockCluster(@NotNull Block start, @NotNull JobMode mode) {
         lockedCluster.clear();
+        preScanned = false; // 新簇：允许再做一次预扫描
+        lastFocus = start.getLocation().toCenterLocation(); // 从起点（最靠近机器人的根部）开始连续采伐
+        final int sx = start.getX(), sz = start.getZ();
+        final int rSq = CLUSTER_HORIZONTAL_RADIUS * CLUSTER_HORIZONTAL_RADIUS;
         java.util.Set<Block> visited = new java.util.HashSet<>();
         java.util.Deque<Block> queue = new java.util.ArrayDeque<>();
         queue.add(start);
@@ -460,7 +701,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                     for (int dz = -1; dz <= 1; dz++) {
                         if (dx == 0 && dy == 0 && dz == 0) continue;
                         Block nb = b.getRelative(dx, dy, dz);
-                        if (visited.add(nb) && isTarget(nb, mode)) queue.add(nb);
+                        if (!visited.add(nb)) continue;
+                        int hx = nb.getX() - sx, hz = nb.getZ() - sz;
+                        if (hx * hx + hz * hz > rSq) continue;   // 水平超出一棵树范围 → 不纳入
+                        if (isTarget(nb, mode)) queue.add(nb);
                     }
                 }
             }
@@ -469,17 +713,21 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
     /** 取锁定簇中离机器人最近、仍有效的方块并移除；顺手剔除失效项；无则 null。 */
     private @Nullable Block pollNextClusterBlock(@NotNull JobMode mode) {
-        Location gl = getEntity().getLocation();
+        // 基准取"上一块"的位置：沿连续相邻方块一路砍，砍完一棵树才会跳到另一棵
+        Location ref = (lastFocus != null) ? lastFocus : getEntity().getLocation();
         Block best = null;
         double bestSq = Double.MAX_VALUE;
         java.util.Iterator<Block> it = lockedCluster.iterator();
         while (it.hasNext()) {
             Block b = it.next();
             if (blockedTargets.contains(b) || !isTarget(b, mode)) { it.remove(); continue; }
-            double sq = b.getLocation().toCenterLocation().distanceSquared(gl);
+            double sq = b.getLocation().toCenterLocation().distanceSquared(ref);
             if (sq < bestSq) { bestSq = sq; best = b; }
         }
-        if (best != null) lockedCluster.remove(best);
+        if (best != null) {
+            lockedCluster.remove(best);
+            lastFocus = best.getLocation().toCenterLocation(); // 更新基准，连续推进
+        }
         return best;
     }
 
@@ -495,8 +743,13 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         }
         targetBlock = null;
         approachTarget = null;
+        nextApproachTarget = null;
+        preScanned = false;
+        lastFocus = null;
         breakingProgress = 0;
         approachAge = 0;
+        noProgress = 0;
+        lastApproachDistSq = Double.MAX_VALUE;
         scanCooldown = 0;
         lockedCluster.clear();
     }
@@ -562,8 +815,12 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
     /** 在工作区（home ±workRadius 立方体）内找离机器人最近的目标方块。 */
     private @Nullable Block findNearestTarget(@NotNull CopperGolem golem, @NotNull JobMode mode) {
+        return findNearestTargetFrom(golem.getLocation(), mode);
+    }
+
+    /** 在工作区内找离指定参考点最近的目标方块（排除当前锁定簇中的方块）。 */
+    private @Nullable Block findNearestTargetFrom(@NotNull Location ref, @NotNull JobMode mode) {
         Block homeBlock = home.getBlock();
-        Location golemLoc = golem.getLocation();
         Block best = null;
         double bestSq = Double.MAX_VALUE;
         for (int dx = -workRadius; dx <= workRadius; dx++) {
@@ -571,7 +828,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                 for (int dz = -workRadius; dz <= workRadius; dz++) {
                     Block b = homeBlock.getRelative(dx, dy, dz);
                     if (blockedTargets.contains(b) || !isTarget(b, mode)) continue;
-                    double sq = b.getLocation().toCenterLocation().distanceSquared(golemLoc);
+                    if (lockedCluster.contains(b)) continue;
+                    double sq = b.getLocation().toCenterLocation().distanceSquared(ref);
                     if (sq < bestSq) { bestSq = sq; best = b; }
                 }
             }
@@ -665,11 +923,13 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
      * 从 {@link EntityStorage} 注销，无需手动清理。</p>
      */
     @Override
-    @MultiHandler(priorities = {EventPriority.NORMAL})
+    @MultiHandler(priorities = {EventPriority.LOWEST})
     public void onInteractedWith(@NotNull PlayerInteractEntityEvent event, @NotNull EventPriority priority) {
-        if (priority != EventPriority.NORMAL) return;
+        if (priority != EventPriority.LOWEST) return;
         // 两手都取消：否则副手交互会漏到原版，被当作"拿走铜傀儡手持物"取下工具
         event.setCancelled(true);
+        // 兜底：下一 tick 恢复手持工具（防止原版在事件后仍剥离装备）
+        Bukkit.getScheduler().runTask(io.github.steamwork.Steamwork.getInstance(), this::updateHeldTool);
         if (event.getHand() != EquipmentSlot.HAND) return;   // 仅主手触发我们的逻辑（避免双触发）
         Player player = event.getPlayer();
         if (player.isSneaking()) {
