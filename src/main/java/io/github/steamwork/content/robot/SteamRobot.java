@@ -202,17 +202,40 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         CopperGolem golem = getEntity();
         golem.setPersistent(true);
         golem.setRemoveWhenFarAway(false);
-        // 关键：彻底关掉铜傀儡的自主 AI（含新版 brain 行为：捡物/游荡），否则会与我们的寻路抢控制。
-        // setAware(false) 停掉自主决策，但显式 getPathfinder().moveTo() 的导航仍生效；
-        // 再清一遍旧 goal 制目标双保险。导航此后完全由本类驱动。
-        golem.setAware(false);
+        // 关键：清空铜傀儡的自主 AI，否则会与我们的寻路抢控制（乱逛/捡物）。
+        // 铜傀儡是新版 brain 制 AI：setAware(false) 会连导航一起冻住（不能用），
+        // removeAllGoals 又只清旧 goal 制（对它无效）。
+        // 正解：保持 aware=true 让导航可用，用反射清空 brain 的行为与记忆，使其无自主动作；
+        // 再清一遍 goal 制双保险。导航此后完全由本类的 moveTo 驱动。
         Bukkit.getMobGoals().removeAllGoals(golem);
+        neutralizeBrain(golem);
         // 已涂蜡铜傀儡：固定为未氧化的亮铜外观，且不再随时间氧化
         golem.setWeatheringState(WeatheringCopperState.UNAFFECTED);
         golem.setOxidizing(CopperGolem.Oxidizing.waxed());
         golem.customName(Component.translatable("steamwork.item.steam_robot.name").color(NamedTextColor.AQUA));
         golem.setCustomNameVisible(true);
         updateHeldTool();
+    }
+
+    /**
+     * 反射清空铜傀儡的 brain（行为 + 记忆），使其无自主动作但导航仍可用。
+     * 运行时为 mojang 映射（Paper/Purpur）：CraftMob.getHandle() → Mob.getBrain()
+     * → Brain.removeAllBehaviors()/clearMemories()。失败仅告警、不致命。
+     */
+    private void neutralizeBrain(@NotNull CopperGolem golem) {
+        try {
+            Object nmsMob = golem.getClass().getMethod("getHandle").invoke(golem);
+            Object brain  = nmsMob.getClass().getMethod("getBrain").invoke(nmsMob);
+            brain.getClass().getMethod("removeAllBehaviors").invoke(brain);
+            brain.getClass().getMethod("clearMemories").invoke(brain);
+        } catch (Throwable t) {
+            Bukkit.getLogger().warning("[Steamwork] 无法清空蒸汽机器人 brain（映射变动?）：" + t);
+        }
+    }
+
+    /** 仅在姿态变化时设置铜傀儡动作状态，避免每 tick 重复发包。 */
+    private void setState(@NotNull CopperGolem golem, @NotNull CopperGolem.State state) {
+        if (golem.getGolemState() != state) golem.setGolemState(state);
     }
 
     /** 按当前任务模式让铜傀儡手持对应工具（采矿→镐 / 砍树→斧 / 巡逻→空手），死亡不掉落。 */
@@ -269,6 +292,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
     /** 巡逻：在部署点周围随机选点游走。 */
     private void patrolStep(@NotNull CopperGolem golem) {
+        setState(golem, CopperGolem.State.IDLE);
         Location loc = golem.getLocation();
         ticksSinceRetarget++;
 
@@ -334,6 +358,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             patrolStep(golem);                            // 工作区没活 → 巡游
             return;
         }
+        setState(golem, CopperGolem.State.IDLE);          // 接近途中：非作业姿态
         Location center = start.getLocation().toCenterLocation();
         if (golem.getLocation().distanceSquared(center) <= 9.0) {
             lockCluster(start, mode);                     // 够近 → 锁定整簇，进入采伐
@@ -366,7 +391,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         // 累积破坏进度：挥臂 + 裂纹 + 碎屑
         golem.swingMainHand();
-        golem.setGolemState(CopperGolem.State.GETTING_ITEM);
+        setState(golem, CopperGolem.State.GETTING_ITEM);
         breakingProgress++;
         float progress = Math.min(1.0f, (float) breakingProgress / breakTicks);
         sendCrack(targetBlock, progress);
@@ -608,10 +633,10 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     @MultiHandler(priorities = {EventPriority.NORMAL})
     public void onInteractedWith(@NotNull PlayerInteractEntityEvent event, @NotNull EventPriority priority) {
         if (priority != EventPriority.NORMAL) return;
-        if (event.getHand() != EquipmentSlot.HAND) return;   // 只主手触发一次
-        Player player = event.getPlayer();
-
+        // 两手都取消：否则副手交互会漏到原版，被当作"拿走铜傀儡手持物"取下工具
         event.setCancelled(true);
+        if (event.getHand() != EquipmentSlot.HAND) return;   // 仅主手触发我们的逻辑（避免双触发）
+        Player player = event.getPlayer();
         if (player.isSneaking()) {
             dismantle(player);
         } else {
