@@ -980,9 +980,9 @@ item:
       <arrow> Right-click a block to deploy one on top of it (full of steam)
       <arrow> Wanders near its deploy point; <white>actions consume onboard steam</white>, <red>halts when empty</red>
       <arrow> Returns to its <white>bound charging chamber</white> when low (auto-binds on first charge)
-      <arrow> <white>Right-click</white> to switch job (Patrol/Mine/Chop); <white>Sneak + right-click</white> to dismantle
-      <arrow> Look at the robot to see job/steam (WAILA)
-      <arrow> <yellow>Mining/chopping/hauling jobs rolling out
+      <arrow> <white>Right-click</white> opens the control GUI (Patrol/Mine/Chop); <white>Sneak + right-click</white> to dismantle
+      <arrow> Holds a tool and swings while mining/chopping; drops go to the <white>chest by home</white>
+      <arrow> <gray>Only breaks vanilla ores/logs, never machines; keep its work area away from your builds
 
   pneumatic_distributor:
     name: "Pneumatic Distributor"
@@ -1469,6 +1469,9 @@ item:
 
 gui:
   steam_robot:
+    steam: "Steam: %cur% / %max% mB"
+    job_active: "✔ Active"
+    job_select: "Click to select"
     state:
       running: "Patrolling"
       no_steam: "Out of Steam"

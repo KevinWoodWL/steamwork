@@ -985,9 +985,9 @@ item:
       <arrow> 右键方块在其上方部署一台（满汽）
       <arrow> 在部署点周围巡游，<white>行动消耗内置蒸汽</white>；耗尽则<red>缺汽停摆</red>
       <arrow> 低汽时回<white>绑定的蒸汽充汽舱</white>充能（首次被充汽自动绑定）
-      <arrow> <white>右键</white> 切换任务模式（巡逻/采矿/砍树），<white>潜行 + 右键</white> 拆除回收
-      <arrow> 注视机器人查看任务/蒸汽（WAILA）
-      <arrow> <yellow>采矿/砍树/搬运作业逐步开放中
+      <arrow> <white>右键</white> 打开控制界面（切换巡逻/采矿/砍树），<white>潜行 + 右键</white> 拆除回收
+      <arrow> 采矿/砍树时手持工具、挥臂作业；掉落收进 <white>home 旁的箱子</white>
+      <arrow> <gray>只破坏原版矿石/原木，绝不破坏机器；工作区避开自家建筑
 
   pneumatic_distributor:
     name: "汽动分发器"
@@ -1474,6 +1474,9 @@ item:
 
 gui:
   steam_robot:
+    steam: "蒸汽：%cur% / %max% mB"
+    job_active: "✔ 当前模式"
+    job_select: "点击切换到此模式"
     state:
       running: "巡游中"
       no_steam: "缺汽停摆"

@@ -6,7 +6,10 @@ import io.github.pylonmc.rebar.entity.RebarEntity;
 import io.github.pylonmc.rebar.entity.interfaces.InteractRebarEntityHandler;
 import io.github.pylonmc.rebar.entity.interfaces.TickingRebarEntity;
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler;
+import io.github.pylonmc.rebar.i18n.RebarArgument;
+import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.util.ProgressBar;
+import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
@@ -16,6 +19,8 @@ import io.github.steamwork.util.PneumaticEndpointSupport;
 import io.papermc.paper.world.WeatheringCopperState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,7 +36,9 @@ import org.bukkit.entity.CopperGolem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -39,7 +46,13 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.xenondevs.invui.Click;
+import xyz.xenondevs.invui.gui.Gui;
+import xyz.xenondevs.invui.item.AbstractItem;
+import xyz.xenondevs.invui.item.ItemProvider;
+import xyz.xenondevs.invui.window.Window;
 
+import java.util.List;
 import java.util.Collection;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -181,11 +194,28 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         CopperGolem golem = getEntity();
         golem.setPersistent(true);
         golem.setRemoveWhenFarAway(false);
+        // 关键：移除铜傀儡的原版 AI 目标（捡物/游荡等），否则会与我们的寻路抢控制，
+        // 导致它"分心"、走不到作业目标、采矿/砍树失效。清空后导航完全由本类的 moveTo 驱动。
+        Bukkit.getMobGoals().removeAllGoals(golem);
         // 已涂蜡铜傀儡：固定为未氧化的亮铜外观，且不再随时间氧化
         golem.setWeatheringState(WeatheringCopperState.UNAFFECTED);
         golem.setOxidizing(CopperGolem.Oxidizing.waxed());
         golem.customName(Component.translatable("steamwork.item.steam_robot.name").color(NamedTextColor.AQUA));
         golem.setCustomNameVisible(true);
+        updateHeldTool();
+    }
+
+    /** 按当前任务模式让铜傀儡手持对应工具（采矿→镐 / 砍树→斧 / 巡逻→空手），死亡不掉落。 */
+    private void updateHeldTool() {
+        EntityEquipment eq = getEntity().getEquipment();
+        if (eq == null) return;
+        ItemStack held = switch (jobMode) {
+            case MINE -> new ItemStack(Material.IRON_PICKAXE);
+            case CHOP -> new ItemStack(Material.IRON_AXE);
+            case PATROL -> null;
+        };
+        eq.setItemInMainHand(held);
+        eq.setItemInMainHandDropChance(0f);
     }
 
     @Override
@@ -285,8 +315,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                 return;
             }
             Location center = targetBlock.getLocation().toCenterLocation();
-            if (loc.getWorld() == center.getWorld() && loc.distanceSquared(center) <= 6.25) {
-                breakTarget(golem, mode);                 // 够近（≤2.5 格）→ 破坏
+            if (loc.getWorld() == center.getWorld() && loc.distanceSquared(center) <= 9.0) {
+                breakTarget(golem, mode);                 // 够近（≤3 格）→ 破坏
                 clearTarget();
                 return;
             }
@@ -332,7 +362,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         Collection<ItemStack> drops = b.getDrops(mode == JobMode.CHOP ? CHOP_TOOL : MINE_TOOL);
 
-        // 破坏特效（音 + 方块碎屑）
+        // 挥动手臂（手持工具）+ 破坏特效（音 + 方块碎屑）
+        golem.swingMainHand();
         world.playSound(b.getLocation().toCenterLocation(),
                 broken.createBlockData().getSoundGroup().getBreakSound(), 1.0f, 0.9f);
         world.spawnParticle(Particle.BLOCK, b.getLocation().toCenterLocation(),
@@ -469,7 +500,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     }
 
     /**
-     * 右键机器人：潜行 → 拆除并掉回部署物品；非潜行 → 循环切换任务模式。
+     * 右键机器人：潜行 → 拆除并掉回部署物品；非潜行 → 打开控制 GUI。
      *
      * <p>拆除时 {@code golem.remove()} 触发 {@code EntityRemoveFromWorldEvent}，Rebar 会自动把本实体
      * 从 {@link EntityStorage} 注销，无需手动清理。</p>
@@ -485,27 +516,113 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         if (player.isSneaking()) {
             dismantle(player);
         } else {
-            cycleJob(player);
+            openGui(player);
         }
     }
 
-    /** 非潜行右键：循环切换任务模式（巡逻→采矿→砍树→…），actionbar 提示 + 音效。 */
-    private void cycleJob(@NotNull Player player) {
-        JobMode[] modes = JobMode.values();
-        jobMode = modes[(jobMode.ordinal() + 1) % modes.length];
-        clearTarget(); // 切换模式后旧目标作废
+    /** 设置任务模式：作废旧目标、更新手持工具、刷新已开界面。 */
+    private void setJob(@NotNull JobMode mode) {
+        if (jobMode == mode) return;
+        jobMode = mode;
+        clearTarget();
         blockedTargets.clear();
         target = null;
-        player.sendActionBar(Component.empty()
-                .append(Component.translatable("steamwork.message.steam_robot.job_set").color(NamedTextColor.GRAY))
-                .append(jobLabel().color(NamedTextColor.AQUA)));
-        CopperGolem golem = getEntity();
-        golem.getWorld().playSound(golem.getLocation(), Sound.UI_BUTTON_CLICK, SoundCategory.BLOCKS, 0.6f, 1.4f);
+        updateHeldTool();
+        getEntity().getWorld().playSound(getEntity().getLocation(),
+                Sound.UI_BUTTON_CLICK, SoundCategory.BLOCKS, 0.6f, 1.4f);
+        refreshGuiItems();
     }
 
     /** 当前任务模式的可翻译名。 */
     private @NotNull Component jobLabel() {
         return Component.translatable("steamwork.gui.steam_robot.job." + jobMode.name().toLowerCase());
+    }
+
+    private static @NotNull Component ni(@NotNull Component c) {
+        return c.decoration(TextDecoration.ITALIC, false);
+    }
+
+    // ===== 控制 GUI =====
+
+    private @Nullable StatusItem statusItem;
+    private JobButton @Nullable [] jobButtons;
+
+    private void openGui(@NotNull Player player) {
+        Window.builder()
+                .setUpperGui(buildGui())
+                .setTitle(ni(Component.translatable("steamwork.item.steam_robot.name")))
+                .setViewer(player)
+                .build()
+                .open();
+    }
+
+    private @NotNull Gui buildGui() {
+        statusItem = new StatusItem();
+        jobButtons = new JobButton[]{
+                new JobButton(JobMode.PATROL), new JobButton(JobMode.MINE), new JobButton(JobMode.CHOP)
+        };
+        return Gui.builder()
+                .setStructure(
+                        "# # # # # # # # #",
+                        "# s # P # M # C #",
+                        "# # # # # # # # #")
+                .addIngredient('#', GuiItems.background())
+                .addIngredient('s', statusItem)
+                .addIngredient('P', jobButtons[0])
+                .addIngredient('M', jobButtons[1])
+                .addIngredient('C', jobButtons[2])
+                .build();
+    }
+
+    private void refreshGuiItems() {
+        if (statusItem != null) statusItem.notifyWindows();
+        if (jobButtons != null) for (JobButton b : jobButtons) b.notifyWindows();
+    }
+
+    /** 状态项：显示蒸汽量与当前状态（仅展示）。 */
+    private final class StatusItem extends AbstractItem {
+        @Override public @NotNull ItemProvider getItemProvider(@NotNull Player v) {
+            String stateKey = seekingCharge ? "charging" : (steam > 0 ? "running" : "no_steam");
+            return ItemStackBuilder.of(Material.COPPER_BLOCK)
+                    .name(ni(Component.translatable("steamwork.item.steam_robot.name").color(NamedTextColor.AQUA)))
+                    .lore(List.of(
+                            ni(Component.translatable("steamwork.gui.steam_robot.steam",
+                                    RebarArgument.of("cur", String.valueOf((int) steam)),
+                                    RebarArgument.of("max", String.valueOf((int) steamCapacity)))
+                                    .color(NamedTextColor.GRAY)),
+                            ni(Component.translatable("steamwork.gui.steam_robot.state." + stateKey)
+                                    .color(NamedTextColor.GRAY))
+                    ));
+        }
+        @Override public void handleClick(@NotNull ClickType t, @NotNull Player p, @NotNull Click c) {
+            refreshGuiItems(); // 点一下刷新数值
+        }
+    }
+
+    /** 任务模式按钮：点击切到该模式，当前模式高亮（绿色名 + 选中提示）。 */
+    private final class JobButton extends AbstractItem {
+        private final JobMode mode;
+        JobButton(@NotNull JobMode mode) { this.mode = mode; }
+
+        @Override public @NotNull ItemProvider getItemProvider(@NotNull Player v) {
+            boolean active = jobMode == mode;
+            Material icon = switch (mode) {
+                case PATROL -> Material.LEATHER_BOOTS;
+                case MINE   -> Material.IRON_PICKAXE;
+                case CHOP   -> Material.IRON_AXE;
+            };
+            Component name = Component.translatable("steamwork.gui.steam_robot.job." + mode.name().toLowerCase())
+                    .color(active ? NamedTextColor.GREEN : NamedTextColor.GRAY);
+            return ItemStackBuilder.of(icon)
+                    .name(ni(name))
+                    .lore(List.of(ni(Component.translatable(active
+                                    ? "steamwork.gui.steam_robot.job_active"
+                                    : "steamwork.gui.steam_robot.job_select")
+                            .color(active ? NamedTextColor.GREEN : NamedTextColor.DARK_GRAY))));
+        }
+        @Override public void handleClick(@NotNull ClickType t, @NotNull Player p, @NotNull Click c) {
+            setJob(mode);
+        }
     }
 
     private void dismantle(@NotNull Player player) {
