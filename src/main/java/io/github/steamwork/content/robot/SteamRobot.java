@@ -98,6 +98,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private static final int TARGET_GIVE_UP = 40;
     /** 单次锁定的连通簇（整棵树 / 整条矿脉）最大方块数。 */
     private static final int CLUSTER_CAP = 512;
+    /** 工作区扫不到目标后，待命多少次决策再重新扫描（避免空扫大立方体每 tick 跑）。 */
+    private static final int SCAN_IDLE_COOLDOWN = 10;
 
     // home（部署点）持久化键，存为三个 double
     private static final NamespacedKey HOME_X = steamworkKey("robot_home_x");
@@ -121,7 +123,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     /** 蒸汽低于容量该比例时回绑定充汽舱充能。 */
     private final double rechargeAt    = getSetting("recharge-at",    ConfigAdapter.DOUBLE,  0.25);
     /** 作业工作区半径（以 home 为中心的立方体半边长，格）。 */
-    private final int    workRadius    = getSetting("work-radius",    ConfigAdapter.INTEGER, 5);
+    private final int    workRadius    = getSetting("work-radius",    ConfigAdapter.INTEGER, 12);
     /** 每破坏一个方块额外耗汽（mB）。 */
     private final double steamPerBreak = getSetting("steam-per-break", ConfigAdapter.DOUBLE, 30.0);
     /** 破坏一个方块需累积的决策次数（每次决策约 tick-interval 游戏刻），≥1，避免秒砍。 */
@@ -148,6 +150,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     private int breakingProgress = 0;
     /** 锁定的连通簇（整棵树 / 整条矿脉）中尚未破坏的方块；瞬态。 */
     private final java.util.List<Block> lockedCluster = new java.util.ArrayList<>();
+    /** 空扫冷却剩余决策次数（>0 时跳过扫描、原地待命）。 */
+    private int scanCooldown = 0;
     /** 不可达 / 被保护插件拦截的方块（瞬态跳过集）。 */
     private final java.util.Set<Block> blockedTargets = new java.util.HashSet<>();
 
@@ -281,13 +285,14 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         }
 
         // ── 作业（按任务模式）──
+        boolean active;
         switch (jobMode) {
-            case PATROL -> patrolStep(golem);
-            case MINE, CHOP -> mineStep(golem, jobMode);
+            case MINE, CHOP -> active = mineStep(golem, jobMode);
+            default         -> { patrolStep(golem); active = true; }
         }
 
-        // 行动耗汽（破坏的额外耗汽在 breakTarget 内单独扣）
-        steam = Math.max(0.0, steam - steamPerTick);
+        // 行动耗汽（仅在实际行动/作业时扣；待命不耗汽）。破坏的额外耗汽在 breakTarget 内单独扣
+        if (active) steam = Math.max(0.0, steam - steamPerTick);
     }
 
     /** 巡逻：在部署点周围随机选点游走。 */
@@ -344,19 +349,31 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
      *   <li><b>采伐</b>：站定逐个破坏锁定簇里的方块，每个需累积 {@link #breakTicks} 次进度
      *       （挥臂 + 裂纹，非秒砍）；簇清空后回接近阶段重新扫描。</li>
      * </ol>
-     * 工作区无目标时退回巡游。
+     * 工作区无目标时原地待命（不游荡、不耗汽）。
+     *
+     * @return 是否处于行动/作业状态（用于决定本 tick 是否耗汽）
      */
-    private void mineStep(@NotNull CopperGolem golem, @NotNull JobMode mode) {
+    private boolean mineStep(@NotNull CopperGolem golem, @NotNull JobMode mode) {
         // 采伐阶段：已锁定一棵树 / 一条矿脉
         if (targetBlock != null || !lockedCluster.isEmpty()) {
             harvestStep(golem, mode);
-            return;
+            return true;
         }
-        // 接近阶段：找最近目标
+        // 空扫冷却：上次没扫到目标，等几次决策再扫，避免空扫大立方体每 tick 跑
+        if (scanCooldown > 0) {
+            scanCooldown--;
+            setState(golem, CopperGolem.State.IDLE);
+            return false;
+        }
+        // 接近阶段：扫描工作区找最近目标
         Block start = findNearestTarget(golem, mode);
         if (start == null) {
-            patrolStep(golem);                            // 工作区没活 → 巡游
-            return;
+            // 工作区无目标：原地待命，等待目标出现（不游荡、不耗汽）
+            scanCooldown = SCAN_IDLE_COOLDOWN;
+            setState(golem, CopperGolem.State.IDLE);
+            if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+            target = null;
+            return false;
         }
         setState(golem, CopperGolem.State.IDLE);          // 接近途中：非作业姿态
         Location center = start.getLocation().toCenterLocation();
@@ -369,6 +386,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         } else if (approachAge % 8 == 1 || !golem.getPathfinder().hasPath()) {
             golem.getPathfinder().moveTo(center, moveSpeed);
         }
+        return true;
     }
 
     /** 采伐：逐个破坏锁定簇里的方块，每个需累积破坏进度（非秒砍）。 */
@@ -468,6 +486,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         targetBlock = null;
         breakingProgress = 0;
         approachAge = 0;
+        scanCooldown = 0;
         lockedCluster.clear();
     }
 
