@@ -192,6 +192,22 @@ public final class SteamworkResearches {
             SteamworkKeys.PRECISION_CENTRIFUGE,
             SteamworkKeys.PRECISION_FOUNDRY);
 
+    /**
+     * ★ 精密工程门控：需在蒸汽科研接口消耗 200 精密点数解锁。
+     * 包含机器人核心、四种机器人及控制终端——比精密自动化更深一层的终局内容。
+     */
+    public static final Research PRECISION_STEAM_ROBOTS = new Research(
+            steamworkKey("precision_steam_robots"), SteamworkItems.MINING_ROBOT, (Long) null,
+            SteamworkKeys.ROBOT_CORE,
+            SteamworkKeys.ROBOT_CORE_WORKPIECE_1,
+            SteamworkKeys.ROBOT_CORE_WORKPIECE_2,
+            SteamworkKeys.ROBOT_CORE_WORKPIECE_3,
+            SteamworkKeys.MINING_ROBOT, SteamworkKeys.LUMBER_ROBOT,
+            SteamworkKeys.HAUL_ROBOT, SteamworkKeys.PATROL_ROBOT,
+            SteamworkKeys.PICKER_ROBOT, SteamworkKeys.FARMER_ROBOT,
+            SteamworkKeys.BUTCHER_ROBOT,
+            SteamworkKeys.ROBOT_CONTROL_TERMINAL);
+
     // ---- Tier 4: endgame  (300-500 pt) ---------------------------------
 
     public static final Research PRECISION_TURBINES_1 = new Research(
@@ -251,6 +267,7 @@ public final class SteamworkResearches {
         MATERIAL_STEAM_LOGISTICS.register();
         CHEMISTRY_DISTILLATION.register();
         PRECISION_ADVANCED_AUTOMATION_1.register();
+        PRECISION_STEAM_ROBOTS.register();
 
         PRECISION_TURBINES_1.register();
         PRECISION_TURBINES_2.register();

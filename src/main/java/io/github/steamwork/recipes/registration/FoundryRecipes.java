@@ -61,6 +61,20 @@ public final class FoundryRecipes {
         SteamFoundryRecipe.RECIPE_TYPE.addRecipe(flightCoreMatrix);
         RebarRecipe.setPriority(flightCoreMatrix, 20.0);
 
+        // 机器人核心工序链第 2 步：活化基体 + 矿物熔剂 + 加热线圈 → 粗炼机器人核心
+        SteamFoundryRecipe robotCoreMatrix = new SteamFoundryRecipe(
+                steamworkKey("foundry_robot_core_matrix"),
+                List.of(
+                        RecipeInput.of(SequencedWorkpiece.robotCore(1)),
+                        RecipeInput.of(SteamworkItems.MINERAL_FLUX),
+                        RecipeInput.of(SteamworkItems.HEATING_COIL)
+                ),
+                SequencedWorkpiece.robotCore(2),
+                300.0,
+                300);
+        SteamFoundryRecipe.RECIPE_TYPE.addRecipe(robotCoreMatrix);
+        RebarRecipe.setPriority(robotCoreMatrix, 20.0);
+
         SteamFoundryRecipe.RECIPE_TYPE.addRecipe(new SteamFoundryRecipe(
                 steamworkKey("foundry_invar"),
                 List.of(

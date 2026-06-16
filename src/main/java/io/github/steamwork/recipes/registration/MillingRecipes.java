@@ -38,6 +38,16 @@ public final class MillingRecipes {
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(millFlightCore);
         RebarRecipe.setPriority(millFlightCore, 10.0);
 
+        // 机器人核心工序链第 3 步：精密铣削粗炼核心 → 校准机器人核心毛坯
+        SteamMillingRecipe millRobotCore = new SteamMillingRecipe(
+                steamworkKey("mill_robot_core_blank"),
+                RecipeInput.of(SequencedWorkpiece.robotCore(2)),
+                SequencedWorkpiece.robotCore(3),
+                200.0,
+                400);
+        SteamMillingRecipe.RECIPE_TYPE.addRecipe(millRobotCore);
+        RebarRecipe.setPriority(millRobotCore, 10.0);
+
         SteamMillingRecipe.RECIPE_TYPE.addRecipe(new SteamMillingRecipe(
                 steamworkKey("mill_invar_to_precision_gear"),
                 RecipeInput.of(SteamworkItems.INVAR_INGOT, 2),

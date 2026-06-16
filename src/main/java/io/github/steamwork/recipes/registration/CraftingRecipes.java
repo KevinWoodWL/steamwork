@@ -1057,6 +1057,20 @@ public final class CraftingRecipes {
         precisionCentrifuge.setIngredient('P', rebarChoice(SteamworkItems.FORGED_PLATE));
         precisionCentrifuge.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(precisionCentrifuge);
+
+        // 机器人控制终端：机器人核心 + 差分机 + 钨锭×2 + 精密阀门×2 + 锻造板×2 + 压力表
+        // 终端是工区大脑，定位终局精密制品，需要差分机（计算调度）+ 机器人核心（自动化基体）。
+        ShapedRecipe robotControlTerminal = new ShapedRecipe(
+                SteamworkKeys.ROBOT_CONTROL_TERMINAL, SteamworkItems.ROBOT_CONTROL_TERMINAL);
+        robotControlTerminal.shape("VPV", "TDT", "FCF");
+        robotControlTerminal.setIngredient('V', rebarChoice(SteamworkItems.PRECISION_VALVE));
+        robotControlTerminal.setIngredient('P', rebarChoice(SteamworkItems.PRESSURE_GAUGE));
+        robotControlTerminal.setIngredient('T', rebarChoice(SteamworkItems.TUNGSTEN_INGOT));
+        robotControlTerminal.setIngredient('D', rebarChoice(SteamworkItems.STEAM_DIFFERENCE_ENGINE));
+        robotControlTerminal.setIngredient('F', rebarChoice(SteamworkItems.FORGED_PLATE));
+        robotControlTerminal.setIngredient('C', rebarChoice(SteamworkItems.ROBOT_CORE));
+        robotControlTerminal.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(robotControlTerminal);
     }
 
     /** Adds reversible 9 ingots <-> 1 block recipes. */

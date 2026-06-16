@@ -982,12 +982,69 @@ item:
     name: "蒸汽机器人"
     lore: |-
       <arrow> 以铜傀儡为底座的自主行动机器人
-      <arrow> 右键方块在其上方部署一台（满汽）
-      <arrow> 在部署点周围巡游，<white>行动消耗内置蒸汽</white>；耗尽则<red>缺汽停摆</red>
-      <arrow> 低汽时回<white>绑定的蒸汽充汽舱</white>充能（首次被充汽自动绑定）
-      <arrow> <white>右键</white> 打开控制界面（切换巡逻/采矿/砍树），<white>潜行 + 右键</white> 拆除回收
-      <arrow> 采矿/砍树时手持工具、挥臂作业；掉落收进 <white>home 旁的箱子</white>
-      <arrow> <gray>只破坏原版矿石/原木，绝不破坏机器；工作区避开自家建筑
+      <arrow> 通过<white>机器人控制终端</white>部署，或右键方块手动放置
+      <arrow> 在终端区域内工作，<white>行动消耗内置蒸汽</white>；耗尽则<red>缺汽停摆</red>
+      <arrow> 低汽时前往终端的<white>充汽点</white>充能
+      <arrow> <white>右键</white> 查看状态，<white>潜行 + 右键</white> 拆除回收
+      <arrow> <gray>未绑定终端时处于待命状态，不执行任务
+
+  mining_robot:
+    name: "采矿机器人"
+    lore: |-
+      <arrow> 扫描终端区域内的矿石并进行采掘
+      <arrow> 手持镐工具、挥臂作业；掉落收进<white>出货点</white>
+      <arrow> <gray>只破坏原版矿石，绝不破坏机器
+
+  lumber_robot:
+    name: "伐木机器人"
+    lore: |-
+      <arrow> 扫描终端区域内的树木并进行砍伐
+      <arrow> 手持斧工具、挥臂作业；掉落收进<white>出货点</white>
+      <arrow> <gray>只破坏原版原木/树叶，绝不破坏机器
+
+  haul_robot:
+    name: "搬运机器人"
+    lore: |-
+      <arrow> 在终端区域内两点之间往返运输物品
+      <arrow> 通过 GUI 绑定<white>取货容器</white>与<white>送货点</white>（容器/产线入口）
+      <arrow> 从取货点拿取物品，步行至送货点投放
+
+  patrol_robot:
+    name: "巡逻机器人"
+    lore: |-
+      <arrow> 在终端区域内巡逻游走
+      <arrow> 发现<white>敌对生物</white>时主动冲上前攻击
+      <arrow> 击杀掉落物自动收集，满载送往出货点
+
+  picker_robot:
+    name: "拾取机器人"
+    lore: |-
+      <arrow> 扫描终端区域内的地面掉落物并捡起
+      <arrow> 满载后自动送往<white>出货点</white>
+      <arrow> <gray>配合采矿/伐木机器人使用效果更佳
+
+  farmer_robot:
+    name: "农耕机器人"
+    lore: |-
+      <arrow> 扫描终端区域内的成熟作物并收割
+      <arrow> 可通过种子槽装入种子，自动在空耕地上补种
+      <arrow> 满载后自动送往<white>出货点</white>
+
+  butcher_robot:
+    name: "屠宰机器人"
+    lore: |-
+      <arrow> 扫描终端区域内的成年动物并进行屠宰
+      <arrow> 自动收集掉落物并送往<white>出货点</white>
+      <arrow> <gray>每种动物保留至少 2 只，避免灭绝
+
+  robot_control_terminal:
+    name: "机器人控制终端"
+    lore: |-
+      <arrow> 机器人工区的大脑
+      <arrow> 点击两个角落设定矩形区域（最大 32×32，忽略 Y 轴）
+      <arrow> 在区域内绑定<white>出货点</white>（容器）和<white>充汽点</white>（蒸汽充汽舱）
+      <arrow> 从终端部署机器人，它们在工区内自主作业
+      <arrow> <gray>机器人从所属终端读取区域/出货/充汽配置
 
   pneumatic_distributor:
     name: "汽动分发器"
@@ -1231,6 +1288,14 @@ item:
         next: "<dark_gray>下一步：<gray>精密铣床 → 校准飞行核心毛坯"
       step_3:
         next: "<dark_gray>下一步：<gray>装配台 + 喷射喷嘴 + 精密轴承 → 蒸汽飞行核心（成品）"
+    robot_core:
+      line_name: "机器人核心"
+      step_1:
+        next: "<dark_gray>下一步：<gray>精密熔炉 + 矿物熔剂 + 加热线圈 → 粗炼机器人核心"
+      step_2:
+        next: "<dark_gray>下一步：<gray>精密铣床 → 校准机器人核心毛坯"
+      step_3:
+        next: "<dark_gray>下一步：<gray>装配台 + 蒸汽马达 + 精密轴承 + 高分子材料 → 机器人核心（成品）"
 
   palladium_workpiece_1:
     name: "<aqua>活化钯合金基体"
@@ -1255,6 +1320,18 @@ item:
     name: "<gold>粗炼飞行核心"
   flight_core_workpiece_3:
     name: "<yellow>校准飞行核心毛坯"
+
+  robot_core:
+    name: "<light_purple>机器人核心"
+    lore: |-
+      <arrow> 经催化反应、熔炼、精密铣削与装配四道工序锻造的自动化控制核心
+      <arrow> 所有蒸汽机器人与控制终端的关键部件
+  robot_core_workpiece_1:
+    name: "<aqua>活化机器人核心基体"
+  robot_core_workpiece_2:
+    name: "<gold>粗炼机器人核心"
+  robot_core_workpiece_3:
+    name: "<yellow>校准机器人核心毛坯"
 
   turbine_rotor:
     name: "涡轮转子"
@@ -1477,14 +1554,58 @@ gui:
     steam: "蒸汽：%cur% / %max% mB"
     job_active: "✔ 当前模式"
     job_select: "点击切换到此模式"
+    sapling_slot: "树苗槽"
+    sapling_slot_hint: "放入树苗，伐木后自动补种"
+    seed_slot: "种子槽"
+    seed_slot_hint: "放入种子，收割后自动补种"
+    haul_set_source: "取货点"
+    haul_set_target: "送货点"
+    haul_unbound: "未绑定"
+    haul_bind_hint: "点击后右键一个方块设为此点"
     state:
       running: "巡游中"
       no_steam: "缺汽停摆"
       charging: "回充汽舱充能中"
     job:
-      patrol: "巡逻"
-      mine: "采矿"
-      chop: "砍树"
+      patrol: "巡逻机器人"
+      mine: "采矿机器人"
+      chop: "伐木机器人"
+      haul: "搬运机器人"
+      pick: "拾取机器人"
+      farm: "农耕机器人"
+      butcher: "屠宰机器人"
+    activity:
+      idle: "待命"
+      patrolling: "巡逻中"
+      searching: "搜索目标中"
+      approaching: "前往目标"
+      clearing: "清除障碍"
+      working: "采伐中"
+      charging: "回充汽舱充能中"
+      no_steam: "缺汽停摆"
+      haul_unbound: "未绑定取/送点"
+      haul_pickup: "前往取货"
+      haul_load: "装货中"
+      haul_deliver: "前往送货"
+      haul_unload: "卸货中"
+      delivering: "运送掉落物"
+      depositing: "存放中"
+      returning: "返回终端"
+      picking: "拾取中"
+      harvesting: "收割中"
+      planting: "播种中"
+      hunting: "追踪猎物"
+      attacking: "战斗中"
+  robot_terminal:
+    set_region: "设定区域"
+    set_region_hint: "点击后，右键两个方块作为对角"
+    no_region: "未设定区域"
+    region_size: "区域：%x% × %z%"
+    set_delivery: "设定出货点"
+    set_charge: "设定充汽点"
+    unbound: "未绑定"
+    claim: "认领机器人"
+    claim_hint: "将区域内未绑定的机器人收归本终端"
   common:
     steam_tier: "<aqua>蒸汽档位"
     current: "<gray>当前：<reset>%value%"
@@ -2442,6 +2563,8 @@ guide:
       name: "蒸汽调校"
     steam_distillation:
       name: "蒸汽蒸馏"
+    steam_robots:
+      name: "蒸汽机器人"
   recipe:
     steam_pressurizing: "<gray>蒸汽加压 | 消耗 %steam% 蒸汽 | %time%"
     steam_sterilizing: "<gray>蒸汽灭菌 | 消耗 %steam% 蒸汽 | %time%"
@@ -2476,6 +2599,7 @@ guide:
     calibrator_supported_machines: "调校仪支持机器"
     steam_calibration: "蒸汽调校"
     steam_distillation: "蒸汽蒸馏"
+    steam_robots: "蒸汽机器人"
 
 fluid:
   steam: "<#d8edf0>蒸汽"
@@ -2545,6 +2669,7 @@ research:
   material_steam_logistics: "蒸汽货运"
   chemistry_distillation: "蒸汽精馏"
   precision_advanced_automation_1: "蒸汽精密自动化I"
+  precision_steam_robots: "蒸汽机器人"
   # Tier 4 - 终局
   precision_turbines_1: "蒸汽涡轮I"
   precision_turbines_2: "蒸汽涡轮II"
@@ -2564,10 +2689,35 @@ researches:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>100 化学</light_purple>点数解锁"
   precision_advanced_automation_1:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>150 精密工程</light_purple>点数解锁"
+  precision_steam_robots:
+    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>200 精密工程</light_purple>点数解锁"
 
 message:
   steam_robot:
     job_set: "任务模式："
+    haul_prompt_source: "<yellow>右键一个容器，设为取货点"
+    haul_prompt_target: "<yellow>右键一个容器或产线入口，设为送货点"
+    haul_source_set: "<green>取货点已设置"
+    haul_target_set: "<green>送货点已设置"
+    haul_source_invalid: "<red>取货点必须是容器（箱子/木桶等）"
+    haul_target_invalid: "<red>送货点必须是容器或产线入口"
+    haul_same_point: "<red>取货点和送货点不能是同一格"
+  robot_terminal:
+    region_set: "<green>区域已设定"
+    region_too_big: "<red>区域超出最大尺寸限制"
+    region_other_world: "<red>两角必须与终端处于同一世界"
+    need_region_first: "<red>请先设定区域"
+    point_out_of_region: "<red>该点必须在区域内"
+    delivery_invalid: "<red>出货点必须是容器（箱子/木桶等）"
+    delivery_set: "<green>出货点已设定"
+    charge_invalid: "<red>充汽点必须是蒸汽充汽舱"
+    charge_set: "<green>充汽点已设定"
+    click_corner1: "<yellow>右键一个方块，设为区域角落 1"
+    click_corner2: "<yellow>右键一个方块，设为区域角落 2"
+    click_delivery: "<yellow>右键一个容器，设为出货点"
+    click_charge: "<yellow>右键一台蒸汽充汽舱，设为充汽点"
+    claimed: "<green>已认领 %count% 台机器人"
+    none_to_claim: "<gray>区域内没有未绑定的机器人"
   line_bridge:
     requires_logic: "<red>需要先解锁<white>汽动逻辑</white>研究才能放置这台桥接机器"
   line_valve:

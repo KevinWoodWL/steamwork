@@ -489,6 +489,15 @@ public class ProductionLineInlet extends RebarBlock implements
     public @NotNull VirtualInventory getIngredientBuffer() { return ingredientBuffer; }
     public @NotNull VirtualInventory getFuelBuffer()       { return fuelBuffer; }
 
+    /**
+     * 接收外部搬运（蒸汽机器人）投入的原料，放入原料缓存。
+     *
+     * @return 放不下的余量（0 表示全部接收）
+     */
+    public int acceptHauledIngredient(@NotNull ItemStack stack) {
+        return ingredientBuffer.addItem(new MachineUpdateReason(), stack);
+    }
+
     @Override public @Nullable UUID getLineId()            { return lineId; }
     @Override public int getLinePosition()                 { return linePosition; }
     @Override public @NotNull BlockFace getLineDirection() { return lineDirection; }

@@ -977,12 +977,69 @@ item:
     name: "Steam Robot"
     lore: |-
       <arrow> Autonomous robot built on a Copper Golem
-      <arrow> Right-click a block to deploy one on top of it (full of steam)
-      <arrow> Wanders near its deploy point; <white>actions consume onboard steam</white>, <red>halts when empty</red>
-      <arrow> Returns to its <white>bound charging chamber</white> when low (auto-binds on first charge)
-      <arrow> <white>Right-click</white> opens the control GUI (Patrol/Mine/Chop); <white>Sneak + right-click</white> to dismantle
-      <arrow> Holds a tool and swings while mining/chopping; drops go to the <white>chest by home</white>
-      <arrow> <gray>Only breaks vanilla ores/logs, never machines; keep its work area away from your builds
+      <arrow> Deploy via the <white>Robot Control Terminal</white> or right-click a block
+      <arrow> Works within the terminal's region; <white>actions consume onboard steam</white>, <red>halts when empty</red>
+      <arrow> Returns to its terminal's <white>charge point</white> when low
+      <arrow> <white>Right-click</white> opens the status GUI; <white>Sneak + right-click</white> to dismantle
+      <arrow> <gray>Will not work without a bound terminal
+
+  mining_robot:
+    name: "Mining Robot"
+    lore: |-
+      <arrow> Scans for ores within the terminal's region and mines them
+      <arrow> Holds a pickaxe and swings while working; drops go to the <white>delivery point</white>
+      <arrow> <gray>Only breaks vanilla ores, never machines
+
+  lumber_robot:
+    name: "Lumber Robot"
+    lore: |-
+      <arrow> Scans for trees within the terminal's region and chops them
+      <arrow> Holds an axe and swings while working; drops go to the <white>delivery point</white>
+      <arrow> <gray>Only breaks vanilla logs/leaves, never machines
+
+  haul_robot:
+    name: "Haul Robot"
+    lore: |-
+      <arrow> Ferries items between two points within the terminal's region
+      <arrow> Bind a <white>pickup container</white> and a <white>delivery point</white> (container or line inlet) via its GUI
+      <arrow> Picks up items from source, walks to target, deposits
+
+  patrol_robot:
+    name: "Patrol Robot"
+    lore: |-
+      <arrow> Patrols within the terminal's region
+      <arrow> Attacks <white>hostile mobs</white> on sight
+      <arrow> Collects drops; delivers to output when full
+
+  picker_robot:
+    name: "Picker Robot"
+    lore: |-
+      <arrow> Scans for dropped items on the ground within the terminal's region
+      <arrow> Automatically delivers to the <white>delivery point</white> when full
+      <arrow> <gray>Works great alongside mining/lumber robots
+
+  farmer_robot:
+    name: "Farmer Robot"
+    lore: |-
+      <arrow> Scans for mature crops within the terminal's region and harvests them
+      <arrow> Load seeds into the seed slot to auto-replant on empty farmland
+      <arrow> Automatically delivers to the <white>delivery point</white> when full
+
+  butcher_robot:
+    name: "Butcher Robot"
+    lore: |-
+      <arrow> Scans for adult animals within the terminal's region and slaughters them
+      <arrow> Automatically collects drops and delivers to the <white>delivery point</white>
+      <arrow> <gray>Keeps at least 2 of each species to prevent extinction
+
+  robot_control_terminal:
+    name: "Robot Control Terminal"
+    lore: |-
+      <arrow> The brain of a robot work zone
+      <arrow> Set a rectangular region (up to 32×32, ignoring Y) with two corner clicks
+      <arrow> Bind a <white>delivery point</white> (container) and a <white>charge point</white> (charging chamber) within the region
+      <arrow> Deploy robots from the terminal; they work within the zone autonomously
+      <arrow> <gray>Robots read region/delivery/charge config from their terminal
 
   pneumatic_distributor:
     name: "Pneumatic Distributor"
@@ -1226,6 +1283,14 @@ item:
         next: "<dark_gray>Next: <gray>Precision Mill -> Calibrated Flight Core Blank"
       step_3:
         next: "<dark_gray>Next: <gray>Assembly Bench + Jet Nozzle + Precision Bearing -> Steam Flight Core (final)"
+    robot_core:
+      line_name: "Robot Core"
+      step_1:
+        next: "<dark_gray>Next: <gray>Precision Foundry + Mineral Flux + Heating Coil -> Rough Robot Core"
+      step_2:
+        next: "<dark_gray>Next: <gray>Precision Mill -> Calibrated Robot Core Blank"
+      step_3:
+        next: "<dark_gray>Next: <gray>Assembly Bench + Steam Motor + Precision Bearing + Polymer -> Robot Core (final)"
 
   palladium_workpiece_1:
     name: "<aqua>Activated Palladium Matrix"
@@ -1250,6 +1315,18 @@ item:
     name: "<gold>Rough Flight Core"
   flight_core_workpiece_3:
     name: "<yellow>Calibrated Flight Core Blank"
+
+  robot_core:
+    name: "<light_purple>Robot Core"
+    lore: |-
+      <arrow> An automation control core forged through catalytic reaction, smelting, precision milling, and assembly
+      <arrow> A key component for all steam robots and the control terminal
+  robot_core_workpiece_1:
+    name: "<aqua>Activated Robot Core Matrix"
+  robot_core_workpiece_2:
+    name: "<gold>Rough Robot Core"
+  robot_core_workpiece_3:
+    name: "<yellow>Calibrated Robot Core Blank"
 
   turbine_rotor:
     name: "Turbine Rotor"
@@ -1472,14 +1549,58 @@ gui:
     steam: "Steam: %cur% / %max% mB"
     job_active: "✔ Active"
     job_select: "Click to select"
+    sapling_slot: "Sapling Slot"
+    sapling_slot_hint: "Place saplings here for auto-replanting"
+    seed_slot: "Seed Slot"
+    seed_slot_hint: "Place seeds here for auto-replanting"
+    haul_set_source: "Pickup Point"
+    haul_set_target: "Delivery Point"
+    haul_unbound: "Not bound"
+    haul_bind_hint: "Click, then right-click a block to set this point"
     state:
       running: "Patrolling"
       no_steam: "Out of Steam"
       charging: "Returning to Charge"
     job:
-      patrol: "Patrol"
-      mine: "Mine"
-      chop: "Chop"
+      patrol: "Patrol Robot"
+      mine: "Mining Robot"
+      chop: "Lumber Robot"
+      haul: "Haul Robot"
+      pick: "Picker Robot"
+      farm: "Farmer Robot"
+      butcher: "Butcher Robot"
+    activity:
+      idle: "Idle"
+      patrolling: "Patrolling"
+      searching: "Searching"
+      approaching: "Approaching target"
+      clearing: "Clearing obstacle"
+      working: "Working"
+      charging: "Returning to charge"
+      no_steam: "Out of steam"
+      haul_unbound: "Haul points not set"
+      haul_pickup: "To pickup"
+      haul_load: "Loading"
+      haul_deliver: "To delivery"
+      haul_unload: "Unloading"
+      delivering: "Delivering"
+      depositing: "Depositing"
+      returning: "Returning"
+      picking: "Picking up"
+      harvesting: "Harvesting"
+      planting: "Planting"
+      hunting: "Tracking prey"
+      attacking: "Attacking"
+  robot_terminal:
+    set_region: "Set Region"
+    set_region_hint: "Click, then right-click two blocks to define corners"
+    no_region: "No region set"
+    region_size: "Region: %x% × %z%"
+    set_delivery: "Set Delivery Point"
+    set_charge: "Set Charge Point"
+    unbound: "Not bound"
+    claim: "Claim Robots"
+    claim_hint: "Bind unowned robots in this region to this terminal"
   common:
     steam_tier: "<aqua>Steam Tier"
     current: "<gray>Current: <reset>%value%"
@@ -2436,6 +2557,8 @@ guide:
       name: "Steam Calibration"
     steam_distillation:
       name: "Steam Distillation"
+    steam_robots:
+      name: "Steam Robots"
   recipe:
     steam_pressurizing: "<gray>Steam pressurizing | %steam% steam | %time%"
     steam_sterilizing: "<gray>Steam sterilizing | %steam% steam | %time%"
@@ -2470,6 +2593,7 @@ guide:
     calibrator_supported_machines: "Calibrator Supported Machines"
     steam_calibration: "Steam Calibration"
     steam_distillation: "Steam Distillation"
+    steam_robots: "Steam Robots"
 
 fluid:
   steam: "<#d8edf0>Steam"
@@ -2539,6 +2663,7 @@ research:
   material_steam_logistics: "Steam Logistics"
   chemistry_distillation: "Steam Distillation"
   precision_advanced_automation_1: "Steam Precision Automation I"
+  precision_steam_robots: "Steam Robots"
   # Tier 4 - endgame
   precision_turbines_1: "Steam Turbine I"
   precision_turbines_2: "Steam Turbine II"
@@ -2559,10 +2684,35 @@ researches:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>100 Chemistry</light_purple> points"
   precision_advanced_automation_1:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>150 Precision</light_purple> points"
+  precision_steam_robots:
+    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>200 Precision</light_purple> points"
 
 message:
   steam_robot:
     job_set: "Job: "
+    haul_prompt_source: "<yellow>Right-click a container to set as pickup point"
+    haul_prompt_target: "<yellow>Right-click a container or production line inlet to set as delivery point"
+    haul_source_set: "<green>Pickup point set"
+    haul_target_set: "<green>Delivery point set"
+    haul_source_invalid: "<red>Pickup point must be a container (chest/barrel/etc.)"
+    haul_target_invalid: "<red>Delivery point must be a container or production line inlet"
+    haul_same_point: "<red>Pickup and delivery points can't be the same block"
+  robot_terminal:
+    region_set: "<green>Region set successfully"
+    region_too_big: "<red>Region exceeds maximum size"
+    region_other_world: "<red>Corners must be in the same world as the terminal"
+    need_region_first: "<red>Set a region first"
+    point_out_of_region: "<red>Point must be inside the region"
+    delivery_invalid: "<red>Delivery point must be a container (chest/barrel/etc.)"
+    delivery_set: "<green>Delivery point set"
+    charge_invalid: "<red>Charge point must be a Steam Charging Chamber"
+    charge_set: "<green>Charge point set"
+    click_corner1: "<yellow>Right-click a block to set corner 1"
+    click_corner2: "<yellow>Right-click a block to set corner 2"
+    click_delivery: "<yellow>Right-click a container to set as delivery point"
+    click_charge: "<yellow>Right-click a Steam Charging Chamber to set as charge point"
+    claimed: "<green>Claimed %count% robot(s)"
+    none_to_claim: "<gray>No unbound robots found in this region"
   line_bridge:
     requires_logic: "<red>You must unlock the <white>Pneumatic Logic</white> research before placing this bridge machine"
   line_valve:

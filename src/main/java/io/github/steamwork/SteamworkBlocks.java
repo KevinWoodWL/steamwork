@@ -127,5 +127,7 @@ public final class SteamworkBlocks {
         RebarBlock.register(SteamworkKeys.STEAM_PRESSURE_TRANSDUCER, Material.BARREL, SteamPressureTransducer.class);
         RebarBlock.register(SteamworkKeys.STEAM_DIFFERENCE_ENGINE, Material.BARREL, SteamDifferenceEngine.class);
         RebarBlock.register(SteamworkKeys.PNEUMATIC_PRESSURE_MODULE, Material.BARREL, PneumaticPressureModule.class);
+        RebarBlock.register(SteamworkKeys.ROBOT_CONTROL_TERMINAL, Material.LODESTONE,
+                io.github.steamwork.content.robot.RobotControlTerminal.class);
     }
 }

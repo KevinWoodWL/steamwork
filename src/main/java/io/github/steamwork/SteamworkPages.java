@@ -32,6 +32,7 @@ public final class SteamworkPages {
     public static final SimpleStaticGuidePage STEAM_AUTOMATION = new SimpleStaticGuidePage(steamworkKey("steam_automation"));
     public static final SimpleStaticGuidePage STEAM_CALIBRATION = new SimpleStaticGuidePage(steamworkKey("steam_calibration"));
     public static final SimpleStaticGuidePage STEAM_DISTILLATION = new SimpleStaticGuidePage(steamworkKey("steam_distillation"));
+    public static final SimpleStaticGuidePage STEAM_ROBOTS = new SimpleStaticGuidePage(steamworkKey("steam_robots"));
 
     public static void initialize() {
         RebarGuide.getRootPage().addButton(new AddonPageButton(Steamwork.getInstance(), ROOT));
@@ -278,6 +279,27 @@ public final class SteamworkPages {
         STEAM_DISTILLATION.addItem(SteamworkItems.STEAM_DISTILLATION_TOWER);
         STEAM_DISTILLATION.addItem(SteamworkItems.DISTILLATION_TOWER_SECTION);
         STEAM_DISTILLATION.addItem(SteamworkItems.DISTILLATION_CONDENSER);
+
+        ROOT.addPage(SteamworkItems.MINING_ROBOT, STEAM_ROBOTS);
+        STEAM_ROBOTS.addItem(SteamworkItems.ROBOT_CONTROL_TERMINAL);
+        // 机器人核心通过完整的四步工序链制造
+        STEAM_ROBOTS.addButton(new SequencedChainButton(SteamworkItems.ROBOT_CORE, java.util.List.of(
+                new SequencedChainPage.Step(io.github.steamwork.recipes.SteamCatalyticReactionRecipe.RECIPE_TYPE,
+                        steamworkKey("react_robot_core")),
+                new SequencedChainPage.Step(io.github.steamwork.recipes.SteamFoundryRecipe.RECIPE_TYPE,
+                        steamworkKey("foundry_robot_core_matrix")),
+                new SequencedChainPage.Step(SteamMillingRecipe.RECIPE_TYPE,
+                        steamworkKey("mill_robot_core_blank")),
+                new SequencedChainPage.Step(SteamAssemblyRecipe.RECIPE_TYPE,
+                        steamworkKey("assemble_robot_core"))
+        )));
+        STEAM_ROBOTS.addItem(SteamworkItems.MINING_ROBOT);
+        STEAM_ROBOTS.addItem(SteamworkItems.LUMBER_ROBOT);
+        STEAM_ROBOTS.addItem(SteamworkItems.HAUL_ROBOT);
+        STEAM_ROBOTS.addItem(SteamworkItems.PATROL_ROBOT);
+        STEAM_ROBOTS.addItem(SteamworkItems.PICKER_ROBOT);
+        STEAM_ROBOTS.addItem(SteamworkItems.FARMER_ROBOT);
+        STEAM_ROBOTS.addItem(SteamworkItems.BUTCHER_ROBOT);
 
         ROOT.addFluid(SteamworkFluids.STEAM);
         ROOT.addFluid(SteamworkFluids.SUPERHEATED_STEAM);

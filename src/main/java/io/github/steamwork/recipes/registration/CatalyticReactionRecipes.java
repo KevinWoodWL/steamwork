@@ -46,6 +46,20 @@ public final class CatalyticReactionRecipes {
         SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(reactFlightCore);
         RebarRecipe.setPriority(reactFlightCore, 30.0);
 
+        // 机器人核心工序链第 1 步：钯合金锭 + 精密齿轮×2 + 催化核心 → 活化机器人核心基体
+        SteamCatalyticReactionRecipe reactRobotCore = new SteamCatalyticReactionRecipe(
+                steamworkKey("react_robot_core"),
+                List.of(
+                        RecipeInput.of(SteamworkItems.PALLADIUM_ALLOY_INGOT),
+                        RecipeInput.of(SteamworkItems.PRECISION_GEAR, 2),
+                        RecipeInput.of(SteamworkItems.CATALYST_CORE)
+                ),
+                SequencedWorkpiece.robotCore(1),
+                320.0,
+                480);
+        SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(reactRobotCore);
+        RebarRecipe.setPriority(reactRobotCore, 30.0);
+
         SteamCatalyticReactionRecipe.RECIPE_TYPE.addRecipe(new SteamCatalyticReactionRecipe(
                 steamworkKey("react_high_polymer"),
                 List.of(

@@ -259,4 +259,21 @@ public final class SteamworkKeys {
 
     // Steam robot（蒸汽机器人，实体 schema 与部署物品共用此 key）
     public static final NamespacedKey STEAM_ROBOT = steamworkKey("steam_robot");
+
+    // Robot work zone（机器人工区：控制终端 + 区域设定器 + 四种单职责机器人）
+    public static final NamespacedKey ROBOT_CONTROL_TERMINAL = steamworkKey("robot_control_terminal");
+    public static final NamespacedKey ROBOT_REGION_WAND = steamworkKey("robot_region_wand");
+    public static final NamespacedKey MINING_ROBOT = steamworkKey("mining_robot");
+    public static final NamespacedKey LUMBER_ROBOT = steamworkKey("lumber_robot");
+    public static final NamespacedKey HAUL_ROBOT = steamworkKey("haul_robot");
+    public static final NamespacedKey PATROL_ROBOT = steamworkKey("patrol_robot");
+    public static final NamespacedKey PICKER_ROBOT = steamworkKey("picker_robot");
+    public static final NamespacedKey FARMER_ROBOT = steamworkKey("farmer_robot");
+    public static final NamespacedKey BUTCHER_ROBOT = steamworkKey("butcher_robot");
+
+    // 机器人核心（四步工序链产物）及其三步中间品
+    public static final NamespacedKey ROBOT_CORE = steamworkKey("robot_core");
+    public static final NamespacedKey ROBOT_CORE_WORKPIECE_1 = steamworkKey("robot_core_workpiece_1");
+    public static final NamespacedKey ROBOT_CORE_WORKPIECE_2 = steamworkKey("robot_core_workpiece_2");
+    public static final NamespacedKey ROBOT_CORE_WORKPIECE_3 = steamworkKey("robot_core_workpiece_3");
 }

@@ -69,6 +69,8 @@ public final class SteamworkDisciplineResearch {
         // ── 精密工程 ─────────────────────────────────────────────────────────
         map.put(SteamworkResearches.PRECISION_ADVANCED_AUTOMATION_1,
                 new Requirement(SteamworkDiscipline.PRECISION, 150));
+        map.put(SteamworkResearches.PRECISION_STEAM_ROBOTS,
+                new Requirement(SteamworkDiscipline.PRECISION, 200));
         return map;
     }
 

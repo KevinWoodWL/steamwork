@@ -253,6 +253,17 @@ public final class SteamworkItems {
 
     // Steam robot（蒸汽机器人部署物品）
     public static final ItemStack STEAM_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.STEAM_ROBOT).build();
+    public static final ItemStack MINING_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.MINING_ROBOT).build();
+    public static final ItemStack LUMBER_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.LUMBER_ROBOT).build();
+    public static final ItemStack HAUL_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.HAUL_ROBOT).build();
+    public static final ItemStack PATROL_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.PATROL_ROBOT).build();
+    public static final ItemStack PICKER_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.PICKER_ROBOT).build();
+    public static final ItemStack FARMER_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.FARMER_ROBOT).build();
+    public static final ItemStack BUTCHER_ROBOT = ItemStackBuilder.rebar(Material.COPPER_BLOCK, SteamworkKeys.BUTCHER_ROBOT).build();
+    // Robot control terminal（机器人控制终端）
+    public static final ItemStack ROBOT_CONTROL_TERMINAL = ItemStackBuilder.rebar(Material.LODESTONE, SteamworkKeys.ROBOT_CONTROL_TERMINAL).build();
+    // 机器人核心（四步工序链成品）
+    public static final ItemStack ROBOT_CORE = ItemStackBuilder.rebar(Material.HEAVY_CORE, SteamworkKeys.ROBOT_CORE).build();
 
     // Precision mill products
     public static final ItemStack PRECISION_GEAR = ItemStackBuilder.rebar(Material.IRON_NUGGET, SteamworkKeys.PRECISION_GEAR).build();
@@ -540,7 +551,15 @@ public final class SteamworkItems {
         RebarItem.register(PneumaticPressureModule.Item.class, PNEUMATIC_PRESSURE_MODULE, SteamworkKeys.PNEUMATIC_PRESSURE_MODULE);
         RebarItem.register(PneumaticLineValve.Item.class, PNEUMATIC_LINE_VALVE, SteamworkKeys.PNEUMATIC_LINE_VALVE);
         RebarItem.register(PneumaticLineSensor.Item.class, PNEUMATIC_LINE_SENSOR, SteamworkKeys.PNEUMATIC_LINE_SENSOR);
-        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.class, STEAM_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Mining.class, MINING_ROBOT, SteamworkKeys.MINING_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Lumber.class, LUMBER_ROBOT, SteamworkKeys.LUMBER_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Haul.class, HAUL_ROBOT, SteamworkKeys.HAUL_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Patrol.class, PATROL_ROBOT, SteamworkKeys.PATROL_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Picker.class, PICKER_ROBOT, SteamworkKeys.PICKER_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Farmer.class, FARMER_ROBOT, SteamworkKeys.FARMER_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.SteamRobotItem.Butcher.class, BUTCHER_ROBOT, SteamworkKeys.BUTCHER_ROBOT);
+        RebarItem.register(io.github.steamwork.content.robot.RobotControlTerminal.Item.class, ROBOT_CONTROL_TERMINAL, SteamworkKeys.ROBOT_CONTROL_TERMINAL);
+        RebarItem.register(RebarItem.class, ROBOT_CORE);
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STERILIZER)
                 .addButton(new MachineRecipesButton(SteamSterilizingRecipe.RECIPE_TYPE));
         RebarGuide.getOrCreateInfoPage(SteamworkKeys.STEAM_STEEPING_VAT)
@@ -606,6 +625,19 @@ public final class SteamworkItems {
                                 io.github.steamwork.util.SteamworkUtils.steamworkKey("mill_palladium_alloy_blank")),
                         new SequencedChainPage.Step(SteamFoundryRecipe.RECIPE_TYPE,
                                 io.github.steamwork.util.SteamworkUtils.steamworkKey("foundry_palladium_alloy_final"))
+                )));
+
+        // 机器人核心由四步工序链产出，info 页挂链式按钮
+        RebarGuide.getOrCreateInfoPage(SteamworkKeys.ROBOT_CORE)
+                .addButton(new SequencedChainButton(ROBOT_CORE, java.util.List.of(
+                        new SequencedChainPage.Step(SteamCatalyticReactionRecipe.RECIPE_TYPE,
+                                io.github.steamwork.util.SteamworkUtils.steamworkKey("react_robot_core")),
+                        new SequencedChainPage.Step(SteamFoundryRecipe.RECIPE_TYPE,
+                                io.github.steamwork.util.SteamworkUtils.steamworkKey("foundry_robot_core_matrix")),
+                        new SequencedChainPage.Step(io.github.steamwork.recipes.SteamMillingRecipe.RECIPE_TYPE,
+                                io.github.steamwork.util.SteamworkUtils.steamworkKey("mill_robot_core_blank")),
+                        new SequencedChainPage.Step(SteamAssemblyRecipe.RECIPE_TYPE,
+                                io.github.steamwork.util.SteamworkUtils.steamworkKey("assemble_robot_core"))
                 )));
 
         // ===== 涡轮支持机器清单 =====

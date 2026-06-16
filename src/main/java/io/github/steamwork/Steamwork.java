@@ -57,6 +57,10 @@ public final class Steamwork extends JavaPlugin implements RebarAddon {
         getServer().getPluginManager().registerEvents(
                 new io.github.steamwork.content.equipment.SteamWeaponSkillListener(), this);
         io.github.steamwork.util.SteamworkChatPrompt.register(this);
+        io.github.steamwork.util.SteamworkBlockPrompt.register(this);
+        getServer().getPluginManager().registerEvents(
+                new io.github.steamwork.content.robot.SteamRobotInteractGuard(), this);
+        io.github.steamwork.content.robot.TerminalParticleVisualizer.register(this);
 
         SteamworkResearches.initialize();
         SteamworkRecipes.initialize();

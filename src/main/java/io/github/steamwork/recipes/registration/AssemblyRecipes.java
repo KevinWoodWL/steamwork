@@ -184,6 +184,74 @@ public final class AssemblyRecipes {
                 RecipeInput.of(SteamworkItems.RUBBER_GASKET),
                 RecipeInput.of(SteamworkItems.HIGH_PRESSURE_FLANGE, 2));
 
+        // ===== 机器人核心工序链第 4 步（成品）=====
+        SteamAssemblyRecipe.RECIPE_TYPE.addRecipe(new SteamAssemblyRecipe(
+                steamworkKey("assemble_robot_core"),
+                List.of(
+                        RecipeInput.of(SequencedWorkpiece.robotCore(3)),
+                        RecipeInput.of(SteamworkItems.STEAM_MOTOR),
+                        RecipeInput.of(SteamworkItems.PRECISION_BEARING, 2),
+                        RecipeInput.of(SteamworkItems.HIGH_POLYMER)
+                ),
+                SteamworkItems.ROBOT_CORE.clone()));
+
+        // ===== 四种机器人（装配台合成）=====
+        // 采矿机器人：机器人核心 + 蒸汽镐 + 耐磨板×2 + 液压活塞
+        register(steamworkKey("assemble_mining_robot"),
+                SteamworkItems.MINING_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_PICKAXE),
+                RecipeInput.of(SteamworkItems.WEAR_PLATE, 2),
+                RecipeInput.of(SteamworkItems.HYDRAULIC_PISTON));
+
+        // 伐木机器人：机器人核心 + 蒸汽斧 + 铣刀片×2 + 耐磨板
+        register(steamworkKey("assemble_lumber_robot"),
+                SteamworkItems.LUMBER_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_AXE),
+                RecipeInput.of(SteamworkItems.MILLING_BLADE, 2),
+                RecipeInput.of(SteamworkItems.WEAR_PLATE));
+
+        // 搬运机器人：机器人核心 + 蒸汽马达×2 + 锻造板×2 + 精密轴承×2
+        register(steamworkKey("assemble_haul_robot"),
+                SteamworkItems.HAUL_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_MOTOR, 2),
+                RecipeInput.of(SteamworkItems.FORGED_PLATE, 2),
+                RecipeInput.of(SteamworkItems.PRECISION_BEARING, 2));
+
+        // 巡逻机器人：机器人核心 + 蒸汽剑 + 高分子材料×2 + 催化核心
+        register(steamworkKey("assemble_patrol_robot"),
+                SteamworkItems.PATROL_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_SWORD),
+                RecipeInput.of(SteamworkItems.HIGH_POLYMER, 2),
+                RecipeInput.of(SteamworkItems.CATALYST_CORE));
+
+        // 拾取机器人：机器人核心 + 蒸汽马达 + 精密轴承×2 + 锻造板
+        register(steamworkKey("assemble_picker_robot"),
+                SteamworkItems.PICKER_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_MOTOR),
+                RecipeInput.of(SteamworkItems.PRECISION_BEARING, 2),
+                RecipeInput.of(SteamworkItems.FORGED_PLATE));
+
+        // 农耕机器人：机器人核心 + 蒸汽锄 + 铣刀片×2 + 液压活塞
+        register(steamworkKey("assemble_farmer_robot"),
+                SteamworkItems.FARMER_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_HOE),
+                RecipeInput.of(SteamworkItems.MILLING_BLADE, 2),
+                RecipeInput.of(SteamworkItems.HYDRAULIC_PISTON));
+
+        // 屠宰机器人：机器人核心 + 蒸汽剑 + 耐磨板×2 + 液压活塞
+        register(steamworkKey("assemble_butcher_robot"),
+                SteamworkItems.BUTCHER_ROBOT,
+                RecipeInput.of(SteamworkItems.ROBOT_CORE),
+                RecipeInput.of(SteamworkItems.STEAM_SWORD),
+                RecipeInput.of(SteamworkItems.WEAR_PLATE, 2),
+                RecipeInput.of(SteamworkItems.HYDRAULIC_PISTON));
+
         // ===== 涡轮转子（精密蒸汽涡轮核心部件）=====
         register(steamworkKey("assemble_turbine_rotor"),
                 SteamworkItems.TURBINE_ROTOR,
