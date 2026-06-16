@@ -926,6 +926,13 @@ item:
     waila_idle: "Production Line Buffer Chest | Not configured"
     waila: "Production Line Buffer Chest #%number% | %state% | Creator: %creator%"
 
+  terminal_capacity_module:
+    name: "Terminal Capacity Module"
+    lore: |-
+      <arrow> Calibration upgrade for the Robot Control Terminal
+      <arrow> When installed, the terminal's deployable robot limit increases from <white>3</white> to <white>5</white>
+      <arrow> Right-click the terminal with a Precision Calibrator to install via the upgrade page
+
   auto_production_module:
     name: "Auto-Production Module"
     lore: |-
@@ -1601,6 +1608,14 @@ gui:
     unbound: "Not bound"
     claim: "Claim Robots"
     claim_hint: "Bind unowned robots in this region to this terminal"
+    status_title: "Terminal Overview"
+    status_robots: "Robots"
+    robot_slot_empty: "Robot Slot"
+    robot_slot_empty_hint: "Place a steam robot here"
+    robot_slot_locked: "Locked Robot Slot"
+    robot_slot_locked_hint: "Install a Terminal Capacity Module in the calibration page"
+    point_invalid: "Invalid (block destroyed)"
+    bind_hint: "Click to rebind"
   common:
     steam_tier: "<aqua>Steam Tier"
     current: "<gray>Current: <reset>%value%"
@@ -2818,4 +2833,3 @@ line:
     cancelled: "Production line configuration cancelled"
     invalidated: "Your production line <white>#%number%</white> has been invalidated!"
   jammed: "Production line <white>#%number%</white> outlet is full �?line halted! Clear the outlet to resume automatically"
-

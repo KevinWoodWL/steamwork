@@ -12,5 +12,7 @@ public enum UpgradeType {
     /** 加工机专用：插入后机器可执行对应的 Pylon 配方。 */
     PYLON_COMPAT,
     /** 产线入口专用：安装后自动触发产线内需要手动操作的机器。 */
-    AUTO_PRODUCTION
+    AUTO_PRODUCTION,
+    /** 机器人控制终端专用：安装后提升可部署机器人上限。 */
+    TERMINAL_CAPACITY
 }

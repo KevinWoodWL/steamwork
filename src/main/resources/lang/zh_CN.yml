@@ -931,6 +931,13 @@ item:
     waila_idle: "产线缓存箱 | 未激活"
     waila: "产线缓存箱 #%number% | %state% | 制作人：%creator%"
 
+  terminal_capacity_module:
+    name: "终端扩容模组"
+    lore: |-
+      <arrow> 机器人控制终端专用调校升级
+      <arrow> 安装后，终端可部署机器人上限从 <white>3</white> 提升至 <white>5</white>
+      <arrow> 通过精密调校仪右键控制终端，在升级页面安装到升级槽
+
   auto_production_module:
     name: "自动生产模组"
     lore: |-
@@ -1606,6 +1613,14 @@ gui:
     unbound: "未绑定"
     claim: "认领机器人"
     claim_hint: "将区域内未绑定的机器人收归本终端"
+    status_title: "终端概览"
+    status_robots: "机器人"
+    robot_slot_empty: "机器人槽"
+    robot_slot_empty_hint: "在此放入蒸汽机器人"
+    robot_slot_locked: "锁定的机器人槽"
+    robot_slot_locked_hint: "在调校页面安装终端扩容模组以解锁"
+    point_invalid: "已失效（方块被破坏）"
+    bind_hint: "点击重新绑定"
   common:
     steam_tier: "<aqua>蒸汽档位"
     current: "<gray>当前：<reset>%value%"
@@ -2825,4 +2840,3 @@ line:
     cancelled: "产线配置已取消"
     invalidated: "你的产线 <white>#%number%</white> 已失效！"
   jammed: "产线 <white>#%number%</white> 出口已满，产线已停摆！请清空出口后自动恢复"
-

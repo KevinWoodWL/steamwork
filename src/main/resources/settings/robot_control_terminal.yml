@@ -1,4 +1,6 @@
 # 机器人控制终端（Robot Control Terminal）
 # 管理一个矩形工区：统管区域、出货点、充汽点与所属机器人。
 region-max: 32           # 区域边长上限（格）；区域忽略 Y 轴，为竖直棱柱
-max-robots: 4            # 单终端最大可部署机器人数量
+max-robots: 3            # 基础最大可部署机器人数量
+max-robots-upgraded: 5   # 安装升级模组后可达到的最大机器人数量
+upgrade-slots: 1         # 升级槽数量（安装 BULK 模组后直接提升至上限）

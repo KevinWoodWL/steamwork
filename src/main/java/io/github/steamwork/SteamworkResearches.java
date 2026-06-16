@@ -76,7 +76,8 @@ public final class SteamworkResearches {
             SteamworkKeys.UPGRADE_MODULE_RANGE,
             SteamworkKeys.UPGRADE_MODULE_BOOST,
             SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT,
-            SteamworkKeys.AUTO_PRODUCTION_MODULE);
+            SteamworkKeys.AUTO_PRODUCTION_MODULE,
+            SteamworkKeys.TERMINAL_CAPACITY_MODULE);
 
     public static final Research PRECISION_STEAM_ASSEMBLY = new Research(
             steamworkKey("precision_steam_assembly"), SteamworkItems.STEAM_ASSEMBLY_BENCH, 120L,

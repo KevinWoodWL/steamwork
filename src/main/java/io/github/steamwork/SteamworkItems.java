@@ -308,6 +308,7 @@ public final class SteamworkItems {
     public static final ItemStack UPGRADE_MODULE_RANGE = ItemStackBuilder.rebar(Material.SPYGLASS, SteamworkKeys.UPGRADE_MODULE_RANGE).build();
     public static final ItemStack UPGRADE_MODULE_BOOST = ItemStackBuilder.rebar(Material.SUGAR, SteamworkKeys.UPGRADE_MODULE_BOOST).build();
     public static final ItemStack UPGRADE_MODULE_PYLON_COMPAT = ItemStackBuilder.rebar(Material.NETHER_STAR, SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT).build();
+    public static final ItemStack TERMINAL_CAPACITY_MODULE = ItemStackBuilder.rebar(Material.COMPARATOR, SteamworkKeys.TERMINAL_CAPACITY_MODULE).build();
 
     // Steam weapons / tools / armor — NO baked capacity. They start "uncanistered" (socket=none,
     // capacity=0) and only gain a steam buffer once a canister is installed at the Canister Bench
@@ -532,6 +533,7 @@ public final class SteamworkItems {
         RebarItem.register(io.github.steamwork.content.machines.upgrade.RangeUpgradeModule.class, UPGRADE_MODULE_RANGE, SteamworkKeys.UPGRADE_MODULE_RANGE);
         RebarItem.register(io.github.steamwork.content.machines.upgrade.BoostUpgradeModule.class, UPGRADE_MODULE_BOOST, SteamworkKeys.UPGRADE_MODULE_BOOST);
         RebarItem.register(io.github.steamwork.content.machines.upgrade.PylonCompatUpgradeModule.class, UPGRADE_MODULE_PYLON_COMPAT, SteamworkKeys.UPGRADE_MODULE_PYLON_COMPAT);
+        RebarItem.register(io.github.steamwork.content.machines.upgrade.TerminalCapacityModule.class, TERMINAL_CAPACITY_MODULE, SteamworkKeys.TERMINAL_CAPACITY_MODULE);
         RebarItem.register(SteamScienceInterface.Item.class, STEAM_SCIENCE_INTERFACE, SteamworkKeys.STEAM_SCIENCE_INTERFACE);
         RebarItem.register(SteamHeatingChamber.Item.class, STEAM_HEATING_CHAMBER, SteamworkKeys.STEAM_HEATING_CHAMBER);
         RebarItem.register(SteamCanisterBench.Item.class, STEAM_CANISTER_BENCH, SteamworkKeys.STEAM_CANISTER_BENCH);

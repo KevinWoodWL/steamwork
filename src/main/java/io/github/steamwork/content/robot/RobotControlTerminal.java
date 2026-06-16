@@ -52,7 +52,8 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  *
  * <p><b>Phase A</b>：终端方块 + 区域/出货/充汽配置 + 持久化 + 注册表 + GUI。机器人部署（槽位）见 Phase B。</p>
  */
-public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, VirtualInventoryRebarBlock {
+public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, VirtualInventoryRebarBlock,
+        io.github.steamwork.content.machines.upgrade.UpgradeableMachine {
 
     // ===== 注册表：terminalId → 终端实例，供机器人 O(1) 找回 =====
     private static final Map<UUID, RobotControlTerminal> ACTIVE_TERMINALS = new ConcurrentHashMap<>();
@@ -75,8 +76,12 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
     private static final NamespacedKey K_CHG = steamworkKey("term_charge");
     private static final NamespacedKey K_ROBOTS = steamworkKey("term_robots"); // 已部署机器人实体 UUID 列表
 
+    private static final char[] ROBOT_SLOT_CHARS = {'1', '2', '3', '4', '5'};
+
     private final int regionMax = Math.max(4, getSettings().get("region-max", ConfigAdapter.INTEGER, 32));
-    private final int maxRobots = Math.max(1, getSettings().get("max-robots", ConfigAdapter.INTEGER, 4));
+    private final int baseMaxRobots = Math.max(1, getSettings().get("max-robots", ConfigAdapter.INTEGER, 3));
+    private final int upgradeMaxRobots = Math.max(baseMaxRobots, getSettings().get("max-robots-upgraded", ConfigAdapter.INTEGER, 5));
+    private final int upgradeSlots = Math.max(0, getSettings().get("upgrade-slots", ConfigAdapter.INTEGER, 2));
 
     // ===== 状态 =====
     private @NotNull UUID terminalId;
@@ -87,13 +92,18 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
     /** 每个槽位对应的已部署机器人实体 UUID；null = 该槽未部署。 */
     private final UUID[] slotRobots;
     private boolean suppressSlotDeploy = false;      // 认领时抑制 PostUpdateHandler 重复部署
+    private final @Nullable VirtualInventory upgradeInventory;
+    private final RobotSlotItem[] robotSlotItems;
+    private @Nullable StatusItem statusItem;
 
     @SuppressWarnings("unused")
     public RobotControlTerminal(@NotNull Block block, @NotNull BlockCreateContext context) {
         super(block, context);
         this.terminalId = UUID.randomUUID();
-        this.robotSlots = new VirtualInventory(maxRobots);
-        this.slotRobots = new UUID[maxRobots];
+        this.robotSlots = new VirtualInventory(upgradeMaxRobots);
+        this.slotRobots = new UUID[upgradeMaxRobots];
+        this.upgradeInventory = upgradeSlots > 0 ? new VirtualInventory(upgradeSlots) : null;
+        this.robotSlotItems = new RobotSlotItem[upgradeMaxRobots];
     }
 
     @SuppressWarnings("unused")
@@ -107,8 +117,10 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         this.bz = pdc.get(K_BZ, PersistentDataType.INTEGER);
         this.deliveryPoint = readPoint(pdc.get(K_DLV, PersistentDataType.STRING));
         this.chargePoint   = readPoint(pdc.get(K_CHG, PersistentDataType.STRING));
-        this.robotSlots = new VirtualInventory(maxRobots);
-        this.slotRobots = new UUID[maxRobots];
+        this.robotSlots = new VirtualInventory(upgradeMaxRobots);
+        this.slotRobots = new UUID[upgradeMaxRobots];
+        this.upgradeInventory = upgradeSlots > 0 ? new VirtualInventory(upgradeSlots) : null;
+        this.robotSlotItems = new RobotSlotItem[upgradeMaxRobots];
         ACTIVE_TERMINALS.put(terminalId, this);
         String robotsStr = pdc.get(K_ROBOTS, PersistentDataType.STRING);
         if (robotsStr != null && !robotsStr.isEmpty()) {
@@ -139,8 +151,8 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         pdc.set(K_ID, PersistentDataType.STRING, terminalId.toString());
         setOrRemove(pdc, K_AX, ax); setOrRemove(pdc, K_AZ, az);
         setOrRemove(pdc, K_BX, bx); setOrRemove(pdc, K_BZ, bz);
-        if (deliveryPoint != null) pdc.set(K_DLV, PersistentDataType.STRING, writePoint(deliveryPoint));
-        if (chargePoint   != null) pdc.set(K_CHG, PersistentDataType.STRING, writePoint(chargePoint));
+        if (deliveryPoint != null) pdc.set(K_DLV, PersistentDataType.STRING, writePoint(deliveryPoint)); else pdc.remove(K_DLV);
+        if (chargePoint   != null) pdc.set(K_CHG, PersistentDataType.STRING, writePoint(chargePoint)); else pdc.remove(K_CHG);
         StringBuilder robotsSb = new StringBuilder();
         for (int i = 0; i < slotRobots.length; i++) {
             if (slotRobots[i] != null) {
@@ -155,17 +167,58 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         }
     }
 
+    /** 当前实际机器人上限：有终端扩容模组则为满配上限，否则为基础值。 */
+    int effectiveMaxRobots() {
+        return hasCapacityUpgrade() ? upgradeMaxRobots : baseMaxRobots;
+    }
+
+    private boolean hasCapacityUpgrade() {
+        if (upgradeInventory == null) return false;
+        for (int i = 0; i < upgradeInventory.getSize(); i++) {
+            ItemStack stack = upgradeInventory.getItem(i);
+            if (stack != null && !stack.isEmpty()
+                    && RebarItem.fromStack(stack) instanceof io.github.steamwork.content.machines.upgrade.UpgradeModule m
+                    && m.getUpgradeType() == io.github.steamwork.content.machines.upgrade.UpgradeType.TERMINAL_CAPACITY) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int upgradeSlotCount() { return upgradeSlots; }
+
+    @Override
+    public void openUpgradeGui(@NotNull Player player) {
+        if (upgradeInventory == null) return;
+        String middleRow = "# # # # u # # # #";
+        xyz.xenondevs.invui.window.Window.builder()
+                .setUpperGui(Gui.builder()
+                        .setStructure("# # # # # # # # #", middleRow, "# # # # # # # # #")
+                        .addIngredient('#', GuiItems.background())
+                        .addIngredient('u', upgradeInventory)
+                        .build())
+                .setTitle(ni(Component.translatable("steamwork.gui.upgrade.title")))
+                .setViewer(player)
+                .build()
+                .open();
+    }
+
     @SuppressWarnings("unused")
     public void postInitialise() {
         ACTIVE_TERMINALS.put(terminalId, this);
         robotSlots.addPreUpdateHandler(event -> {
             ItemStack newItem = event.getNewItem();
             if (newItem == null || newItem.isEmpty()) return;
+            // 锁定超出当前上限的槽位
+            if (event.getSlot() >= effectiveMaxRobots()) {
+                event.setCancelled(true);
+                return;
+            }
             if (!(RebarItem.fromStack(newItem) instanceof SteamRobotItem)) {
                 event.setCancelled(true);
                 return;
             }
-            // 每槽最多 1 个，禁止堆叠
             if (newItem.getAmount() > 1) {
                 event.setCancelled(true);
             }
@@ -178,20 +231,52 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
             ItemStack next = event.getNewItem();
             boolean hadItem = prev != null && !prev.isEmpty();
             boolean hasItem = next != null && !next.isEmpty();
-            // 槽位原有机器人 → 精确召回该实体
             if (hadItem && slotRobots[slot] != null) {
                 recallRobot(slotRobots[slot]);
                 slotRobots[slot] = null;
             }
-            // 新物品 → 按物品类型部署对应机器人
             if (hasItem) {
                 slotRobots[slot] = deployRobot(next);
             }
+            refreshGuiItems();
         });
+        // 升级槽：只接受终端扩容模组
+        if (upgradeInventory != null) {
+            upgradeInventory.addPreUpdateHandler(event -> {
+                ItemStack newItem = event.getNewItem();
+                if (newItem == null || newItem.isEmpty()) return;
+                if (!(RebarItem.fromStack(newItem) instanceof io.github.steamwork.content.machines.upgrade.UpgradeModule m
+                        && m.getUpgradeType() == io.github.steamwork.content.machines.upgrade.UpgradeType.TERMINAL_CAPACITY)) {
+                    event.setCancelled(true);
+                }
+            });
+            upgradeInventory.addPostUpdateHandler(event -> {
+                // 移除升级后，超出新上限的槽位需召回机器人并弹出物品
+                int eff = effectiveMaxRobots();
+                for (int i = eff; i < slotRobots.length; i++) {
+                    if (slotRobots[i] != null) {
+                        recallRobot(slotRobots[i]);
+                        slotRobots[i] = null;
+                    }
+                    ItemStack item = robotSlots.getItem(i);
+                    if (item != null && !item.isEmpty()) {
+                        Block block = getBlock();
+                        block.getWorld().dropItemNaturally(block.getLocation().add(0.5, 1.0, 0.5), item);
+                        suppressSlotDeploy = true;
+                        robotSlots.setItem(null, i, ItemStack.empty());
+                        suppressSlotDeploy = false;
+                    }
+                }
+                refreshGuiItems();
+            });
+        }
     }
 
     @Override
     public @NotNull Map<@NotNull String, @NotNull VirtualInventory> getVirtualInventories() {
+        if (upgradeInventory != null) {
+            return Map.of("robots", robotSlots, "upgrades", upgradeInventory);
+        }
         return Map.of("robots", robotSlots);
     }
 
@@ -228,7 +313,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         Entity entity = world.getEntity(entityId);
         if (entity != null && !entity.isDead()) {
             if (io.github.pylonmc.rebar.entity.EntityStorage.get(entity) instanceof SteamRobot robot) {
-                robot.dropCarrying(getBlock().getLocation().add(0.5, 1.0, 0.5));
+                robot.dropStoredItems(getBlock().getLocation().add(0.5, 1.0, 0.5));
             }
             entity.remove();
         }
@@ -242,7 +327,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
             Entity entity = world.getEntity(slotRobots[i]);
             if (entity != null && !entity.isDead()) {
                 if (io.github.pylonmc.rebar.entity.EntityStorage.get(entity) instanceof SteamRobot robot) {
-                    robot.dropCarrying(dropLoc);
+                    robot.dropStoredItems(dropLoc);
                 }
                 entity.remove();
             }
@@ -271,8 +356,39 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
 
     public @NotNull UUID getTerminalId() { return terminalId; }
     public boolean hasRegion() { return ax != null && az != null && bx != null && bz != null; }
-    public @Nullable Location getDeliveryPoint() { return deliveryPoint; }
-    public @Nullable Location getChargePoint()   { return chargePoint; }
+    public @Nullable Location getDeliveryPoint() {
+        if (deliveryPoint != null) {
+            Block b = deliveryPoint.getBlock();
+            if (PneumaticEndpointSupport.isChunkLoaded(b) && !(b.getState() instanceof Container)) {
+                deliveryPoint = null;
+            }
+        }
+        return deliveryPoint;
+    }
+
+    public @Nullable Location getChargePoint() {
+        if (chargePoint != null) {
+            Block b = chargePoint.getBlock();
+            if (PneumaticEndpointSupport.isChunkLoaded(b)
+                    && !(PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber)) {
+                chargePoint = null;
+            }
+        }
+        return chargePoint;
+    }
+
+    private boolean isDeliveryValid() {
+        if (deliveryPoint == null) return false;
+        Block b = deliveryPoint.getBlock();
+        return PneumaticEndpointSupport.isChunkLoaded(b) && b.getState() instanceof Container;
+    }
+
+    private boolean isChargeValid() {
+        if (chargePoint == null) return false;
+        Block b = chargePoint.getBlock();
+        return PneumaticEndpointSupport.isChunkLoaded(b)
+                && PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber;
+    }
 
     /** 区域 X 范围（min, max）；调用前须确认 {@link #hasRegion()}。 */
     public int regionMinX() { return Math.min(ax, bx); }
@@ -331,18 +447,33 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
 
     @Override
     public @NotNull Gui createGui() {
-        return Gui.builder()
+        int visibleRobotSlots = Math.min(upgradeMaxRobots, ROBOT_SLOT_CHARS.length);
+        String robotRow = switch (visibleRobotSlots) {
+            case 1 -> "# # # # 1 # # # #";
+            case 2 -> "# # # 1 2 # # # #";
+            case 3 -> "# # # 1 2 3 # # #";
+            case 4 -> "# # 1 2 3 4 # # #";
+            default -> "# # 1 2 3 4 5 # #";
+        };
+        statusItem = new StatusItem();
+        var builder = Gui.builder()
                 .setStructure(
+                        "# # # # s # # # #",
                         "# r # d # c # a #",
                         "# # # # # # # # #",
-                        "# . . . . # # # #")
+                        robotRow)
                 .addIngredient('#', GuiItems.background())
+                .addIngredient('s', statusItem)
                 .addIngredient('r', new RegionItem())
                 .addIngredient('d', new BindItem(false))
                 .addIngredient('c', new BindItem(true))
-                .addIngredient('a', new ClaimItem())
-                .addIngredient('.', robotSlots)
-                .build();
+                .addIngredient('a', new ClaimItem());
+        for (int i = 0; i < visibleRobotSlots; i++) {
+            RobotSlotItem item = new RobotSlotItem(i);
+            robotSlotItems[i] = item;
+            builder.addIngredient(ROBOT_SLOT_CHARS[i], item);
+        }
+        return builder.build();
     }
 
     @Override
@@ -399,10 +530,21 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
             Component name = Component.translatable(charge
                     ? "steamwork.gui.robot_terminal.set_charge"
                     : "steamwork.gui.robot_terminal.set_delivery").color(NamedTextColor.AQUA);
-            Component status = (bound == null)
-                    ? Component.translatable("steamwork.gui.robot_terminal.unbound").color(NamedTextColor.RED)
-                    : Component.text("(" + bound.getBlockX() + ", " + bound.getBlockY() + ", " + bound.getBlockZ() + ")", NamedTextColor.GREEN);
-            return ItemStackBuilder.of(icon).name(ni(name)).lore(List.of(ni(status)));
+            java.util.ArrayList<Component> lore = new java.util.ArrayList<>();
+            if (bound == null) {
+                lore.add(ni(Component.translatable("steamwork.gui.robot_terminal.unbound").color(NamedTextColor.RED)));
+            } else {
+                boolean valid = charge ? isChargeValid() : isDeliveryValid();
+                Component coords = Component.text("(" + bound.getBlockX() + ", " + bound.getBlockY() + ", " + bound.getBlockZ() + ")");
+                if (valid) {
+                    lore.add(ni(coords.color(NamedTextColor.GREEN)));
+                } else {
+                    lore.add(ni(Component.translatable("steamwork.gui.robot_terminal.point_invalid").color(NamedTextColor.RED)));
+                    lore.add(ni(coords.color(NamedTextColor.DARK_GRAY).decorate(TextDecoration.STRIKETHROUGH)));
+                }
+            }
+            lore.add(ni(Component.translatable("steamwork.gui.robot_terminal.bind_hint").color(NamedTextColor.DARK_GRAY)));
+            return ItemStackBuilder.of(icon).name(ni(name)).lore(lore);
         }
         @Override public void handleClick(@NotNull ClickType t, @NotNull Player p, @NotNull Click c) {
             p.closeInventory();
@@ -416,6 +558,128 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
                 if (charge) setChargePoint(b, p); else setDeliveryPoint(b, p);
             });
         }
+    }
+
+    /** 终端状态总览（区域、出货、充汽、机器人数量一目了然）。 */
+    private void refreshGuiItems() {
+        if (statusItem != null) statusItem.notifyWindows();
+        for (RobotSlotItem item : robotSlotItems) {
+            if (item != null) item.notifyWindows();
+        }
+    }
+
+    private final class RobotSlotItem extends AbstractItem {
+        private final int index;
+
+        RobotSlotItem(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
+            if (index >= effectiveMaxRobots()) {
+                return ItemStackBuilder.of(Material.RED_STAINED_GLASS_PANE)
+                        .name(ni(Component.translatable("steamwork.gui.robot_terminal.robot_slot_locked")
+                                .color(NamedTextColor.RED)))
+                        .lore(List.of(ni(Component.translatable("steamwork.gui.robot_terminal.robot_slot_locked_hint")
+                                .color(NamedTextColor.DARK_GRAY))));
+            }
+
+            ItemStack stack = robotSlots.getItem(index);
+            if (stack != null && !stack.isEmpty()) {
+                return ItemStackBuilder.copyOf(stack);
+            }
+
+            return ItemStackBuilder.of(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
+                    .name(ni(Component.translatable("steamwork.gui.robot_terminal.robot_slot_empty")
+                            .color(NamedTextColor.GRAY)))
+                    .lore(List.of(ni(Component.translatable("steamwork.gui.robot_terminal.robot_slot_empty_hint")
+                            .color(NamedTextColor.DARK_GRAY))));
+        }
+
+        @Override
+        public void handleClick(@NotNull ClickType type, @NotNull Player player, @NotNull Click click) {
+            if (index >= effectiveMaxRobots()) {
+                refreshGuiItems();
+                return;
+            }
+
+            ItemStack current = robotSlots.getItem(index);
+            boolean occupied = current != null && !current.isEmpty();
+            ItemStack cursor = player.getItemOnCursor();
+            boolean hasCursor = cursor != null && !cursor.isEmpty();
+
+            if (occupied) {
+                if (!hasCursor) {
+                    player.setItemOnCursor(current.clone());
+                    robotSlots.setItem(null, index, ItemStack.empty());
+                }
+                refreshGuiItems();
+                return;
+            }
+
+            if (!hasCursor || !(RebarItem.fromStack(cursor) instanceof SteamRobotItem)) {
+                refreshGuiItems();
+                return;
+            }
+
+            ItemStack placing = cursor.clone();
+            placing.setAmount(1);
+            robotSlots.setItem(null, index, placing);
+            if (cursor.getAmount() <= 1) {
+                player.setItemOnCursor(ItemStack.empty());
+            } else {
+                ItemStack remaining = cursor.clone();
+                remaining.setAmount(cursor.getAmount() - 1);
+                player.setItemOnCursor(remaining);
+            }
+            refreshGuiItems();
+        }
+    }
+
+    private final class StatusItem extends AbstractItem {
+        @Override public @NotNull ItemProvider getItemProvider(@NotNull Player v) {
+            java.util.ArrayList<Component> lore = new java.util.ArrayList<>();
+            // 区域
+            if (hasRegion()) {
+                lore.add(ni(Component.text("▸ ").color(NamedTextColor.DARK_GRAY)
+                        .append(Component.translatable("steamwork.gui.robot_terminal.set_region").color(NamedTextColor.WHITE))
+                        .append(Component.text("  " + (Math.abs(ax - bx) + 1) + " × " + (Math.abs(az - bz) + 1), NamedTextColor.GREEN))));
+            } else {
+                lore.add(ni(Component.text("▸ ").color(NamedTextColor.DARK_GRAY)
+                        .append(Component.translatable("steamwork.gui.robot_terminal.set_region").color(NamedTextColor.WHITE))
+                        .append(Component.text("  ").append(Component.translatable("steamwork.gui.robot_terminal.no_region").color(NamedTextColor.RED)))));
+            }
+            // 出货点
+            addPointLine(lore, deliveryPoint, false);
+            // 充汽点
+            addPointLine(lore, chargePoint, true);
+            // 机器人
+            int deployed = 0;
+            for (UUID u : slotRobots) if (u != null) deployed++;
+            lore.add(ni(Component.text("▸ ").color(NamedTextColor.DARK_GRAY)
+                    .append(Component.translatable("steamwork.gui.robot_terminal.status_robots").color(NamedTextColor.WHITE))
+                    .append(Component.text("  " + deployed + " / " + effectiveMaxRobots(), deployed > 0 ? NamedTextColor.GREEN : NamedTextColor.GRAY))));
+            return ItemStackBuilder.of(Material.COMPARATOR)
+                    .name(ni(Component.translatable("steamwork.gui.robot_terminal.status_title").color(NamedTextColor.GOLD)))
+                    .lore(lore);
+        }
+        private void addPointLine(java.util.ArrayList<Component> lore, @Nullable Location point, boolean charge) {
+            String labelKey = charge ? "steamwork.gui.robot_terminal.set_charge" : "steamwork.gui.robot_terminal.set_delivery";
+            Component base = Component.text("▸ ").color(NamedTextColor.DARK_GRAY)
+                    .append(Component.translatable(labelKey).color(NamedTextColor.WHITE).append(Component.text("  ")));
+            if (point == null) {
+                lore.add(ni(base.append(Component.translatable("steamwork.gui.robot_terminal.unbound").color(NamedTextColor.GRAY))));
+            } else {
+                boolean valid = charge ? isChargeValid() : isDeliveryValid();
+                if (valid) {
+                    lore.add(ni(base.append(Component.text("(" + point.getBlockX() + ", " + point.getBlockY() + ", " + point.getBlockZ() + ")", NamedTextColor.GREEN))));
+                } else {
+                    lore.add(ni(base.append(Component.translatable("steamwork.gui.robot_terminal.point_invalid").color(NamedTextColor.RED))));
+                }
+            }
+        }
+        @Override public void handleClick(@NotNull ClickType t, @NotNull Player p, @NotNull Click c) {}
     }
 
     /** 认领区域内未绑定终端的机器人（绑定到本终端）。 */
@@ -452,9 +716,10 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
                 if (!withinRegion(entity.getLocation())) continue;
                 if (!(io.github.pylonmc.rebar.entity.EntityStorage.get(entity) instanceof SteamRobot robot)) continue;
                 if (robot.getTerminalId() != null && robot.terminal() != null) continue;
-                // 找第一个空槽
+                // 找第一个空槽（受升级上限约束）
                 int emptySlot = -1;
-                for (int i = 0; i < slotRobots.length; i++) {
+                int eff = effectiveMaxRobots();
+                for (int i = 0; i < eff; i++) {
                     if (slotRobots[i] == null) {
                         ItemStack si = robotSlots.getItem(i);
                         if (si == null || si.isEmpty()) { emptySlot = i; break; }
@@ -472,6 +737,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         } finally {
             suppressSlotDeploy = false;
         }
+        refreshGuiItems();
         return count;
     }
 

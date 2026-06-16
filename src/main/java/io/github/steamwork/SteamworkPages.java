@@ -273,6 +273,7 @@ public final class SteamworkPages {
         STEAM_CALIBRATION.addItem(SteamworkItems.UPGRADE_MODULE_BOOST);
         STEAM_CALIBRATION.addItem(SteamworkItems.UPGRADE_MODULE_PYLON_COMPAT);
         STEAM_CALIBRATION.addItem(SteamworkItems.AUTO_PRODUCTION_MODULE);
+        STEAM_CALIBRATION.addItem(SteamworkItems.TERMINAL_CAPACITY_MODULE);
 
         ROOT.addPage(SteamworkItems.STEAM_DISTILLATION_TOWER, STEAM_DISTILLATION);
         // ★ CHEMISTRY_DISTILLATION（学科门控）

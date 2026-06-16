@@ -36,5 +36,8 @@ public class CalibratorSupportedMachinesPage extends SimpleStaticGuidePage {
 
         // 产线入口
         addItem(SteamworkItems.PRODUCTION_LINE_INLET);
+
+        // 机器人控制终端
+        addItem(SteamworkItems.ROBOT_CONTROL_TERMINAL);
     }
 }

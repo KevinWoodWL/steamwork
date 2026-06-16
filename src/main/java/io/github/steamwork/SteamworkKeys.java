@@ -237,6 +237,7 @@ public final class SteamworkKeys {
     public static final NamespacedKey UPGRADE_MODULE_RANGE = steamworkKey("upgrade_module_range");
     public static final NamespacedKey UPGRADE_MODULE_BOOST = steamworkKey("upgrade_module_boost");
     public static final NamespacedKey UPGRADE_MODULE_PYLON_COMPAT = steamworkKey("upgrade_module_pylon_compat");
+    public static final NamespacedKey TERMINAL_CAPACITY_MODULE = steamworkKey("terminal_capacity_module");
 
     // Production line
     public static final NamespacedKey PRODUCTION_LINE_INLET = steamworkKey("production_line_inlet");

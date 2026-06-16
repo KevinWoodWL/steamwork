@@ -980,6 +980,18 @@ public final class CraftingRecipes {
         bulkModule.setCategory(CraftingBookCategory.MISC);
         RecipeType.VANILLA_SHAPED.addRecipe(bulkModule);
 
+        // 终端扩容模组（机器人控制终端专用）：
+        // 耐磨板框架 + 红石比较器（信号扩展） + 调校器核心 + 铜锭（铜制机器人材料）
+        ShapedRecipe termCapModule = new ShapedRecipe(
+                SteamworkKeys.TERMINAL_CAPACITY_MODULE, SteamworkItems.TERMINAL_CAPACITY_MODULE);
+        termCapModule.shape("WCW", "RMR", "WCW");
+        termCapModule.setIngredient('W', rebarChoice(SteamworkItems.WEAR_PLATE));
+        termCapModule.setIngredient('C', Material.COPPER_INGOT);
+        termCapModule.setIngredient('R', Material.COMPARATOR);
+        termCapModule.setIngredient('M', rebarChoice(SteamworkItems.MACHINE_CALIBRATOR));
+        termCapModule.setCategory(CraftingBookCategory.MISC);
+        RecipeType.VANILLA_SHAPED.addRecipe(termCapModule);
+
         // 自动生产模组（产线入口专用，后期配方）：
         // 高压管（蒸汽信号导管）+ 精密轴承（精密传动机构），上排；
         // 压力表×2（双路感应监测）夹住调校仪核心，中排；
