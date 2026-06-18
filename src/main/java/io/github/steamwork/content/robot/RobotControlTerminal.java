@@ -36,8 +36,10 @@ import xyz.xenondevs.invui.inventory.VirtualInventory;
 import xyz.xenondevs.invui.item.AbstractItem;
 import xyz.xenondevs.invui.item.ItemProvider;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,6 +59,10 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
 
     // ===== 注册表：terminalId → 终端实例，供机器人 O(1) 找回 =====
     private static final Map<UUID, RobotControlTerminal> ACTIVE_TERMINALS = new ConcurrentHashMap<>();
+    private static final Map<ChunkTicketKey, Integer> CHUNK_TICKET_REFS = new ConcurrentHashMap<>();
+
+    private record ChunkTicketKey(@NotNull UUID worldId, int x, int z) {}
+    private record ChunkPos(int x, int z) {}
 
     public static @Nullable RobotControlTerminal forTerminal(@NotNull UUID id) {
         RobotControlTerminal t = ACTIVE_TERMINALS.get(id);
@@ -95,6 +101,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
     private final @Nullable VirtualInventory upgradeInventory;
     private final RobotSlotItem[] robotSlotItems;
     private @Nullable StatusItem statusItem;
+    private final Set<ChunkPos> activeChunkTickets = new HashSet<>();
 
     @SuppressWarnings("unused")
     public RobotControlTerminal(@NotNull Block block, @NotNull BlockCreateContext context) {
@@ -238,6 +245,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
             if (hasItem) {
                 slotRobots[slot] = deployRobot(next);
             }
+            refreshChunkTickets();
             refreshGuiItems();
         });
         // 升级槽：只接受终端扩容模组
@@ -267,9 +275,11 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
                         suppressSlotDeploy = false;
                     }
                 }
+                refreshChunkTickets();
                 refreshGuiItems();
             });
         }
+        refreshChunkTickets();
     }
 
     @Override
@@ -284,6 +294,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
     public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
         ACTIVE_TERMINALS.remove(terminalId, this);
         recallAllRobots();
+        releaseChunkTickets();
         VirtualInventoryRebarBlock.super.onBlockBreak(drops, context);
     }
 
@@ -333,6 +344,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
             }
             slotRobots[i] = null;
         }
+        refreshChunkTickets();
     }
 
     private @Nullable Location findSafeSpawn() {
@@ -390,6 +402,83 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
                 && PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber;
     }
 
+    private boolean hasDeployedRobots() {
+        for (UUID robotId : slotRobots) {
+            if (robotId != null) return true;
+        }
+        return false;
+    }
+
+    private void refreshChunkTickets() {
+        Set<ChunkPos> desired = desiredChunkTickets();
+        World world = getBlock().getWorld();
+        for (ChunkPos pos : new HashSet<>(activeChunkTickets)) {
+            if (!desired.contains(pos)) {
+                releaseChunkTicket(world, pos);
+                activeChunkTickets.remove(pos);
+            }
+        }
+        for (ChunkPos pos : desired) {
+            if (activeChunkTickets.add(pos)) {
+                acquireChunkTicket(world, pos);
+            }
+        }
+    }
+
+    private void releaseChunkTickets() {
+        World world = getBlock().getWorld();
+        for (ChunkPos pos : new HashSet<>(activeChunkTickets)) {
+            releaseChunkTicket(world, pos);
+        }
+        activeChunkTickets.clear();
+    }
+
+    private @NotNull Set<ChunkPos> desiredChunkTickets() {
+        Set<ChunkPos> desired = new HashSet<>();
+        if (!hasRegion() || !hasDeployedRobots()) return desired;
+        Block block = getBlock();
+        addChunk(desired, block.getX(), block.getZ());
+        for (int cx = regionMinX() >> 4; cx <= regionMaxX() >> 4; cx++) {
+            for (int cz = regionMinZ() >> 4; cz <= regionMaxZ() >> 4; cz++) {
+                desired.add(new ChunkPos(cx, cz));
+            }
+        }
+        addChunk(desired, deliveryPoint);
+        addChunk(desired, chargePoint);
+        return desired;
+    }
+
+    private static void addChunk(@NotNull Set<ChunkPos> chunks, @Nullable Location loc) {
+        if (loc == null) return;
+        addChunk(chunks, loc.getBlockX(), loc.getBlockZ());
+    }
+
+    private static void addChunk(@NotNull Set<ChunkPos> chunks, int blockX, int blockZ) {
+        chunks.add(new ChunkPos(blockX >> 4, blockZ >> 4));
+    }
+
+    private static void acquireChunkTicket(@NotNull World world, @NotNull ChunkPos pos) {
+        ChunkTicketKey key = new ChunkTicketKey(world.getUID(), pos.x(), pos.z());
+        CHUNK_TICKET_REFS.compute(key, (ignored, count) -> {
+            if (count == null || count <= 0) {
+                world.addPluginChunkTicket(pos.x(), pos.z(), io.github.steamwork.Steamwork.getInstance());
+                return 1;
+            }
+            return count + 1;
+        });
+    }
+
+    private static void releaseChunkTicket(@NotNull World world, @NotNull ChunkPos pos) {
+        ChunkTicketKey key = new ChunkTicketKey(world.getUID(), pos.x(), pos.z());
+        CHUNK_TICKET_REFS.computeIfPresent(key, (ignored, count) -> {
+            if (count <= 1) {
+                world.removePluginChunkTicket(pos.x(), pos.z(), io.github.steamwork.Steamwork.getInstance());
+                return null;
+            }
+            return count - 1;
+        });
+    }
+
     /** 区域 X 范围（min, max）；调用前须确认 {@link #hasRegion()}。 */
     public int regionMinX() { return Math.min(ax, bx); }
     public int regionMaxX() { return Math.max(ax, bx); }
@@ -421,6 +510,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         // 区域变了：原出货/充汽点若不在新区域内则作废
         if (deliveryPoint != null && !withinRegion(deliveryPoint)) deliveryPoint = null;
         if (chargePoint   != null && !withinRegion(chargePoint))   chargePoint = null;
+        refreshChunkTickets();
         msg(feedback, "steamwork.message.robot_terminal.region_set", NamedTextColor.GREEN);
         return true;
     }
@@ -431,6 +521,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         if (!withinRegion(block.getLocation())) { msg(feedback, "steamwork.message.robot_terminal.point_out_of_region", NamedTextColor.RED); return; }
         if (!(block.getState() instanceof Container)) { msg(feedback, "steamwork.message.robot_terminal.delivery_invalid", NamedTextColor.RED); return; }
         deliveryPoint = block.getLocation();
+        refreshChunkTickets();
         msg(feedback, "steamwork.message.robot_terminal.delivery_set", NamedTextColor.GREEN);
     }
 
@@ -440,6 +531,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         if (!withinRegion(block.getLocation())) { msg(feedback, "steamwork.message.robot_terminal.point_out_of_region", NamedTextColor.RED); return; }
         if (!(PneumaticEndpointSupport.loadedRebarBlock(block) instanceof SteamChargingChamber)) { msg(feedback, "steamwork.message.robot_terminal.charge_invalid", NamedTextColor.RED); return; }
         chargePoint = block.getLocation();
+        refreshChunkTickets();
         msg(feedback, "steamwork.message.robot_terminal.charge_set", NamedTextColor.GREEN);
     }
 

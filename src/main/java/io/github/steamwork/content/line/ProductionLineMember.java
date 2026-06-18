@@ -1,6 +1,7 @@
 package io.github.steamwork.content.line;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
+import io.github.steamwork.util.PneumaticEndpointSupport;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -110,7 +111,7 @@ public interface ProductionLineMember {
      */
     @Nullable
     static ProductionLineMember of(@NotNull Block block) {
-        RebarBlock rb = RebarBlock.getRebarBlock(block);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
         if (rb instanceof ProductionLineMember m) return m;
         if (rb != null) {
             if (PylonMixingPotMember.isPylonMixingPot(rb)

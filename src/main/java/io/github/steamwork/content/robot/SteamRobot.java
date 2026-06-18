@@ -408,6 +408,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         // 同步充汽点：跟随终端配置
         Location chargePoint = term.getChargePoint();
+        boolean chargeUsable = isChargePointUsable(chargePoint);
 
         // ── 交货后冷却（关箱过渡，避免立刻跑去充汽）──
         if (postDeliveryCooldown > 0) {
@@ -419,7 +420,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                 && golem.getHealth() < golem.getMaxHealth();
         if (seekingCharge) {
             boolean healDone = !patrolNeedsHeal;
-            if ((steam >= steamCapacity && healDone) || chargePoint == null || !chamberLoaded(chargePoint)) {
+            if ((steam >= steamCapacity && healDone) || !chargeUsable) {
                 seekingCharge = false;
                 // 有未完成的砍伐/采矿簇 → 需走回工作点
                 if (targetBlock != null || !lockedCluster.isEmpty()) {
@@ -434,8 +435,8 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             }
         } else if (postDeliveryCooldown <= 0
                 && (steam < steamCapacity * rechargeAt || patrolNeedsHeal)
-                && chargePoint != null && chamberLoaded(chargePoint)) {
-            if (!carrying.isEmpty() && (robotType == RobotType.MINE || robotType == RobotType.CHOP
+                && chargeUsable) {
+            if (steam > 0.0 && !carrying.isEmpty() && (robotType == RobotType.MINE || robotType == RobotType.CHOP
                     || robotType == RobotType.PICK || robotType == RobotType.FARM
                     || robotType == RobotType.BUTCHER || robotType == RobotType.PATROL)) {
                 needsDelivery = true;
@@ -452,6 +453,15 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         // ── 缺汽停摆（无可用充汽舱）──
         if (steam <= 0.0) {
+            if (chargeUsable) {
+                seekingCharge = true;
+                boundChamber = chargePoint;
+                pauseWork();
+                activity = Activity.CHARGING;
+                navigateToChamber(golem);
+                updateNameTagIfChanged(golem);
+                return;
+            }
             activity = Activity.NO_STEAM;
             if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
             target = null;
@@ -782,10 +792,14 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
     // ===== 拾取机器人（PICK）=====
 
-    /** 不可达掉落物黑名单（实体 UUID → 拉黑时刻），避免反复追踪够不到的物品。 */
-    private final java.util.Map<java.util.UUID, Long> blockedItems = new java.util.HashMap<>();
+    /** 不可达掉落物黑名单（实体 UUID → 拉黑位置/时刻），避免反复追踪够不到的物品。 */
+    private final java.util.Map<java.util.UUID, BlockedPickTarget> blockedItems = new java.util.HashMap<>();
     private static final long ITEM_BLACKLIST_EXPIRY = 400; // 20 秒后重试
     private static final int PICK_APPROACH_LIMIT = 200;    // 拾取接近上限（10 秒，覆盖 ~40 格）
+    private static final int PICK_NO_PROGRESS_LIMIT = 12;
+    private static final int PICK_REPATH_INTERVAL = 4;
+    private static final double PICK_UNBLOCK_DROP_Y = 1.0;
+    private static final double PICK_UNBLOCK_MOVE_SQ = 4.0;
     /** 当前追踪的掉落物实体 UUID（用于无进度检测）。 */
     private @Nullable java.util.UUID pickTargetId = null;
     /** 拾取接近阶段的无进度计数。 */
@@ -803,6 +817,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         RobotControlTerminal term = terminal();
         if (term == null || !term.hasRegion()) {
+            resetPickTarget(golem, true);
             activity = Activity.IDLE;
             setState(golem, CopperGolem.State.IDLE);
             return false;
@@ -813,17 +828,17 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         long now = world.getFullTime();
 
         // 清理过期黑名单
-        blockedItems.entrySet().removeIf(e -> now - e.getValue() > ITEM_BLACKLIST_EXPIRY);
+        blockedItems.entrySet().removeIf(e -> now - e.getValue().tick() >= ITEM_BLACKLIST_EXPIRY);
 
         // 快速路径：正在追踪的目标仍有效 → 跳过全量实体扫描
         org.bukkit.entity.Item nearest = null;
         if (pickTargetId != null) {
             org.bukkit.entity.Entity tracked = world.getEntity(pickTargetId);
-            if (tracked instanceof org.bukkit.entity.Item item && item.isValid() && !item.isDead()
-                    && !blockedItems.containsKey(pickTargetId)) {
+            if (tracked instanceof org.bukkit.entity.Item item && isPickTargetValid(item, term)
+                    && !isPickBlocked(item, now)) {
                 nearest = item;
             } else {
-                pickTargetId = null;
+                resetPickTarget(golem, true);
             }
         }
 
@@ -843,15 +858,15 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                     minX, world.getMinHeight(), minZ, maxX + 1, world.getMaxHeight(), maxZ + 1);
             for (org.bukkit.entity.Entity ent : world.getNearbyEntities(pickScanBox)) {
                 if (!(ent instanceof org.bukkit.entity.Item item)) continue;
-                if (!item.isValid() || item.isDead()) continue;
-                if (blockedItems.containsKey(item.getUniqueId())) continue;
+                if (!isPickTargetValid(item, term)) continue;
+                if (isPickBlocked(item, now)) continue;
                 double sq = loc.distanceSquared(item.getLocation());
                 if (sq < bestSq) { bestSq = sq; nearest = item; }
             }
         }
 
         if (nearest == null) {
-            pickTargetId = null;
+            resetPickTarget(golem, true);
             if (!carrying.isEmpty()) { needsDelivery = true; return true; }
             scanCooldown = SCAN_IDLE_COOLDOWN;
             activity = Activity.IDLE;
@@ -865,9 +880,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         java.util.UUID nid = nearest.getUniqueId();
         if (!nid.equals(pickTargetId)) {
             pickTargetId = nid;
-            pickNoProgress = 0;
-            pickLastDistSq = Double.MAX_VALUE;
-            pickApproachAge = 0;
+            resetPickProgress();
         }
 
         // 走向目标掉落物
@@ -882,29 +895,24 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                 pickNoProgress++;
             }
             pickApproachAge++;
-            if (pickNoProgress > NO_PROGRESS_LIMIT || pickApproachAge > PICK_APPROACH_LIMIT) {
-                blockedItems.put(nid, now);
-                pickTargetId = null;
-                pickNoProgress = 0;
-                pickApproachAge = 0;
-                pickLastDistSq = Double.MAX_VALUE;
-                if (golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+            if (pickNoProgress > PICK_NO_PROGRESS_LIMIT || pickApproachAge > PICK_APPROACH_LIMIT) {
+                blockPickTarget(nearest, now, golem);
                 return true;
             }
             activity = Activity.APPROACHING;
             setState(golem, CopperGolem.State.IDLE);
             golem.lookAt(itemLoc);
-            if (!golem.getPathfinder().hasPath() || pickApproachAge % 8 == 1) {
+            if (!golem.getPathfinder().hasPath()
+                    || pickApproachAge % 8 == 1
+                    || (pickNoProgress > 0 && pickNoProgress % PICK_REPATH_INTERVAL == 0)) {
                 golem.getPathfinder().moveTo(itemLoc, moveSpeed);
             }
             return true;
         }
 
         // 到了：捡起
-        pickTargetId = null;
-        pickNoProgress = 0;
-        pickApproachAge = 0;
-        pickLastDistSq = Double.MAX_VALUE;
+        resetPickTarget(golem, true);
+        if (!isPickTargetValid(nearest, term)) return true;
         activity = Activity.PICKING;
         setState(golem, CopperGolem.State.GETTING_ITEM);
         golem.swingMainHand();
@@ -916,6 +924,56 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         steam = Math.max(0.0, steam - steamPerBreak);
         if (carrying.size() >= inventoryCapacity) needsDelivery = true;
         return true;
+    }
+
+    private record BlockedPickTarget(long tick, @NotNull Location location) {}
+
+    private boolean isPickTargetValid(@NotNull org.bukkit.entity.Item item, @NotNull RobotControlTerminal term) {
+        if (!item.isValid() || item.isDead()) return false;
+        ItemStack stack = item.getItemStack();
+        if (stack == null || stack.isEmpty() || stack.getAmount() <= 0) return false;
+        Location itemLoc = item.getLocation();
+        World itemWorld = itemLoc.getWorld();
+        if (itemWorld == null || itemWorld != getEntity().getWorld()) return false;
+        if (!term.withinRegion(itemLoc)) return false;
+        return itemWorld.isChunkLoaded(itemLoc.getBlockX() >> 4, itemLoc.getBlockZ() >> 4);
+    }
+
+    private boolean isPickBlocked(@NotNull org.bukkit.entity.Item item, long now) {
+        java.util.UUID id = item.getUniqueId();
+        BlockedPickTarget blocked = blockedItems.get(id);
+        if (blocked == null) return false;
+        Location itemLoc = item.getLocation();
+        if (now - blocked.tick() >= ITEM_BLACKLIST_EXPIRY
+                || movedEnoughToRetry(blocked.location(), itemLoc)) {
+            blockedItems.remove(id);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean movedEnoughToRetry(@NotNull Location blockedLoc, @NotNull Location itemLoc) {
+        if (blockedLoc.getWorld() != itemLoc.getWorld()) return true;
+        if (blockedLoc.getY() - itemLoc.getY() >= PICK_UNBLOCK_DROP_Y) return true;
+        return blockedLoc.distanceSquared(itemLoc) >= PICK_UNBLOCK_MOVE_SQ;
+    }
+
+    private void blockPickTarget(@NotNull org.bukkit.entity.Item item, long now, @NotNull CopperGolem golem) {
+        blockedItems.put(item.getUniqueId(), new BlockedPickTarget(now, item.getLocation().clone()));
+        resetPickTarget(golem, true);
+        scanCooldown = 0;
+    }
+
+    private void resetPickTarget(@NotNull CopperGolem golem, boolean stopPath) {
+        pickTargetId = null;
+        resetPickProgress();
+        if (stopPath && golem.getPathfinder().hasPath()) golem.getPathfinder().stopPathfinding();
+    }
+
+    private void resetPickProgress() {
+        pickNoProgress = 0;
+        pickApproachAge = 0;
+        pickLastDistSq = Double.MAX_VALUE;
     }
 
     // ===== 农耕机器人（FARM）=====
@@ -1286,11 +1344,12 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         }
     }
 
-    /** 绑定充汽舱所在区块是否已加载、且该方块确为充汽舱。 */
-    private boolean chamberLoaded(@NotNull Location chamberCore) {
+    /** 充汽点可用于回充导航：未加载时保留配置，加载后才校验确为充汽舱。 */
+    private boolean isChargePointUsable(@Nullable Location chamberCore) {
+        if (chamberCore == null || chamberCore.getWorld() != getEntity().getWorld()) return false;
         Block b = chamberCore.getBlock();
-        return PneumaticEndpointSupport.isChunkLoaded(b)
-                && PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber;
+        return !PneumaticEndpointSupport.isChunkLoaded(b)
+                || PneumaticEndpointSupport.loadedRebarBlock(b) instanceof SteamChargingChamber;
     }
 
     /**
@@ -2081,15 +2140,18 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
                 for (int z = minZ; z <= maxZ; z++) {
                     if (!world.isChunkLoaded(x >> 4, z >> 4)) continue;
                     int surfaceY = world.getHighestBlockYAt(x, z);
-                    int yLow = Math.max(world.getMinHeight(), surfaceY - 5);
-                    int yHigh = Math.min(world.getMaxHeight(), surfaceY + 40);
+                    int yLow = Math.max(world.getMinHeight(), surfaceY - 60);
+                    int yHigh = Math.min(world.getMaxHeight(), surfaceY + 5);
                     for (int y = yLow; y <= yHigh; y++) {
                         Block b = world.getBlockAt(x, y, z);
                         if (isBlocked(b) || !isTarget(b, mode)) continue;
                         if (lockedCluster.contains(b)) continue;
                         double dx = x + 0.5 - rx, dy = y + 0.5 - ry, dz = z + 0.5 - rz;
-                        double sq = dx * dx + dy * dy + dz * dz;
+                        // 高于机器人的原木加 4 倍 Y 权重：地面树干远优于浮空树枝
+                        double yW = dy > 0 ? dy * 4.0 : dy;
+                        double sq = dx * dx + yW * yW + dz * dz;
                         if (sq < bestSq) { bestSq = sq; best = b; }
+                        break; // 每列只取最低原木（树干底部），跳过上方树冠/树枝
                     }
                 }
             }

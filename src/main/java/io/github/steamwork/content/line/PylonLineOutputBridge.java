@@ -5,6 +5,7 @@ import io.github.pylonmc.pylon.recipes.MixingPotRecipe;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.recipe.FluidOrItem;
 import io.github.steamwork.Steamwork;
+import io.github.steamwork.util.PneumaticEndpointSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -263,7 +264,7 @@ public final class PylonLineOutputBridge implements Listener {
     }
 
     private static boolean isPylonBlock(@NotNull Block block, @NotNull String keyName) {
-        RebarBlock rb = RebarBlock.getRebarBlock(block);
+        RebarBlock rb = PneumaticEndpointSupport.loadedRebarBlock(block);
         NamespacedKey key = rb != null ? rb.getKey() : null;
         return key != null && "pylon".equals(key.getNamespace()) && keyName.equals(key.getKey());
     }
