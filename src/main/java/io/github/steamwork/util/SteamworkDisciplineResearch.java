@@ -57,8 +57,6 @@ public final class SteamworkDisciplineResearch {
         // ── 化学 ────────────────────────────────────────────────────────────
         // 注：CHEMISTRY_BASIC_RESEARCH（解锁科研接口本身）不在此列，
         //     必须保持全局研究点可解锁，否则玩家无法建造接口来获取学科点数。
-        map.put(SteamworkResearches.CHEMISTRY_HEATING_CHAMBER,
-                new Requirement(SteamworkDiscipline.CHEMISTRY, 60));
         map.put(SteamworkResearches.CHEMISTRY_DISTILLATION,
                 new Requirement(SteamworkDiscipline.CHEMISTRY, 100));
         // ── 材料学 ──────────────────────────────────────────────────────────

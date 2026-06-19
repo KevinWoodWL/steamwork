@@ -2674,7 +2674,6 @@ research:
   # Tier 3 - advanced alloys & fluids
   material_advanced_ingots: "Advanced Ingots"
   material_advanced_boilers: "Advanced Boilers"
-  chemistry_heating_chamber: "Steam Superheating"
   material_steam_logistics: "Steam Logistics"
   chemistry_distillation: "Steam Distillation"
   precision_advanced_automation_1: "Steam Precision Automation I"
@@ -2693,8 +2692,6 @@ researches:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>80 Material</light_purple> points"
   material_advanced_boilers:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>60 Material</light_purple> points"
-  chemistry_heating_chamber:
-    unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>60 Chemistry</light_purple> points"
   chemistry_distillation:
     unlock-instructions: "<arrow> <red>Discipline-gated<gray>: unlock at the <aqua>Steam Science Interface</aqua> for <light_purple>100 Chemistry</light_purple> points"
   precision_advanced_automation_1:

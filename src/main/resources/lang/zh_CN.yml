@@ -2680,7 +2680,6 @@ research:
   # Tier 3 - 高级合金与流体
   material_advanced_ingots: "高级合金锭"
   material_advanced_boilers: "高级锅炉"
-  chemistry_heating_chamber: "蒸汽过热"
   material_steam_logistics: "蒸汽货运"
   chemistry_distillation: "蒸汽精馏"
   precision_advanced_automation_1: "蒸汽精密自动化I"
@@ -2698,8 +2697,6 @@ researches:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>80 材料学</light_purple>点数解锁"
   material_advanced_boilers:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>60 材料学</light_purple>点数解锁"
-  chemistry_heating_chamber:
-    unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>60 化学</light_purple>点数解锁"
   chemistry_distillation:
     unlock-instructions: "<arrow> <red>学科门控研究<gray>：需在<aqua>蒸汽科研接口</aqua>消耗 <light_purple>100 化学</light_purple>点数解锁"
   precision_advanced_automation_1:

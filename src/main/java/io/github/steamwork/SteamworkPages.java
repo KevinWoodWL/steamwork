@@ -175,7 +175,7 @@ public final class SteamworkPages {
         STEAM_MACHINES.addItem(SteamworkItems.HYDRAULIC_TURBINE);
         STEAM_MACHINES.addItem(SteamworkItems.DIESEL_TURBINE);
         STEAM_MACHINES.addItem(SteamworkItems.PRECISION_STEAM_TURBINE);
-        // ★ CHEMISTRY_HEATING_CHAMBER（学科门控）
+        // MATERIAL_BASIC_MACHINES
         STEAM_MACHINES.addItem(SteamworkItems.STEAM_HEATING_CHAMBER);
 
         ROOT.addPage(SteamworkItems.STEAM_SWORD, EQUIPMENT);

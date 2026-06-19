@@ -41,7 +41,8 @@ public final class SteamworkResearches {
             SteamworkKeys.BRASS_SIEVE, SteamworkKeys.BRASS_FLOW_VALVE,
             SteamworkKeys.BRASS_FAN_BLADE, SteamworkKeys.BRASS_VALVE_CORE,
             SteamworkKeys.BRASS_SEAL_RING,
-            SteamworkKeys.NICHROME_DUST, SteamworkKeys.NICHROME_INGOT);
+            SteamworkKeys.NICHROME_DUST, SteamworkKeys.NICHROME_INGOT,
+            SteamworkKeys.HEATING_COIL);
 
     public static final Research BIOLOGY_PLANT_PROCESSING = new Research(
             steamworkKey("biology_plant_processing"), SteamworkItems.PLANT_FIBER, 20L,
@@ -61,6 +62,7 @@ public final class SteamworkResearches {
             SteamworkKeys.STEAM_WASHING_TROUGH,
             SteamworkKeys.STEAM_PRESS, SteamworkKeys.STEAM_GRINDER,
             SteamworkKeys.STEAM_PRESSURIZED_FURNACE,
+            SteamworkKeys.STEAM_HEATING_CHAMBER,
             SteamworkKeys.HEAT_TREATED_METAL, SteamworkKeys.MACHINE_SCRAP,
             SteamworkKeys.GRANITE_DUST, SteamworkKeys.DIORITE_DUST, SteamworkKeys.ANDESITE_DUST);
 
@@ -124,8 +126,7 @@ public final class SteamworkResearches {
             SteamworkKeys.INVAR_INGOT, SteamworkKeys.DURALUMIN_INGOT, SteamworkKeys.TUNGSTEN_INGOT,
             SteamworkKeys.MANGANESE_STEEL_INGOT, SteamworkKeys.MANGANESE_BRONZE_INGOT,
             SteamworkKeys.INVAR_BLOCK, SteamworkKeys.DURALUMIN_BLOCK, SteamworkKeys.TUNGSTEN_BLOCK,
-            SteamworkKeys.MANGANESE_STEEL_BLOCK, SteamworkKeys.MANGANESE_BRONZE_BLOCK,
-            SteamworkKeys.HEATING_COIL);
+            SteamworkKeys.MANGANESE_STEEL_BLOCK, SteamworkKeys.MANGANESE_BRONZE_BLOCK);
 
     /**
      * ★ 材料学门控：需在蒸汽科研接口消耗 60 材料学点数解锁。
@@ -134,13 +135,6 @@ public final class SteamworkResearches {
             steamworkKey("material_advanced_boilers"), SteamworkItems.INVAR_BOILER, (Long) null,
             SteamworkKeys.INVAR_BOILER, SteamworkKeys.MANGANESE_STEEL_BOILER,
             SteamworkKeys.TUNGSTEN_BOILER);
-
-    /**
-     * ★ 化学门控：需在蒸汽科研接口消耗 60 化学点数解锁。
-     */
-    public static final Research CHEMISTRY_HEATING_CHAMBER = new Research(
-            steamworkKey("chemistry_heating_chamber"), SteamworkItems.STEAM_HEATING_CHAMBER, (Long) null,
-            SteamworkKeys.STEAM_HEATING_CHAMBER);
 
     public static final Research MATERIAL_STEAM_LOGISTICS = new Research(
             steamworkKey("material_steam_logistics"), SteamworkItems.STEAM_COMPRESSOR, 130L,
@@ -264,7 +258,6 @@ public final class SteamworkResearches {
 
         MATERIAL_ADVANCED_INGOTS.register();
         MATERIAL_ADVANCED_BOILERS.register();
-        CHEMISTRY_HEATING_CHAMBER.register();
         MATERIAL_STEAM_LOGISTICS.register();
         CHEMISTRY_DISTILLATION.register();
         PRECISION_ADVANCED_AUTOMATION_1.register();
