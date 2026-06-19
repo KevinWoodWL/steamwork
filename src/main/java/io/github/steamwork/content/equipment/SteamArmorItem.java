@@ -387,6 +387,7 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
     }
 
     /** 每 tick 的总驱动：检测模式切换组合键，再按当前模式分派。 */
+    @SuppressWarnings("deprecation")
     private static void driveFlight(@NotNull Player player) {
         UUID id = player.getUniqueId();
 
@@ -498,6 +499,7 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
      * 落地或在地面松开空格 → 结束会话（下次重新点火）；空中松开空格 → 滑翔保留会话；
      * 按住空格 → 首次点火升空 2 秒，点火完成后（含空中复推）直接推进耗汽。
      */
+    @SuppressWarnings("deprecation")
     private static void driveJetpack(@NotNull Player player) {
         UUID id = player.getUniqueId();
 
@@ -562,7 +564,7 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
         // 期间绝不上升、复用起飞点火的大量粒子+音效；抵消完才转入正常推进上升。
         // 抵消时长随下坠动量线性增长（恒力减速）。
         if (player.getVelocity().getY() < -BRAKE_MIN_SPEED) {
-            int brakeTicks = STEAM_FLIGHT_BRAKE_TICKS.merge(id, 1, Integer::sum);
+            int brakeTicks = STEAM_FLIGHT_BRAKE_TICKS.merge(id, 1, (a, b) -> Integer.sum(a, b));
             applyMomentumBrake(player);
             // 用点火阶段的特效（传入 ≤ 点火时长的计数触发"起飞式"粒子分支）
             spawnFlightParticles(player, Math.min(brakeTicks, FLIGHT_IGNITION_TICKS));
@@ -592,6 +594,7 @@ public class SteamArmorItem extends SteamEquipment implements InventoryTickerReb
      * <p>接管期间每 tick 稳定维持飞行并持续耗汽；蒸汽耗尽自动落下。想落地：再按一次
      * Ctrl+Shift 切到「关闭」即可。</p>
      */
+    @SuppressWarnings("deprecation")
     private static void driveHover(@NotNull Player player) {
         UUID id = player.getUniqueId();
         // 仅维持"已在空中接管"的悬浮飞行；未接管（在地面切入悬浮）→ 本模式不生效

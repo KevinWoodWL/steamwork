@@ -305,12 +305,12 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         RebarItem ri = RebarItem.fromStack(robotItem);
         if (!(ri instanceof SteamRobotItem sri)) return null;
         SteamRobot.RobotType type = switch (sri) {
-            case SteamRobotItem.Mining  ignored -> SteamRobot.RobotType.MINE;
-            case SteamRobotItem.Lumber  ignored -> SteamRobot.RobotType.CHOP;
-            case SteamRobotItem.Haul    ignored -> SteamRobot.RobotType.HAUL;
-            case SteamRobotItem.Picker  ignored -> SteamRobot.RobotType.PICK;
-            case SteamRobotItem.Farmer  ignored -> SteamRobot.RobotType.FARM;
-            case SteamRobotItem.Butcher ignored -> SteamRobot.RobotType.BUTCHER;
+            case SteamRobotItem.Mining  _ -> SteamRobot.RobotType.MINE;
+            case SteamRobotItem.Lumber  _ -> SteamRobot.RobotType.CHOP;
+            case SteamRobotItem.Haul    _ -> SteamRobot.RobotType.HAUL;
+            case SteamRobotItem.Picker  _ -> SteamRobot.RobotType.PICK;
+            case SteamRobotItem.Farmer  _ -> SteamRobot.RobotType.FARM;
+            case SteamRobotItem.Butcher _ -> SteamRobot.RobotType.BUTCHER;
             default -> SteamRobot.RobotType.PATROL;
         };
         Location spawnLoc = findSafeSpawn();
@@ -697,12 +697,10 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
             }
 
             ItemStack current = robotSlots.getItem(index);
-            boolean occupied = current != null && !current.isEmpty();
             ItemStack cursor = player.getItemOnCursor();
-            boolean hasCursor = cursor != null && !cursor.isEmpty();
 
-            if (occupied) {
-                if (!hasCursor) {
+            if (current != null && !current.isEmpty()) {
+                if (cursor == null || cursor.isEmpty()) {
                     player.setItemOnCursor(current.clone());
                     robotSlots.setItem(null, index, ItemStack.empty());
                 }
@@ -710,7 +708,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
                 return;
             }
 
-            if (!hasCursor || !(RebarItem.fromStack(cursor) instanceof SteamRobotItem)) {
+            if (cursor == null || cursor.isEmpty() || !(RebarItem.fromStack(cursor) instanceof SteamRobotItem)) {
                 refreshGuiItems();
                 return;
             }
@@ -820,7 +818,7 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
                 if (emptySlot < 0) break;
                 robot.bindTerminal(terminalId);
                 slotRobots[emptySlot] = entity.getUniqueId();
-                ItemStack robotItem = robotItemForType(robot.getRobotType());
+                ItemStack robotItem = SteamRobot.robotItemForType(robot.getRobotType()).clone();
                 if (robotItem != null) {
                     robotSlots.setItem(null, emptySlot, robotItem);
                 }
@@ -831,18 +829,6 @@ public class RobotControlTerminal extends RebarBlock implements GuiRebarBlock, V
         }
         refreshGuiItems();
         return count;
-    }
-
-    private static @Nullable ItemStack robotItemForType(@NotNull SteamRobot.RobotType type) {
-        return switch (type) {
-            case MINE    -> io.github.steamwork.SteamworkItems.MINING_ROBOT.clone();
-            case CHOP    -> io.github.steamwork.SteamworkItems.LUMBER_ROBOT.clone();
-            case HAUL    -> io.github.steamwork.SteamworkItems.HAUL_ROBOT.clone();
-            case PATROL  -> io.github.steamwork.SteamworkItems.PATROL_ROBOT.clone();
-            case PICK    -> io.github.steamwork.SteamworkItems.PICKER_ROBOT.clone();
-            case FARM    -> io.github.steamwork.SteamworkItems.FARMER_ROBOT.clone();
-            case BUTCHER -> io.github.steamwork.SteamworkItems.BUTCHER_ROBOT.clone();
-        };
     }
 
     // ===== 物品 =====

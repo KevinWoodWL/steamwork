@@ -1,6 +1,5 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
@@ -271,7 +270,7 @@ public class SteamScienceInterface extends RebarBlock implements
                 // 配方完成：将点数存入对应学科的待领取池，同时积累全局研究点奖励
                 SteamworkDiscipline disc = SteamworkDiscipline.fromKey(recipe.disciplineKey());
                 if (disc != null) {
-                    storedByDiscipline.merge(disc, recipe.researchPoints(), Integer::sum);
+                    storedByDiscipline.merge(disc, recipe.researchPoints(), (a, b) -> Integer.sum(a, b));
                 }
                 pendingResearchBonus += Math.max(2, recipe.researchPoints() / 4);
                 outputInventory.addItem(new MachineUpdateReason(), recipe.residue().clone());
@@ -334,7 +333,7 @@ public class SteamScienceInterface extends RebarBlock implements
             if (stack == null || stack.isEmpty() || stack.getAmount() <= already) continue;
             if (!need.matchesIgnoringAmount(stack)) continue;
             int take = Math.min(stillNeeded, stack.getAmount() - already);
-            reserved.merge(slot, take, Integer::sum);
+            reserved.merge(slot, take, (a, b) -> Integer.sum(a, b));
             stillNeeded -= take;
             if (stillNeeded <= 0) return reserved;
         }

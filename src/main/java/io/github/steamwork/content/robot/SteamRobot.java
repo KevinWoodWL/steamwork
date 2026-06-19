@@ -369,7 +369,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         eq.setItemInMainHandDropChance(0f);
     }
 
-    /** 每 tick 强制刷新手持物品，确保无论何种路径移除都能立刻恢复。 */
+    /** 每 tick 确保手持工具正确（供 tick 顶部调用）。 */
     private void ensureHeldTool() {
         updateHeldTool();
     }
@@ -383,6 +383,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void tick() {
         CopperGolem golem = getEntity();
         if (!golem.isValid()) return;
@@ -391,7 +392,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
         if (firstTickAfterLoad) {
             firstTickAfterLoad = false;
-            setTickInterval(tickInterval);
+            setTickInterval(tickInterval); // 重载后强制重设（防 EntityStorage 恢复时覆盖）
         }
 
         ensureHeldTool();
@@ -491,7 +492,6 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         updateNameTagIfChanged(golem);
     }
 
-    private static final ItemStack PATROL_TOOL = new ItemStack(Material.NETHERITE_SWORD);
     private static final int PATROL_Y_TOLERANCE = 5;
 
     private @Nullable org.bukkit.entity.Monster patrolChaseTarget = null;
@@ -1221,8 +1221,6 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
 
     // ===== 屠宰机器人（BUTCHER）=====
 
-    private static final ItemStack BUTCHER_TOOL = new ItemStack(Material.NETHERITE_SWORD);
-
     /**
      * 屠宰：扫描工作区内的动物 → 走过去 → 攻击 → 掉落收集 → 满载送出货点。
      * 每种动物保留至少 2 只（避免灭绝）。
@@ -1263,7 +1261,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             if (!animal.isValid() || animal.isDead()) continue;
             if (animal instanceof org.bukkit.entity.Tameable t && t.isTamed()) continue;
             if (!animal.isAdult()) continue;
-            animalCounts.merge(animal.getType(), 1, Integer::sum);
+            animalCounts.merge(animal.getType(), 1, (a, b) -> Integer.sum(a, b));
             candidates.add(animal);
         }
 
@@ -1644,6 +1642,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
             if (targetBlock == null) {                    // 簇清空 → 回接近阶段
                 replantSapling();
                 lockedCluster.clear();
+                returningToWork = false;
                 return;
             }
         }
@@ -2207,7 +2206,6 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
         return matches && PneumaticEndpointSupport.loadedRebarBlock(b) == null;
     }
 
-    /** 以 home 为原点、wanderRadius 为半径随机选一个地表点。 */
     /** 在终端区域内随机选一个地表点（fallback 到 home 附近）。 */
     private @NotNull Location pickWanderTarget(@NotNull CopperGolem golem) {
         ThreadLocalRandom rng = ThreadLocalRandom.current();
@@ -2285,6 +2283,7 @@ public class SteamRobot extends RebarEntity<CopperGolem> implements
     public double getSteamCapacity() { return steamCapacity; }
 
     /** 充入蒸汽（封顶到容量），返回实际充入量。供蒸汽充汽舱调用。巡逻机器人充汽时同时回满血。 */
+    @SuppressWarnings("deprecation")
     public double addSteam(double amount) {
         if (amount <= 0.0) return 0.0;
         double added = Math.min(amount, steamCapacity - steam);

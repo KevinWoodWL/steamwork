@@ -17,9 +17,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import xyz.xenondevs.invui.gui.Gui;
-import xyz.xenondevs.invui.item.Item;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;

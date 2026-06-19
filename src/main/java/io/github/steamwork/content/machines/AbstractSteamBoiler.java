@@ -1,7 +1,6 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.PylonFluids;
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
@@ -30,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

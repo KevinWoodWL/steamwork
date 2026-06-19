@@ -1,7 +1,6 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.pylon.PylonFluids;
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
@@ -353,7 +352,7 @@ public class SteamDistillationTower extends RebarBlock implements
             if (stack == null || stack.isEmpty() || stack.getAmount() <= already) continue;
             if (!need.matchesIgnoringAmount(stack)) continue;
             int take = Math.min(stillNeeded, stack.getAmount() - already);
-            reserved.merge(slot, take, Integer::sum);
+            reserved.merge(slot, take, (a, b) -> Integer.sum(a, b));
             stillNeeded -= take;
             if (stillNeeded <= 0) return reserved;
         }

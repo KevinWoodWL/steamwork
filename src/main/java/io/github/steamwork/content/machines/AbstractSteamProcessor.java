@@ -1,6 +1,5 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.steamwork.content.line.ProductionLineMember;
@@ -29,6 +28,7 @@ import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkItems;
 import io.github.steamwork.recipes.SteamProcessRecipe;
+import io.github.steamwork.util.PdcItemStacks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -110,6 +110,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
     private final NamespacedKey currentRecipePdcKey;
     private final NamespacedKey ticksPdcKey;
     private final NamespacedKey lockedRecipePdcKey;
+    private final NamespacedKey fixedOutputPdcKey;
 
     protected boolean lastActive = false;
     /** 机器当前停摆原因。{@link StopReason#PROCESSING} 表示在加工，其它值都表示停摆且原因明确。 */
@@ -180,10 +181,9 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
      * 于 {@code onRecipeStart()} 之后立即固定，确保离心机等随机产出配方在整个加工周期
      * 内（从 canStoreOutput 检查到实际放出）看到同一个物品。
      *
-     * <p>存储在实例字段而非共享的配方对象上，支持多台机器同时执行同一配方互不干扰。</p>
-     *
-     * <p>TODO: 服务器重启时若配方正在进行中，此字段重置为 null，完成时会重新随机。
-     * 属于极低频边缘情况，暂不做 PDC 持久化。</p>
+     * <p>存储在实例字段而非共享的配方对象上，支持多台机器同时执行同一配方互不干扰。
+     * 通过 PDC（{@code <prefix>_fixed_output} {@code byte[]}）持久化，服务器重启后
+     * 从 PDC 恢复，避免中途重启导致完成时重新随机产出。</p>
      */
     @Nullable private ItemStack fixedRecipeOutput = null;
 
@@ -206,6 +206,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         this.currentRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_recipe");
         this.ticksPdcKey = steamworkKey(pdcKeyPrefix() + "_ticks");
         this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
+        this.fixedOutputPdcKey = steamworkKey(pdcKeyPrefix() + "_fixed_output");
         this.upgradeInventory = upgradeSlotCount() > 0 ? new VirtualInventory(upgradeSlotCount()) : null;
         setFacing(context.getFacing());
         setTickInterval(tickInterval);
@@ -218,9 +219,13 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         this.currentRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_recipe");
         this.ticksPdcKey = steamworkKey(pdcKeyPrefix() + "_ticks");
         this.lockedRecipePdcKey = steamworkKey(pdcKeyPrefix() + "_locked_recipe");
+        this.fixedOutputPdcKey = steamworkKey(pdcKeyPrefix() + "_fixed_output");
         this.upgradeInventory = upgradeSlotCount() > 0 ? new VirtualInventory(upgradeSlotCount()) : null;
         currentRecipeKey = pdc.get(currentRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
         recipeTicksRemaining = pdc.getOrDefault(ticksPdcKey, org.bukkit.persistence.PersistentDataType.INTEGER, 0);
+        // 恢复本机已锁定的随机产出物品，避免重启后完成时重新随机。
+        // 旧存档没有此 key → fromBytes 返回 null，行为同修改前。
+        fixedRecipeOutput = PdcItemStacks.fromBytes(pdc.get(fixedOutputPdcKey, PdcItemStacks.TYPE));
         try { getFacing(); } catch (IllegalStateException e) { setFacing(org.bukkit.block.BlockFace.SOUTH); }
         lockedRecipeKey = pdc.get(lockedRecipePdcKey, RebarSerializers.NAMESPACED_KEY);
         String lineIdStr = pdc.get(LINE_ID_KEY, org.bukkit.persistence.PersistentDataType.STRING);
@@ -364,9 +369,17 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         if (currentRecipeKey != null && recipeTicksRemaining > 0) {
             pdc.set(currentRecipePdcKey, RebarSerializers.NAMESPACED_KEY, currentRecipeKey);
             pdc.set(ticksPdcKey, org.bukkit.persistence.PersistentDataType.INTEGER, recipeTicksRemaining);
+            // 与配方进度同步持久化锁定产出，重启后从断点继续时不再重新随机
+            byte[] fixedBytes = PdcItemStacks.toBytes(fixedRecipeOutput);
+            if (fixedBytes != null) {
+                pdc.set(fixedOutputPdcKey, PdcItemStacks.TYPE, fixedBytes);
+            } else {
+                pdc.remove(fixedOutputPdcKey);
+            }
         } else {
             pdc.remove(currentRecipePdcKey);
             pdc.remove(ticksPdcKey);
+            pdc.remove(fixedOutputPdcKey);
         }
         if (lockedRecipeKey != null) {
             pdc.set(lockedRecipePdcKey, RebarSerializers.NAMESPACED_KEY, lockedRecipeKey);
@@ -533,15 +546,6 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         interruptionTicks += tickInterval;
     }
 
-    /** 配方崩溃的视觉/音效：大烟 + 灭火嘶嘶声。 */
-    private void spawnCrashEffects() {
-        Block b = getBlock();
-        b.getWorld().spawnParticle(
-                Particle.SMOKE,
-                b.getLocation().add(0.5, 1.0, 0.5),
-                10, 0.3, 0.2, 0.3, 0.05);
-        b.getWorld().playSound(b.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 0.6f);
-    }
 
     /**
      * 蒸汽涡轮加速回调（实现 {@link SteamBoostable}）。
@@ -672,7 +676,7 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
 
                 int available = stack.getAmount() - alreadyReserved;
                 int amountToTake = Math.min(stillNeeded, available);
-                reserved.merge(slot, amountToTake, Integer::sum);
+                reserved.merge(slot, amountToTake, (a, b) -> Integer.sum(a, b));
                 stillNeeded -= amountToTake;
                 if (stillNeeded <= 0) break;
             }
@@ -1242,14 +1246,12 @@ public abstract class AbstractSteamProcessor<R extends SteamProcessRecipe> exten
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
             SteamProcessRecipe recipe = getCurrentRecipe();
-            boolean processing = recipe != null && recipeTicksRemaining > 0;
 
-            if (!processing) {
+            if (recipe == null || recipeTicksRemaining <= 0) {
                 return ItemStackBuilder.of(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
                         .name(noItalic(Component.translatable(translationPrefix() + ".progress")))
                         .lore(List.of(noItalic(Component.translatable(SHARED_KEY + ".progress_idle"))));
             }
-            assert recipe != null;
 
             int totalTicks = Math.max(1, recipe.timeTicks());
             int remaining = Math.max(0, recipeTicksRemaining);

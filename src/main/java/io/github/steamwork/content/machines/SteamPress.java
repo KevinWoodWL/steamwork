@@ -1,6 +1,5 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
@@ -824,9 +823,8 @@ public class SteamPress extends RebarBlock implements
         @Override
         public @NotNull ItemProvider getItemProvider(@NotNull Player viewer) {
             SteamProcessRecipe recipe = getCurrentRecipe();
-            boolean processing = recipe != null && recipeTicksRemaining > 0;
 
-            if (!processing) {
+            if (recipe == null || recipeTicksRemaining <= 0) {
                 return ItemStackBuilder.of(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
                         .name(noItalic(Component.translatable("steamwork.gui.steam_press.progress")))
                         .lore(List.of(noItalic(Component.translatable("steamwork.gui.steam_processor.progress_idle"))));

@@ -43,7 +43,7 @@ import java.util.UUID;
  * {@code getNextRecipe()} + {@code tryStartRecipe(recipe)} 方法，则自动触发配方处理；
  * 否则物品推入后等待玩家手动触发。</p>
  */
-class PylonMachineMember implements ProductionLineMember, ManualInteractMember {
+class PylonMachineMember implements ManualInteractMember {
 
     private final @NotNull Block block;
     private final @NotNull RebarBlock rebarBlock;

@@ -614,17 +614,6 @@ public abstract class AbstractSteamBooster extends RebarBlock implements
         return noItalic(Component.translatable(translationPrefix() + ".title"));
     }
 
-    private String createSteamBar() {
-        double amount = fluidAmount(boosterFluid());
-        double capacity = fluidCapacity(boosterFluid());
-        int filled = (int) Math.round(16.0 * amount / Math.max(1.0, capacity));
-        StringBuilder bar = new StringBuilder();
-        for (int i = 0; i < 16; i++) {
-            bar.append(i < filled ? "|" : ".");
-        }
-        return bar.toString();
-    }
-
     private void setActive(boolean active) {
         if (lastActive != active) {
             lastActive = active;

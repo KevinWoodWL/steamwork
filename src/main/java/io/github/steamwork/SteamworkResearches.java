@@ -4,7 +4,6 @@ import io.github.pylonmc.rebar.item.research.Research;
 import io.github.pylonmc.rebar.config.RebarConfig;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static io.github.steamwork.util.SteamworkUtils.steamworkKey;

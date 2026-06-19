@@ -30,7 +30,7 @@ import java.util.UUID;
  * {@link PylonLineOutputBridge}. Fluid results remain inside the pot and are not part of the
  * item production line.</p>
  */
-class PylonMixingPotMember implements ProductionLineMember, ManualInteractMember {
+class PylonMixingPotMember implements ManualInteractMember {
 
     private static final int MAX_INPUT_STACKS = 7;
     private static final double INPUT_RADIUS_XZ = 0.5;

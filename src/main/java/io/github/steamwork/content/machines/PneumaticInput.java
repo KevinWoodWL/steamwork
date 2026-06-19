@@ -1,7 +1,6 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.EntityCulledRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.FacadeRebarBlock;
@@ -64,7 +63,6 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * 网络推送时（{@link PneumaticUtils}）会先调用 {@link #isAllowed(ItemStack)} 检查过滤。</p>
  */
 public class PneumaticInput extends RebarBlock implements
-        BlockBreakRebarBlockHandler,
         DirectionalRebarBlock,
         EntityCulledRebarBlock,
         FacadeRebarBlock,

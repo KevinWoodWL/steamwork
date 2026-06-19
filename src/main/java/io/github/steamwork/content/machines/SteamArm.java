@@ -1,27 +1,22 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.*;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter;
-import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.i18n.RebarArgument;
 import io.github.pylonmc.rebar.item.RebarItem;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.logistics.LogisticGroup;
-import io.github.pylonmc.rebar.logistics.LogisticGroupType;
-import io.github.pylonmc.rebar.logistics.slot.LogisticSlot;
 import io.github.pylonmc.rebar.util.gui.GuiItems;
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat;
 import io.github.pylonmc.rebar.util.ProgressBar;
 import io.github.pylonmc.rebar.waila.WailaDisplay;
 import io.github.steamwork.SteamworkFluids;
 import io.github.steamwork.SteamworkKeys;
-import kotlin.jvm.functions.Function1;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -49,19 +44,16 @@ import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.window.Window;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
 
 public class SteamArm extends RebarBlock implements
         DirectionalRebarBlock,
@@ -137,7 +129,6 @@ public class SteamArm extends RebarBlock implements
                 if (clickedBlock == null) return;
 
                 org.bukkit.entity.Player player = event.getPlayer();
-                UUID playerId = player.getUniqueId();
 
                 // Check if clicking on a Steam Arm block itself - skip it, don't add as target
                 io.github.pylonmc.rebar.block.RebarBlock rb = io.github.pylonmc.rebar.block.BlockStorage.get(clickedBlock);
@@ -178,7 +169,6 @@ public class SteamArm extends RebarBlock implements
                                 if (existingIndex >= 0) {
                                     // Remove from list (toggle off selected state)
                                     targets.remove(existingIndex);
-                                    steamArm.invalidateCache();
                                     steamArm.notifyGuiItems();
                                     net.kyori.adventure.text.Component typeComponent = net.kyori.adventure.text.Component.translatable("steamwork.message.steam_arm.target_type." + (isInput ? "input" : "output"));
                                     net.kyori.adventure.text.Component locationInfo = net.kyori.adventure.text.Component.text("(" + clickedBlock.getX() + ", " + clickedBlock.getY() + ", " + clickedBlock.getZ() + ")");
@@ -204,46 +194,6 @@ public class SteamArm extends RebarBlock implements
                 player.sendMessage(noItalic(net.kyori.adventure.text.Component.translatable("steamwork.message.steam_arm.no_steam_arm_nearby")));
             }
 
-            private void cancelInputSelection(org.bukkit.entity.Player player) {
-                cancelSelection(player, true);
-            }
-
-            private void cancelOutputSelection(org.bukkit.entity.Player player) {
-                cancelSelection(player, false);
-            }
-
-            private void cancelSelection(org.bukkit.entity.Player player, boolean isInput) {
-                UUID playerId = player.getUniqueId();
-                if (isInput) {
-                    PLAYERS_IN_INPUT_SELECTION.remove(playerId);
-                } else {
-                    PLAYERS_IN_OUTPUT_SELECTION.remove(playerId);
-                }
-
-                // Find and update the SteamArm block
-                org.bukkit.Location loc = player.getLocation();
-                for (int dx = -5; dx <= 5; dx++) {
-                    for (int dy = -5; dy <= 5; dy++) {
-                        for (int dz = -5; dz <= 5; dz++) {
-                            org.bukkit.block.Block block = loc.getWorld().getBlockAt(
-                                    (int) (loc.getX() + dx), (int) (loc.getY() + dy), (int) (loc.getZ() + dz));
-                            if (block.isEmpty()) continue;
-
-                            io.github.pylonmc.rebar.block.RebarBlock rb = io.github.pylonmc.rebar.block.BlockStorage.get(block);
-                            if (rb instanceof SteamArm steamArm) {
-                                if (isInput) {
-                                    steamArm.selectingInputMode = false;
-                                } else {
-                                    steamArm.selectingOutputMode = false;
-                                }
-                                steamArm.notifyGuiItems();
-                            }
-                        }
-                    }
-                }
-
-                player.sendMessage(noItalic(net.kyori.adventure.text.Component.translatable("steamwork.message.steam_arm.selection_cancelled")));
-            }
         }, io.github.steamwork.Steamwork.getInstance());
     }
 
@@ -254,8 +204,6 @@ public class SteamArm extends RebarBlock implements
             io.github.steamwork.util.SteamworkUtils.steamworkKey("input_targets");
     private static final NamespacedKey OUTPUT_TARGETS_KEY =
             io.github.steamwork.util.SteamworkUtils.steamworkKey("output_targets");
-    private static final NamespacedKey SELECTING_MODE_KEY =
-            io.github.steamwork.util.SteamworkUtils.steamworkKey("selecting_mode");
     private static final NamespacedKey DISTRIBUTION_MODE_KEY =
             io.github.steamwork.util.SteamworkUtils.steamworkKey("distribution_mode");
     private static final NamespacedKey INPUT_ROUND_ROBIN_INDEX_KEY =
@@ -297,14 +245,6 @@ public class SteamArm extends RebarBlock implements
 
     private boolean lastActive = false;
     private boolean lastHasMotor = false;
-
-    // 异步扫描缓存 - 避免每tick都扫描大量方块
-    private static final int SCAN_CACHE_TICKS = 10;  // 每10tick重新扫描一次
-    private int scanCacheTicks = 0;
-    private List<Endpoint> cachedInputEndpoints = null;
-    private List<Endpoint> cachedOutputEndpoints = null;
-    private int cachedInputHash = 0;
-    private int cachedOutputHash = 0;
 
     public enum TargetSelectionMode {
         NONE,
@@ -494,7 +434,6 @@ public class SteamArm extends RebarBlock implements
         // Check if already in list - if so, remove it
         if (targets.contains(loc)) {
             targets.remove(loc);
-            invalidateCache();
             notifyGuiItems();
             Component typeComponent = Component.translatable("steamwork.message.steam_arm.target_type." + (isInput ? "input" : "output"));
             Component locationInfo = Component.text("(" + clickedBlock.getX() + ", " + clickedBlock.getY() + ", " + clickedBlock.getZ() + ")");
@@ -584,7 +523,6 @@ public class SteamArm extends RebarBlock implements
         // Check if this is a large chest and find partner
         BlockLocation targetLoc = detectLargeChest(target);
         list.add(targetLoc);
-        invalidateCache();  // 清除缓存，因为目标已更改
         notifyGuiItems();
 
         // Build location string
@@ -616,14 +554,6 @@ public class SteamArm extends RebarBlock implements
             notifyGuiItems();
         }
     }
-
-    /**
-     * 添加目标容器（兼容旧调用）
-     */
-    private void addTarget(Block target, List<BlockLocation> list, String type, Player player) {
-        addTarget(target, list, type, player, false);
-    }
-
     @Override
     public void onBlockBreak(@NotNull List<@NotNull ItemStack> drops, @NotNull BlockBreakContext context) {
         FluidBufferRebarBlock.super.onBlockBreak(drops, context);
@@ -661,11 +591,6 @@ public class SteamArm extends RebarBlock implements
 
     @Override
     public void tick() {
-        // 递减缓存计时器
-        if (scanCacheTicks > 0) {
-            scanCacheTicks--;
-        }
-
         boolean hasMotor = hasMotor();
 
         // Update motor state change
@@ -1048,47 +973,6 @@ public class SteamArm extends RebarBlock implements
         return !outputTargets.isEmpty();
     }
 
-    private List<Endpoint> findEndpointsFromTargets(List<BlockLocation> targets, boolean isInput) {
-        List<Endpoint> endpoints = new ArrayList<>();
-        World world = getBlock().getWorld();
-
-        for (BlockLocation loc : targets) {
-            // Handle main block
-            addEndpointsFromBlock(endpoints, world, loc.x(), loc.y(), loc.z(), isInput);
-
-            // Handle partner block for large chests
-            if (loc.isLargeChest()) {
-                addEndpointsFromBlock(endpoints, world, loc.partnerX(), loc.partnerY(), loc.partnerZ(), isInput);
-            }
-        }
-
-        endpoints.sort(Comparator
-                .comparingInt(Endpoint::distanceSquared)
-                .thenComparing(endpoint -> endpoint.block().getX())
-                .thenComparing(endpoint -> endpoint.block().getY())
-                .thenComparing(endpoint -> endpoint.block().getZ())
-                .thenComparing(endpoint -> endpoint.groupName() != null ? endpoint.groupName() : ""));
-        return endpoints;
-    }
-
-    /**
-     * Add endpoints from a single block
-     */
-    private void addEndpointsFromBlock(List<Endpoint> endpoints, World world, int x, int y, int z, boolean isInput) {
-        Block targetBlock = new Location(world, x, y, z).getBlock();
-        if (targetBlock.isEmpty()) {
-            return;
-        }
-
-        Map<String, LogisticGroup> groups = getLogisticGroups(targetBlock);
-        for (Map.Entry<String, LogisticGroup> entry : groups.entrySet()) {
-            if (matchesDirection(entry.getValue(), isInput)) {
-                int distSq = distanceSquared(targetBlock);
-                endpoints.add(new Endpoint(targetBlock, entry.getKey(), entry.getValue(), distSq));
-            }
-        }
-    }
-
     /**
      * Represents a target location, supporting both single blocks and large chests (double chests).
      * For large chests, both positions are stored and treated as a single logical container.
@@ -1226,42 +1110,6 @@ public class SteamArm extends RebarBlock implements
         return new BlockLocation(target.getX(), target.getY(), target.getZ());
     }
 
-    private List<Endpoint> findEndpoints(boolean input) {
-        List<Endpoint> endpoints = new ArrayList<>();
-        for (int x = -range; x <= range; x++) {
-            for (int y = -range; y <= range; y++) {
-                for (int z = -range; z <= range; z++) {
-                    if (x == 0 && y == 0 && z == 0) {
-                        continue;
-                    }
-                    if (x * x + y * y + z * z > range * range) {
-                        continue;
-                    }
-
-                    Block candidate = getBlock().getRelative(x, y, z);
-                    if (candidate.isEmpty()) {
-                        continue;
-                    }
-
-                    Map<String, LogisticGroup> groups = getLogisticGroups(candidate);
-                    for (Map.Entry<String, LogisticGroup> entry : groups.entrySet()) {
-                        if (matchesDirection(entry.getValue(), input)) {
-                            endpoints.add(new Endpoint(candidate, entry.getKey(), entry.getValue(), distanceSquared(candidate)));
-                        }
-                    }
-                }
-            }
-        }
-
-        endpoints.sort(Comparator
-                .comparingInt(Endpoint::distanceSquared)
-                .thenComparing(endpoint -> endpoint.block().getX())
-                .thenComparing(endpoint -> endpoint.block().getY())
-                .thenComparing(endpoint -> endpoint.block().getZ())
-                .thenComparing(endpoint -> endpoint.groupName() != null ? endpoint.groupName() : ""));
-        return endpoints;
-    }
-
     private Map<String, LogisticGroup> getLogisticGroups(Block candidate) {
         LogisticRebarBlock logisticBlock = BlockStorage.getAs(LogisticRebarBlock.class, candidate);
         if (logisticBlock != null) {
@@ -1312,94 +1160,11 @@ public class SteamArm extends RebarBlock implements
                 && c2Data.getType() != org.bukkit.block.data.type.Chest.Type.SINGLE;
     }
 
-    private boolean matchesDirection(LogisticGroup group, boolean input) {
-        return group.getSlotType() == LogisticGroupType.BOTH
-                || group.getSlotType() == (input ? LogisticGroupType.INPUT : LogisticGroupType.OUTPUT);
-    }
-
     private int distanceSquared(Block candidate) {
         int dx = candidate.getX() - getBlock().getX();
         int dy = candidate.getY() - getBlock().getY();
         int dz = candidate.getZ() - getBlock().getZ();
         return dx * dx + dy * dy + dz * dz;
-    }
-
-    /**
-     * 计算周围环境的哈希值，用于检测环境变化
-     * 如果哈希值改变，说明周围方块有变化，需要重新扫描
-     */
-    private int calculateSurroundingHash() {
-        int hash = 0;
-        int checkRadius = Math.min(range + 2, 8); // 限制检查范围以提高性能
-        for (int x = -checkRadius; x <= checkRadius; x++) {
-            for (int y = -checkRadius; y <= checkRadius; y++) {
-                for (int z = -checkRadius; z <= checkRadius; z++) {
-                    if (x * x + y * y + z * z > (checkRadius + 1) * (checkRadius + 1)) continue;
-                    Block block = getBlock().getRelative(x, y, z);
-                    hash = hash * 31 + (block.isEmpty() ? 0 : block.getType().hashCode());
-                }
-            }
-        }
-        return hash;
-    }
-
-    /**
-     * 获取输入端点列表，使用缓存机制
-     */
-    private List<Endpoint> getInputEndpoints() {
-        if (hasCustomInputTargets()) {
-            return findEndpointsFromTargets(inputTargets, true);
-        }
-        return new ArrayList<>();
-    }
-
-    /**
-     * 获取输出端点列表，使用缓存机制
-     */
-    private List<Endpoint> getOutputEndpoints() {
-        if (hasCustomOutputTargets()) {
-            return findEndpointsFromTargets(outputTargets, false);
-        }
-        return new ArrayList<>();
-    }
-
-    /**
-     * 获取缓存的端点列表
-     * 只有当缓存过期或环境变化时才重新扫描
-     */
-    private List<Endpoint> getCachedEndpoints(boolean isInput) {
-        int currentHash = calculateSurroundingHash();
-        int cachedHash = isInput ? cachedInputHash : cachedOutputHash;
-        List<Endpoint> cachedList = isInput ? cachedInputEndpoints : cachedOutputEndpoints;
-
-        // 检查是否需要刷新缓存
-        boolean needsRefresh = cachedList == null
-                || scanCacheTicks <= 0
-                || currentHash != cachedHash;
-
-        if (needsRefresh) {
-            List<Endpoint> newList = findEndpoints(isInput);
-            if (isInput) {
-                cachedInputEndpoints = newList;
-                cachedInputHash = currentHash;
-            } else {
-                cachedOutputEndpoints = newList;
-                cachedOutputHash = currentHash;
-            }
-            scanCacheTicks = SCAN_CACHE_TICKS;
-            return newList;
-        }
-
-        return cachedList != null ? cachedList : new ArrayList<>();
-    }
-
-    /**
-     * 当目标被修改时清除缓存
-     */
-    private void invalidateCache() {
-        cachedInputEndpoints = null;
-        cachedOutputEndpoints = null;
-        scanCacheTicks = 0;
     }
 
     private void setActive(boolean active) {
@@ -1527,7 +1292,6 @@ public class SteamArm extends RebarBlock implements
             }
 
             targets.remove(index);
-            invalidateCache();
             notifyGuiItems();
             openTargetListMenu(player, input);
         }
@@ -1604,7 +1368,7 @@ public class SteamArm extends RebarBlock implements
                 lore.add(noItalic(Component.translatable("steamwork.gui.steam_arm.input_target.list_hint")));
             }
 
-            Material mat = inputTargets.isEmpty() ? Material.MAP : Material.MAP;
+            Material mat = Material.MAP;
             if (selectingInputMode) {
                 mat = Material.GOLD_INGOT;
             }
@@ -1675,7 +1439,7 @@ public class SteamArm extends RebarBlock implements
                 lore.add(noItalic(Component.translatable("steamwork.gui.steam_arm.output_target.list_hint")));
             }
 
-            Material mat = outputTargets.isEmpty() ? Material.ENDER_EYE : Material.ENDER_EYE;
+            Material mat = Material.ENDER_EYE;
             if (selectingOutputMode) {
                 mat = Material.GOLD_INGOT;
             }

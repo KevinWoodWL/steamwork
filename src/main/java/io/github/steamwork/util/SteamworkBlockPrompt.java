@@ -28,13 +28,11 @@ import java.util.function.Consumer;
 public final class SteamworkBlockPrompt implements Listener {
 
     private static final Map<UUID, Consumer<Block>> PENDING = new ConcurrentHashMap<>();
-    private static Plugin plugin;
 
     private SteamworkBlockPrompt() {}
 
     /** 在插件启用时注册一次。 */
     public static void register(@NotNull Plugin pl) {
-        plugin = pl;
         Bukkit.getPluginManager().registerEvents(new SteamworkBlockPrompt(), pl);
     }
 

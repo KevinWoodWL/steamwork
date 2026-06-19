@@ -53,7 +53,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class SteamPressurizedFurnace extends RebarBlock implements
         DirectionalRebarBlock,
@@ -83,7 +82,6 @@ public class SteamPressurizedFurnace extends RebarBlock implements
     private @Nullable NamespacedKey currentRecipeKey = null;
     private int recipeTicksRemaining = 0;
 
-    // TODO: Persist these inventories before the machine becomes survival-safe.
     private final VirtualInventory inputInventory = new VirtualInventory(5);
     private final VirtualInventory outputInventory = new VirtualInventory(1);
 
@@ -303,7 +301,7 @@ public class SteamPressurizedFurnace extends RebarBlock implements
                 if (!canReserve(stack, alreadyReserved, need)) continue;
                 int available = stack.getAmount() - alreadyReserved;
                 int amountToReserve = Math.min(stillNeeded, available);
-                reserved.merge(slot, amountToReserve, Integer::sum);
+                reserved.merge(slot, amountToReserve, (a, b) -> Integer.sum(a, b));
                 stillNeeded -= amountToReserve;
                 if (stillNeeded <= 0) break;
             }
@@ -325,7 +323,7 @@ public class SteamPressurizedFurnace extends RebarBlock implements
                 if (!canReserve(stack, alreadyReserved, need)) continue;
                 int available = stack.getAmount() - alreadyReserved;
                 int amountToReserve = Math.min(stillNeeded, available);
-                reserved.merge(slot, amountToReserve, Integer::sum);
+                reserved.merge(slot, amountToReserve, (a, b) -> Integer.sum(a, b));
                 stillNeeded -= amountToReserve;
                 if (stillNeeded <= 0) break;
             }
@@ -502,20 +500,6 @@ public class SteamPressurizedFurnace extends RebarBlock implements
         return null;
     }
 
-    /**
-     * 验证完整配方是否可用
-     */
-    private boolean canStartRecipe(VirtualInventory inventory, int size, SteamPressurizingRecipe recipe) {
-        Map<Integer, Integer> reserved = reserveIngredients(inventory, size, recipe);
-        if (reserved == null) return false;
-
-        // 清理预占位
-        for (Map.Entry<Integer, Integer> entry : reserved.entrySet()) {
-            // 不需要实际移除，只是验证
-        }
-        return true;
-    }
-
     private void spawnSteamParticles(int count) {
         getBlock().getWorld().spawnParticle(
                 org.bukkit.Particle.CLOUD, getBlock().getLocation().add(0.5, 0.8, 0.5),
@@ -643,7 +627,6 @@ public class SteamPressurizedFurnace extends RebarBlock implements
                     : pct > 0 ? Material.GRAY_STAINED_GLASS
                     : Material.BLACK_STAINED_GLASS;
 
-            String bar = steamBarColors(pct);
             return ItemStackBuilder.of(mat)
                     .name(noItalic(Component.translatable("steamwork.gui.pressurized_furnace.steam_gauge")))
                     .lore(List.of(
@@ -659,18 +642,6 @@ public class SteamPressurizedFurnace extends RebarBlock implements
         @Override
         public void handleClick(@NotNull ClickType clickType, @NotNull Player player, @NotNull Click click) {
         }
-
-        private String steamBarColors(int pct) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 20; i++) {
-                if (i * 5 < pct) {
-                    sb.append(i < 10 ? "<aqua>" : "<dark_aqua>").append("|");
-                } else {
-                    sb.append("<dark_gray>|");
-                }
-            }
-            return sb.toString();
-        }
     }
 
     private final class ProgressStatusItem extends AbstractItem {
@@ -682,7 +653,7 @@ public class SteamPressurizedFurnace extends RebarBlock implements
             ItemStackBuilder builder = ItemStackBuilder.of(processing ? Material.CLOCK : Material.LIGHT_GRAY_STAINED_GLASS_PANE)
                     .name(noItalic(Component.translatable("steamwork.gui.pressurized_furnace.progress")));
 
-            if (!processing) {
+            if (recipe == null || recipeTicksRemaining <= 0) {
                 return builder.lore(noItalic(Component.translatable(
                         "steamwork.gui.pressurized_furnace.progress_idle"
                 )));

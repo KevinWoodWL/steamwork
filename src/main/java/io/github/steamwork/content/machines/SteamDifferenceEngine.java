@@ -1,7 +1,6 @@
 package io.github.steamwork.content.machines;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler;
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
@@ -68,7 +67,6 @@ import static io.github.steamwork.util.SteamworkUtils.steamworkKey;
  * </ul>
  */
 public class SteamDifferenceEngine extends RebarBlock implements
-        BlockBreakRebarBlockHandler,
         FluidBufferRebarBlock,
         GuiRebarBlock,
         TickingRebarBlock {

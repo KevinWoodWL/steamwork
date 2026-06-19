@@ -1,6 +1,5 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;

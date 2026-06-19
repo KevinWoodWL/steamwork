@@ -1,11 +1,9 @@
 package io.github.steamwork.content.machines;
 
-import io.github.pylonmc.pylon.util.PylonUtils;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
-import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock.MultiblockComponent;
 import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockBreakContext;
@@ -194,10 +192,13 @@ public class SteamAssemblyBench extends RebarBlock implements
         }
 
         // 手持物品 → 放入。底座为空或与手上同类型才可放
-        boolean empty = onPedestal == null || onPedestal.getType().isAir();
-        if (!empty && !onPedestal.isSimilar(held)) return;
-
-        int current = empty ? 0 : onPedestal.getAmount();
+        int current;
+        if (onPedestal == null || onPedestal.getType().isAir()) {
+            current = 0;
+        } else {
+            if (!onPedestal.isSimilar(held)) return;
+            current = onPedestal.getAmount();
+        }
         int space = held.getMaxStackSize() - current;
         if (space <= 0) return; // 已满一组
 
