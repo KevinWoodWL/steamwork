@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pylonmc/rebar
-          ref: 'master'
+          ref: 'af416af520ee381ddb79ff90f8b854969080a224'
           path: rebar
 
       # --- Checkout pylon (master — v0.4.5 适配 pylon 0.40 API) ---
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pylonmc/pylon
-          ref: 'master'
+          ref: '95befbaf770a083a9900fdafe5a9e6fd5c50ded5'
           path: pylon
 
       # --- Set up JDK 25 ---
